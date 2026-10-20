@@ -1,0 +1,260 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  max-width: 1440px;
+  margin: auto;
+  min-height: 740px;
+  padding: 32px 6% 50px;
+  gap: 6%;
+  align-items: center;
+}
+.copy h1 {
+  font-size: clamp(44px, 5.3vw, 78px);
+  line-height: 1.18;
+  letter-spacing: -4px;
+  margin: 36px 0 26px;
+}
+.copy p {
+  color: var(--muted);
+  margin-bottom: 30px;
+}
+.heroNote {
+  margin-top: 70px;
+  font: 10px/1.6 monospace;
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+}
+.motionScene {
+  min-width: 0;
+  width: 100%;
+  max-width: 600px;
+  justify-self: center;
+}
+.hero ~ section :global(.tag) {
+  color: var(--card-ink);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 6px 9px;
+  line-height: 1.25;
+}
+.categories {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.categories a {
+  border: 1px solid var(--line);
+  padding: 14px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+}
+.categories a:hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--muted);
+}
+.helpGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.helpGrid > a {
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.helpGrid > a:hover {
+  background: var(--surface-hover);
+  transform: translateY(-3px);
+}
+.helpGrid h3 {
+  font-size: 26px;
+  margin: 26px 0 12px;
+}
+.helpGrid p {
+  font-size: 14px;
+  color: var(--muted);
+}
+.credits {
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+}
+.credits :global(.sectionHeading) h2 {
+  line-height: 1.4;
+}
+.toolGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.toolCard {
+  position: relative;
+  min-width: 0;
+  min-height: 310px;
+  background: var(--card-bg);
+  color: var(--card-ink);
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+.toolCard:hover {
+  transform: translateY(-4px);
+  background: var(--card-hover);
+}
+.toolBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  min-height: 150px;
+}
+.toolLogo {
+  object-fit: contain;
+  width: 64px;
+  height: 64px;
+}
+.toolName {
+  font-size: 27px;
+  font-weight: 750;
+  letter-spacing: -1px;
+}
+.toolRole {
+  font-size: 14px;
+  font-weight: 700;
+}
+.toolCard p {
+  font-size: 12px;
+  color: #60616a;
+  margin: 10px 0 0;
+  line-height: 1.7;
+}
+.toolArrow {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  color: #777;
+  font-size: 17px;
+}
+.creditsNote {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 26px 0 0;
+}
+.nextCompanion {
+  min-height: 310px;
+  border: 1px dashed var(--line);
+  border-radius: 22px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.nextSymbol {
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--accent-ink);
+  line-height: 1;
+}
+.nextCompanion h3 {
+  font-size: 19px;
+  margin: 22px 0 0;
+}
+.nextCompanion p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 14px 0 24px;
+}
+.nextCompanion :global(.eyebrow) {
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+@media (max-width: 1000px) {
+  .toolGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 42px 6% 45px;
+    gap: 32px;
+    min-height: 0;
+  }
+  .copy h1 {
+    font-size: clamp(40px, 9.5vw, 66px);
+    letter-spacing: -2.5px;
+  }
+  .heroNote {
+    margin-top: 36px;
+    font-size: 9px;
+  }
+  .motionScene {
+    max-width: 480px;
+  }
+  .helpGrid {
+    grid-template-columns: 1fr;
+  }
+  .helpGrid > a {
+    padding: 26px;
+  }
+  .helpGrid h3 {
+    font-size: 23px;
+  }
+  .toolGrid {
+    gap: 12px;
+  }
+  .toolCard {
+    min-height: 280px;
+    padding: 22px 18px;
+    gap: 22px;
+    border-radius: 18px;
+  }
+  .toolBrand {
+    min-height: 120px;
+  }
+  .toolName {
+    font-size: 22px;
+  }
+  .toolLogo {
+    width: 52px;
+    height: 52px;
+  }
+  .toolRole {
+    font-size: 13px;
+  }
+  .nextCompanion {
+    min-height: 280px;
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+  .nextCompanion h3 {
+    font-size: 17px;
+  }
+}
+@media (max-width: 370px) {
+  .toolGrid {
+    grid-template-columns: 1fr;
+  }
+}

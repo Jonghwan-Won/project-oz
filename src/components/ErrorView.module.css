@@ -1,0 +1,68 @@
+.page {
+  min-height: calc(100svh - 76px);
+  padding: 80px 6% 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: Arial, 'Malgun Gothic', sans-serif;
+}
+.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(80px, 16vw, 204px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.075em;
+  margin-bottom: 40px;
+}
+.initial {
+  color: var(--accent);
+}
+.code {
+  color: var(--accent-ink);
+  font: 10px/1.5 monospace;
+  letter-spacing: 2px;
+}
+.page h1 {
+  font-size: clamp(24px, 3vw, 40px);
+  line-height: 1.4;
+  letter-spacing: -0.045em;
+  margin: 14px 0 20px;
+}
+.description {
+  max-width: 600px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-line;
+  margin: 0;
+  word-break: keep-all;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+.actions a,
+.actions button {
+  border-radius: 999px;
+  min-width: 155px;
+}
+@media (max-width: 760px) {
+  .page {
+    padding: 64px 6% 80px;
+  }
+  .art {
+    margin-bottom: 28px;
+  }
+  .description {
+    font-size: 14px;
+  }
+}

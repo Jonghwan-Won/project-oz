@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+enum Lifecycle {
+  IDEA
+  BUILDING
+  TESTING
+  RELEASED
+  ARCHIVED
+}
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+model Project {
+  id String @id @default(uuid()) @db.Uuid
+  slug String @unique
+  title String @db.VarChar(200)
+  summary String
+  bodyMarkdown String @default("")
+  lifecycle Lifecycle @default(IDEA)
+  visibility Visibility @default(PRIVATE)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  @@index([visibility, lifecycle])
+}

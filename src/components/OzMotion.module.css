@@ -1,0 +1,173 @@
+.stage {
+  --motion-bg: color-mix(in srgb, var(--bg) 92%, var(--ink));
+  --motion-line: color-mix(in srgb, var(--ink) 24%, var(--motion-bg));
+  --motion-glass: color-mix(in srgb, var(--accent) 7%, transparent);
+  width: 100%;
+  min-width: 0;
+  background: var(--motion-bg);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 18px 12px 20px;
+  color: var(--ink);
+  position: relative;
+}
+:global(html[data-theme='light']) .stage {
+  --motion-bg: #fafafa;
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.canvas :is(path, rect, ellipse, circle) {
+  vector-effect: non-scaling-stroke;
+}
+.label {
+  font: 11px monospace;
+  letter-spacing: 1px;
+  fill: var(--ink);
+}
+.micro {
+  font: 9px monospace;
+  letter-spacing: 0.3px;
+  fill: var(--muted);
+}
+.orbits {
+  transform-origin: 140px 126px;
+  animation: rotate 32s linear infinite;
+}
+.satellite {
+  transform-origin: 140px 126px;
+  animation: rotate 12s linear infinite;
+}
+.portal {
+  transform-origin: 88.5px 134px;
+  animation: portal 6s ease-in-out infinite;
+}
+.route {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: draw 8s ease-in-out infinite;
+}
+.node {
+  animation: pulse 5s ease-in-out infinite;
+}
+.shoe {
+  animation: float 7s ease-in-out infinite;
+}
+.signal {
+  stroke-dasharray: 350;
+  animation: signal 9s linear infinite;
+}
+.caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--motion-line);
+  margin: 10px 8% 0;
+  padding-top: 15px;
+  font: 8px monospace;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.caption button {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 44px;
+  min-width: 90px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.caption button:hover {
+  color: var(--accent-ink);
+}
+.stage[data-paused='true'] * {
+  animation-play-state: paused !important;
+}
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes portal {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+@keyframes draw {
+  0%,
+  10% {
+    stroke-dashoffset: 400;
+  }
+  60%,
+  85% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -400;
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    stroke: var(--accent-ink);
+    fill: var(--motion-bg);
+  }
+  50% {
+    fill: var(--accent);
+    stroke: var(--ink);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -9px;
+  }
+}
+@keyframes signal {
+  to {
+    stroke-dashoffset: -700;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage * {
+    animation: none !important;
+  }
+  .route {
+    stroke-dashoffset: 0;
+  }
+}
+@media (max-width: 760px) {
+  .stage {
+    padding: 16px 8px;
+    border-radius: 20px;
+  }
+  .label {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .micro {
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+  .caption {
+    margin: 0 5%;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+}

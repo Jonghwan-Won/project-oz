@@ -1,0 +1,107 @@
+.card {
+  display: block;
+  min-width: 0;
+}
+.cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.index,
+.preview {
+  position: absolute;
+  z-index: 1;
+  font: 12px/1.5 monospace;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.index {
+  top: 24px;
+  left: 26px;
+}
+.preview {
+  bottom: 24px;
+  left: 26px;
+}
+.art {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  stroke: var(--muted);
+  opacity: 0.16;
+  stroke-width: 1;
+  transition: transform 0.3s;
+}
+.coverTitle {
+  position: relative;
+  z-index: 1;
+  max-width: 88%;
+  text-align: center;
+  font-size: clamp(30px, 4vw, 58px);
+  line-height: 1.2;
+  letter-spacing: -2px;
+  color: var(--ink);
+}
+.card:first-child .coverTitle {
+  color: var(--accent-ink);
+}
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+}
+.heading h3 {
+  margin: 0;
+  font-size: clamp(23px, 2.4vw, 30px);
+  line-height: 1.35;
+  letter-spacing: -0.7px;
+}
+.heading > span {
+  color: var(--muted);
+  font-size: 22px;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.card:hover .art {
+  transform: scale(1.04);
+}
+.card:hover .heading {
+  color: var(--accent-ink);
+}
+.card:focus-visible {
+  outline-offset: 8px;
+  border-radius: 8px;
+}
+@media (max-width: 760px) {
+  .index,
+  .preview {
+    font-size: 11px;
+    left: 20px;
+  }
+  .index {
+    top: 18px;
+  }
+  .preview {
+    bottom: 18px;
+  }
+  .coverTitle {
+    font-size: clamp(30px, 8vw, 48px);
+  }
+  .heading {
+    margin-top: 18px;
+  }
+}
