@@ -1,0 +1,97 @@
+.guide {
+  max-width: 1100px;
+}
+.section {
+  padding: 32px 0;
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+}
+.section h3 {
+  margin-top: 32px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.colors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.swatch p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+.chip {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.code {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+  font-size: 13px;
+}
+.form {
+  display: grid;
+  gap: 20px;
+  max-width: 620px;
+}
+.form label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.form input {
+  min-height: 48px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.form fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.form button {
+  justify-self: start;
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.tableWrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.tableWrap caption {
+  text-align: left;
+  padding: 12px 0;
+  color: var(--muted);
+}
+.tableWrap th,
+.tableWrap td {
+  padding: 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
