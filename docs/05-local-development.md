@@ -1,6 +1,30 @@
 # 로컬 개발
 
 ## 원칙
+2026-10-21 변경: 현재 기본 구성은 각 PC의 Next.js + NAS 공용 개발 PostgreSQL이다. 아래 PC별 Compose 절차는 대안으로 보존한다. 운영 DB에 연결해 개발하지 않는다.
+
+## 개발 가이드와 테이블 없는 연결 테스트
+
+`npm run dev` 실행 후 `/guide`에서 공통 UI·색상·기본 날짜 입력·설계된 역할과 API·DB 연결을 확인한다. 페이지와 `/api/guide`는 development 환경에서만 제공하고 production에서는 404다. `/lab` 이동과 공개 메뉴는 유지한다. 인증·역할 검사는 아직 미구현이다.
+
+NAS DB를 쓰려면 PC의 **별도 PowerShell 창**에서 SSH 터널을 열어 유지한다. DSM_USER는 실제 DSM 계정명, DEV_DB_CONTAINER_IP는 개발 DB 컨테이너 IP, NAS_SSH_HOST는 NAS 접속 주소로 바꾼다. 외부에서는 NAS 내부 IP 대신 Tailscale 주소를 사용한다. 실제 주소는 개인 작업일지에서 확인한다.
+
+```powershell
+ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:15432:DEV_DB_CONTAINER_IP:5432 DSM_USER@NAS_SSH_HOST
+```
+
+프로젝트 루트 `.env.local`에 아래 항목을 직접 설정한다. CHANGE_ME는 비밀번호를 URL 인코딩한 값으로 바꾼다. 기존 파일 전체를 덮어쓰지 않는다. 비밀번호를 채팅·Git·로그에 남기지 않는다.
+
+```dotenv
+DATABASE_URL="postgresql://oz_dev_app:CHANGE_ME@127.0.0.1:15432/oz_dev"
+```
+
+환경 설정은 개발 서버에 자동 반영될 수 있다. 반영되지 않으면 재시작한다. 가이드에서 API 호출 → DB 연결 확인을 누른다. DB 테스트는 pg 드라이버로 `SELECT 1`만 실행하며 테이블·migration을 만들지 않는다. 연결·쿼리 타임아웃은 3초이며 원본 DB 오류와 접속 정보는 응답에 포함하지 않는다. 이 검사는 Prisma·실제 CRUD 검증과 별개다.
+
+별도 터미널에서 `node tests/guide.smoke.mjs`로 가이드·API·잘못된 요청·DB 응답 형식을 검사한다. DB 503은 연결 미완료이며 출력에 구분한다. 다른 포트라면 GUIDE_TEST_URL을 지정한다.
+
+## PC별 DB 구성 대안 (이전 계획)
+
 Mac M1 또는 개인 Windows에서 Next 개발 서버를 직접 실행하고 PostgreSQL만 Docker로 띄운다. 운영 NAS DB에 연결해 개발하지 않는다. 로컬 DB/스토리지/키/테스트 계정은 운영과 분리한다. 회사 PC는 회사의 설치·외부 저장소·AI 사용 정책이 허용할 때만 사용한다.
 
 ## 준비

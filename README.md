@@ -46,6 +46,8 @@ npm run test:smoke
 
 ## 개발 DB (선택)
 
+2026-10-21: 기본 개발 DB는 NAS의 공용 개발 PostgreSQL로 변경했다. `npm run dev` 후 `/guide`에서 UI 사용법과 API·DB 연결을 확인할 수 있다. SSH 터널과 `.env.local` 설정은 [로컬 개발 문서](docs/05-local-development.md)를 따른다. 가이드는 운영 모드에서 404이며 테이블을 만들지 않는다. 아래 Compose는 PC별 DB를 사용할 때의 대안이다.
+
 Docker 설치 후 다음을 실행합니다. 현재 기기에서는 Docker가 없어 DB 기동·마이그레이션 적용·Docker 이미지 빌드를 검증하지 못했습니다.
 
 ```powershell
