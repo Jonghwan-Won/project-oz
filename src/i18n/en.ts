@@ -66,7 +66,7 @@ export const en = {
     menu: 'Main navigation',
     open: 'Open menu',
     close: 'Close menu',
-    login: 'Log in ↗',
+    login: 'Log in',
     guide: 'Development guide',
   },
   projectTypes: {
@@ -155,7 +155,7 @@ export const en = {
     },
   },
   language: {
-    label: 'Choose language · currently English',
+    label: '한국어로 전환',
     pending: 'Changing language.',
     failed: 'Could not change the language. Please try again.',
   },

@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE "Project" ADD COLUMN "thumbnailUrl" VARCHAR(2048);
+COMMIT;

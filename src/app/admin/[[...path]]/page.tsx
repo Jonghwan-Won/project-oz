@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation';
-import { projects } from '@/content/projects';
+import { ProjectManager } from '../ProjectManager';
+import { getAdminProjects } from '@/server/services/admin-projects';
+import { redirect, notFound } from 'next/navigation';
 import { posts } from '@/content/site';
-import { ko } from '@/i18n/ko';
 import { AdminEditor } from '../AdminEditor';
 import { ButtonLink } from '@/components/ui/Button';
 import s from '../admin.module.css';
@@ -18,7 +18,7 @@ const planned = {
       '프로젝트 썸네일과 게시글 첨부 이미지를 관리할 메뉴입니다. NAS 파일 저장 연동 후 구현합니다.',
   },
   settings: {
-    title: '사이트 설정',
+    title: '사이트 관리',
     description: '사이트 소개·메뉴·공개 설정을 관리할 메뉴입니다.',
   },
 };
@@ -28,32 +28,23 @@ export default async function Admin({
 }: {
   params: Promise<{ path?: string[] }>;
 }) {
+  if (process.env.NODE_ENV !== 'development') redirect('/login');
   const { path = [] } = await params;
   if (path.length > 1) notFound();
   const section = path[0];
-  if (section === 'projects' || section === 'board') {
-    const entries =
-      section === 'projects'
-        ? projects.map((project) => ({
-            id: project.slug,
-            slug: project.slug,
-            title: ko.projectItems[project.slug].title,
-            summary: ko.projectItems[project.slug].summary,
-            body: '',
-            category: ko.projectOrigins[project.origin],
-            status: project.visibility === 'PUBLIC' ? '공개' : '비공개',
-            thumbnail: project.thumbnail ?? '',
-          }))
-        : posts.map((post) => ({
-            id: post.slug,
-            slug: post.slug,
-            title: post.title,
-            summary: post.excerpt,
-            body: post.paragraphs.join('\n\n'),
-            category: post.category,
-            status: '공개',
-            thumbnail: '',
-          }));
+  if (section === 'projects')
+    return <ProjectManager {...await getAdminProjects()} />;
+  if (section === 'board') {
+    const entries = posts.map((post) => ({
+      id: post.slug,
+      slug: post.slug,
+      title: post.title,
+      summary: post.excerpt,
+      body: post.paragraphs.join('\n\n'),
+      category: post.category,
+      status: '공개',
+      thumbnail: '',
+    }));
     return (
       <AdminEditor key={section} section={section} initialEntries={entries} />
     );
@@ -64,20 +55,19 @@ export default async function Admin({
     return (
       <section className={s.panel}>
         <span className="eyebrow">PLANNED</span>
-        <h2>{item.title}</h2>
         <p>{item.description}</p>
         <p>현재는 메뉴와 용도를 확인하는 준비 화면입니다.</p>
       </section>
     );
   }
+  const projectCount = (await getAdminProjects()).projects.length;
   return (
     <section>
-      <h2>대시보드</h2>
-      <p>현재 저장소에 등록된 콘텐츠를 기준으로 표시합니다.</p>
+      <p>프로젝트는 개발 DB, 게시글은 저장소 콘텐츠를 기준으로 표시합니다.</p>
       <div className={s.stats}>
         <div className={s.panel}>
           <span>프로젝트</span>
-          <strong>{projects.length}</strong>
+          <strong>{projectCount}</strong>
           <ButtonLink href="/admin/projects">프로젝트 관리 ↗</ButtonLink>
         </div>
         <div className={s.panel}>
@@ -89,8 +79,8 @@ export default async function Admin({
       <div className={s.panel}>
         <h3>다음 연결 항목</h3>
         <p>
-          관리자 인증·권한 → 개발 DB 저장 → 썸네일 업로드 → 공개 사이트 반영
-          순서로 연결합니다.
+          프로젝트 조회·저장은 개발 DB에 연결했습니다. 운영 관리자 인증·권한과
+          게시판 DB 저장은 다음 단계입니다.
         </p>
       </div>
     </section>

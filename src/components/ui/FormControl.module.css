@@ -1,0 +1,38 @@
+.control {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.5;
+}
+.control::placeholder {
+  color: var(--muted);
+}
+.control:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.control:disabled,
+.check:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.control[aria-invalid='true'] {
+  border-color: #e57373;
+}
+.textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+.check {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  accent-color: var(--accent-ink);
+  vertical-align: middle;
+}

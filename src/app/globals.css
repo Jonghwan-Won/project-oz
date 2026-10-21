@@ -230,7 +230,7 @@ p {
   padding: 85px 6%;
 }
 section[id] {
-  scroll-margin-top: 112px;
+  scroll-margin-top: 76px;
 }
 section[tabindex='-1']:focus {
   outline: none;
@@ -575,7 +575,7 @@ footer small {
     padding: 52px 6%;
   }
   section[id] {
-    scroll-margin-top: 96px;
+    scroll-margin-top: 76px;
   }
   .sectionHeading {
     align-items: start;

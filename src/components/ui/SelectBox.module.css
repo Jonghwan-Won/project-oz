@@ -1,0 +1,76 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.trigger > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.content {
+  z-index: 80;
+  max-height: min(320px, var(--radix-select-content-available-height));
+  min-width: var(--radix-select-trigger-width);
+  max-width: calc(100vw - 24px);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px #0004;
+  overflow: hidden;
+}
+.viewport {
+  padding: 5px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.item[data-highlighted] {
+  background: var(--surface-hover);
+}
+.item[data-state='checked'] {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+.item[data-disabled] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.indicator {
+  margin-left: auto;
+}
+.scroll {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+  background: var(--surface);
+}

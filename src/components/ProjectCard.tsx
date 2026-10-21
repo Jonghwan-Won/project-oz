@@ -1,25 +1,31 @@
-import Link from 'next/link';
+import { ProjectPreviewLink } from './ProjectPreviewLink';
+import { publicProjectDetail } from '@/lib/project-detail';
 import Image from 'next/image';
-import type { Project } from '@/content/projects';
+import type { PublicProject } from '@/server/services/projects';
 import type { Messages } from '@/i18n/ko';
 import s from './ProjectCard.module.css';
 
 export function ProjectCard({
   project,
   labels,
+  locale = 'ko',
 }: {
-  project: Project;
+  project: PublicProject;
   labels: Messages;
+  locale?: string;
 }) {
-  const item = labels.projectItems[project.slug];
+  const item = project;
   return (
-    <Link
+    <ProjectPreviewLink
+      project={publicProjectDetail(project, labels)}
+      locale={locale}
       className={`interactiveCard ${s.card}`}
       href={`/work/${project.slug}`}
     >
       <div className={s.cover} aria-hidden="true">
         {project.thumbnail ? (
           <Image
+            unoptimized
             src={project.thumbnail}
             alt=""
             fill
@@ -29,8 +35,7 @@ export function ProjectCard({
         ) : (
           <>
             <span className={s.index}>
-              {String(project.order).padStart(2, '0')} /{' '}
-              {labels.projectOrigins[project.origin]}
+              {String(project.order).padStart(2, '0')} / {project.originLabel}
             </span>
             <svg className={s.art} viewBox="0 0 600 400" fill="none">
               <circle cx="300" cy="200" r="132" />
@@ -61,14 +66,16 @@ export function ProjectCard({
           <span aria-hidden="true">↗</span>
         </div>
         <div className={s.meta}>
-          <span>{labels.projectOrigins[project.origin]}</span>
-          {project.type && <span>{labels.projectTypes[project.type]}</span>}
+          <span>{project.originLabel}</span>
+          {project.type && <span>{project.typeLabel}</span>}
           {project.lifecycle && (
-            <span>{labels.projectStatuses[project.lifecycle]}</span>
+            <span>
+              {labels.projectStatuses[project.lifecycle] ?? project.lifecycle}
+            </span>
           )}
           {project.placeholder && <span>{labels.projects.placeholder}</span>}
         </div>
       </div>
-    </Link>
+    </ProjectPreviewLink>
   );
 }

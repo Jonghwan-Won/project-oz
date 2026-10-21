@@ -1,5 +1,20 @@
 'use client';
+import { TextArea } from '@/components/ui/TextArea';
+import { SelectBox } from '@/components/ui/SelectBox';
+import { Input } from '@/components/ui/Input';
+import { SearchPanel } from '@/components/ui/SearchPanel';
+import { Pagination } from '@/components/ui/Pagination';
+import { emptyBoardSearch, matchesBoard, paginate } from '@/lib/admin-list';
 
+import Image from 'next/image';
+
+import { FileUpload } from '@/components/ui/FileUpload';
+import { AssetLinks } from '@/components/ui/AssetLinks';
+import { thumbnailUrl, type UploadedAsset } from '@/lib/files';
+import type { JSONContent } from '@tiptap/core';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { RichTextView } from '@/components/ui/RichTextView';
+import { textDocument } from '@/lib/rich-text';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import s from './admin.module.css';
@@ -9,10 +24,12 @@ type Entry = {
   title: string;
   slug: string;
   summary: string;
+  introduction?: JSONContent;
   body: string;
   category: string;
   status: string;
   thumbnail: string;
+  attachments?: UploadedAsset[];
 };
 const empty: Entry = {
   id: '',
@@ -33,6 +50,14 @@ export function AdminEditor({
   initialEntries: Entry[];
 }) {
   const [entries, setEntries] = useState(initialEntries);
+  const [search, setSearch] = useState(emptyBoardSearch);
+  const [appliedSearch, setAppliedSearch] = useState(emptyBoardSearch);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const filtered = entries.filter((entry) =>
+    matchesBoard(entry, appliedSearch),
+  );
+  const result = paginate(filtered, page, pageSize);
   const [draft, setDraft] = useState<Entry | null>(null);
   const [message, setMessage] = useState('');
   const isProject = section === 'projects';
@@ -40,13 +65,65 @@ export function AdminEditor({
 
   return (
     <section>
+      <SearchPanel
+        onSearch={() => {
+          setAppliedSearch({ ...search });
+          setPage(1);
+        }}
+        onReset={() => {
+          setSearch(emptyBoardSearch);
+          setAppliedSearch(emptyBoardSearch);
+          setPage(1);
+        }}
+      >
+        <label>
+          검색어
+          <Input
+            type="search"
+            value={search.keyword}
+            placeholder="제목·주소·본문"
+            onChange={(event) =>
+              setSearch({ ...search, keyword: event.target.value })
+            }
+          />
+        </label>
+        <label>
+          카테고리
+          <SelectBox
+            aria-label="검색 카테고리"
+            value={search.category}
+            onValueChange={(category) => setSearch({ ...search, category })}
+            options={[
+              { value: '', label: '전체' },
+              ...Array.from(new Set(entries.map((entry) => entry.category)))
+                .sort()
+                .map((value) => ({ value, label: value })),
+            ]}
+          />
+        </label>
+        <label>
+          공개 범위
+          <SelectBox
+            aria-label="검색 공개 범위"
+            value={search.status}
+            onValueChange={(status) => setSearch({ ...search, status })}
+            options={[
+              { value: '', label: '전체' },
+              { value: '공개', label: '공개' },
+              { value: '비공개', label: '비공개' },
+            ]}
+          />
+        </label>
+      </SearchPanel>
       <div className={s.heading}>
         <div>
-          <span className="eyebrow">{isProject ? 'PROJECTS' : 'BOARD'}</span>
-          <h2>{isProject ? '프로젝트 관리' : '게시판 관리'}</h2>
-          <p>{entries.length}개 · 화면 확인용 데이터</p>
+          <p aria-live="polite">
+            전체 {entries.length}건 · 검색 결과 {filtered.length}건 · 화면
+            확인용 데이터
+          </p>
         </div>
         <Button
+          variant="primary"
           onClick={() => {
             setDraft({ ...empty });
             setMessage('');
@@ -55,9 +132,11 @@ export function AdminEditor({
           {label} 등록
         </Button>
       </div>
-      <p role="status" className={s.notice}>
-        {message}
-      </p>
+      {message && (
+        <p role="status" className={s.notice}>
+          {message}
+        </p>
+      )}
       {draft && (
         <form
           className={s.panel}
@@ -74,6 +153,12 @@ export function AdminEditor({
             ) {
               setMessage(
                 '이미 사용 중인 주소입니다. 다른 주소를 입력해 주세요.',
+              );
+              return;
+            }
+            if (!thumbnailUrl(draft.thumbnail)) {
+              setMessage(
+                '썸네일은 http(s) URL 또는 사이트 내부 경로로 입력해 주세요.',
               );
               return;
             }
@@ -102,7 +187,7 @@ export function AdminEditor({
           <div className={s.fields}>
             <label>
               제목
-              <input
+              <Input
                 required
                 maxLength={120}
                 value={draft.title}
@@ -113,7 +198,7 @@ export function AdminEditor({
             </label>
             <label>
               주소(slug)
-              <input
+              <Input
                 required
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
                 maxLength={80}
@@ -126,7 +211,7 @@ export function AdminEditor({
             </label>
             <label>
               {isProject ? '작업 구분' : '게시판 카테고리'}
-              <input
+              <Input
                 required
                 maxLength={40}
                 value={draft.category}
@@ -137,32 +222,55 @@ export function AdminEditor({
             </label>
             <label>
               공개 범위
-              <select
+              <SelectBox
+                aria-label="공개 범위"
                 value={draft.status}
-                onChange={(event) =>
-                  setDraft({ ...draft, status: event.target.value })
-                }
-              >
-                <option>비공개</option>
-                <option>공개</option>
-              </select>
+                onValueChange={(status) => setDraft({ ...draft, status })}
+                options={['비공개', '공개'].map((value) => ({
+                  value,
+                  label: value,
+                }))}
+              />
             </label>
           </div>
-          <label>
-            {isProject ? '프로젝트 소개' : '게시글 요약'}
-            <textarea
-              rows={4}
-              maxLength={2000}
-              value={draft.summary}
-              onChange={(event) =>
-                setDraft({ ...draft, summary: event.target.value })
-              }
-            />
-          </label>
+          {isProject ? (
+            <div>
+              <label htmlFor="project-introduction">프로젝트 소개</label>
+              <RichTextEditor
+                key={draft.id || 'new'}
+                id="project-introduction"
+                label="프로젝트 소개"
+                value={draft.introduction ?? textDocument(draft.summary)}
+                onChange={(introduction, summary) =>
+                  setDraft((current) =>
+                    current ? { ...current, introduction, summary } : current,
+                  )
+                }
+              />
+              <details>
+                <summary>소개 미리보기</summary>
+                <RichTextView
+                  value={draft.introduction ?? textDocument(draft.summary)}
+                />
+              </details>
+            </div>
+          ) : (
+            <label>
+              게시글 요약
+              <TextArea
+                rows={4}
+                maxLength={2000}
+                value={draft.summary}
+                onChange={(event) =>
+                  setDraft({ ...draft, summary: event.target.value })
+                }
+              />
+            </label>
+          )}
           {!isProject && (
             <label>
               게시글 본문
-              <textarea
+              <TextArea
                 rows={8}
                 maxLength={50000}
                 value={draft.body}
@@ -173,21 +281,73 @@ export function AdminEditor({
             </label>
           )}
           {isProject && (
-            <label>
-              썸네일 경로(선택)
-              <input
-                placeholder="/images/project-thumbnail.webp"
-                pattern="/[^/].*"
-                value={draft.thumbnail}
-                onChange={(event) =>
-                  setDraft({ ...draft, thumbnail: event.target.value })
+            <div>
+              <label>
+                썸네일 URL(선택)
+                <Input
+                  placeholder="https://example.com/thumbnail.webp 또는 /api/assets/파일ID"
+                  value={draft.thumbnail}
+                  onChange={(event) =>
+                    setDraft({ ...draft, thumbnail: event.target.value })
+                  }
+                />
+              </label>
+              <FileUpload
+                label="썸네일 이미지 업로드"
+                imagesOnly
+                onUploaded={(asset) =>
+                  setDraft((current) =>
+                    current
+                      ? {
+                          ...current,
+                          thumbnail: asset.url,
+                          attachments: [
+                            ...(current.attachments ?? []).filter(
+                              (item) => item.id !== asset.id,
+                            ),
+                            asset,
+                          ],
+                        }
+                      : current,
+                  )
                 }
               />
-              <small>
-                public 폴더의 이미지 경로입니다. 비워두면 궤도 그래픽과 제목을
-                사용합니다. 파일 업로드는 준비 중입니다.
-              </small>
-            </label>
+              {draft.thumbnail && thumbnailUrl(draft.thumbnail) && (
+                <Image
+                  unoptimized
+                  src={draft.thumbnail}
+                  alt="선택한 썸네일 미리보기"
+                  width={640}
+                  height={360}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: 260,
+                    objectFit: 'contain',
+                  }}
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <FileUpload
+                label="첨부파일 업로드"
+                onUploaded={(asset) =>
+                  setDraft((current) =>
+                    current
+                      ? {
+                          ...current,
+                          attachments: [...(current.attachments ?? []), asset],
+                        }
+                      : current,
+                  )
+                }
+              />
+              <AssetLinks assets={draft.attachments ?? []} />
+              <p>
+                파일은 NAS에 저장됩니다. 프로젝트와의 연결은 현재 화면에서만
+                유지됩니다. 취소하거나 새로고침해도 업로드한 파일은 NAS에
+                남습니다.
+              </p>
+            </div>
           )}
           <div className={s.actions}>
             <Button type="submit">화면에 임시 반영</Button>
@@ -197,31 +357,63 @@ export function AdminEditor({
           </div>
         </form>
       )}
-      <div className={s.list}>
-        {entries.map((entry) => (
-          <article className={s.row} key={entry.id}>
-            <div>
-              <h3>{entry.title}</h3>
-              <p>
-                {entry.category} · {entry.status}
-              </p>
-              <small>
-                /{isProject ? 'work' : 'board'}/{entry.slug}
-              </small>
-            </div>
-            <Button
-              size="sm"
-              aria-label={`${entry.title} 수정`}
-              onClick={() => {
-                setDraft({ ...entry });
-                setMessage('');
-              }}
-            >
-              수정
-            </Button>
-          </article>
-        ))}
+      <div className={s.gridWrap}>
+        <table className={s.grid}>
+          <caption className="srOnly">게시글 목록</caption>
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>제목</th>
+              <th>카테고리</th>
+              <th>공개 범위</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={5} className={s.empty}>
+                  검색 결과가 없습니다.
+                </td>
+              </tr>
+            )}
+            {result.items.map((entry, index) => (
+              <tr key={entry.id}>
+                <td>{(result.page - 1) * pageSize + index + 1}</td>
+                <td>
+                  <strong>{entry.title}</strong>
+                  <small>/board/{entry.slug}</small>
+                </td>
+                <td>{entry.category}</td>
+                <td>{entry.status}</td>
+                <td>
+                  <Button
+                    size="sm"
+                    aria-label={`${entry.title} 수정`}
+                    onClick={() => {
+                      setDraft({ ...entry });
+                      setMessage('');
+                    }}
+                  >
+                    수정
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+      <Pagination
+        page={result.page}
+        totalPages={result.totalPages}
+        total={filtered.length}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+      />
     </section>
   );
 }

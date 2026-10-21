@@ -1,4 +1,7 @@
 'use client';
+import { SelectBox } from '@/components/ui/SelectBox';
+import { TextArea } from '@/components/ui/TextArea';
+import { Input } from '@/components/ui/Input';
 
 import { useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -157,7 +160,7 @@ export function IdeaPlayground() {
             }}
           >
             <label htmlFor="idea-draft">아이디어 메모</label>
-            <textarea
+            <TextArea
               id="idea-draft"
               required
               maxLength={3000}
@@ -172,15 +175,15 @@ export function IdeaPlayground() {
               <span>{draft.length} / 3,000</span>
             </div>
             <label htmlFor="idea-category">어떤 생각인가요?</label>
-            <select
+            <SelectBox
               id="idea-category"
               value={category}
-              onChange={(event) => setCategory(event.target.value)}
-            >
-              {['미분류', '제품', '개발', '자동화'].map((name) => (
-                <option key={name}>{name}</option>
-              ))}
-            </select>
+              onValueChange={setCategory}
+              options={['미분류', '제품', '개발', '자동화'].map((value) => ({
+                value,
+                label: value,
+              }))}
+            />
             <Button type="submit" variant="primary">
               아이디어 담기 ↗
             </Button>
@@ -313,7 +316,7 @@ export function IdeaPlayground() {
                   >
                     ⠿
                   </button>
-                  <input
+                  <Input
                     key={`${idea.id}-${index}`}
                     className={s.priorityInput}
                     type="number"
@@ -410,15 +413,14 @@ export function IdeaPlayground() {
                 }}
               >
                 <label htmlFor="branch-kind">덧붙일 내용 유형</label>
-                <select
+                <SelectBox
                   id="branch-kind"
                   value={branchKind}
-                  onChange={(event) => setBranchKind(event.target.value)}
-                >
-                  {['댓글', '설계', '구현 이슈', '연결 포스트'].map((kind) => (
-                    <option key={kind}>{kind}</option>
-                  ))}
-                </select>
+                  onValueChange={setBranchKind}
+                  options={['댓글', '설계', '구현 이슈', '연결 포스트'].map(
+                    (value) => ({ value, label: value }),
+                  )}
+                />
                 {replyId && (
                   <div className={s.replyTarget}>
                     답글 대상:{' '}
@@ -431,7 +433,7 @@ export function IdeaPlayground() {
                 <label htmlFor="branch-content">
                   {replyId ? '답글 내용' : '새 가지 내용'}
                 </label>
-                <textarea
+                <TextArea
                   id="branch-content"
                   value={branchDraft}
                   onChange={(event) => setBranchDraft(event.target.value)}
@@ -456,7 +458,7 @@ export function IdeaPlayground() {
                 }}
               >
                 <label htmlFor="edit-content">수정할 내용</label>
-                <textarea
+                <TextArea
                   autoFocus
                   id="edit-content"
                   required

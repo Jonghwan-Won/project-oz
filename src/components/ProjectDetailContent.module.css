@@ -1,0 +1,83 @@
+.detail {
+  min-width: 0;
+}
+.cover {
+  width: 100%;
+  max-height: 340px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface);
+}
+.cover img {
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  display: block;
+}
+.document {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+.document .title {
+  margin: 0 0 32px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.properties {
+  margin: 0 0 32px;
+  display: grid;
+  gap: 16px;
+  font-size: 14px;
+}
+.properties > div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 24px;
+}
+.properties dt {
+  color: var(--muted);
+  padding-top: 4px;
+}
+.properties dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
+}
+.tag {
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: var(--hover);
+  color: var(--accent-ink);
+}
+.summary {
+  font-size: 18px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+.content {
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  margin-top: 32px;
+}
+.notice {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+@media (max-width: 600px) {
+  .document {
+    padding: 24px 0;
+  }
+  .properties > div {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .cover img {
+    height: 200px;
+  }
+}

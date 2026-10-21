@@ -57,7 +57,7 @@ export const ko = {
     menu: '주 메뉴',
     open: '메뉴 열기',
     close: '메뉴 닫기',
-    login: '로그인 ↗',
+    login: '로그인',
     guide: '개발 가이드',
   },
   projectTypes: {
@@ -146,7 +146,7 @@ export const ko = {
     },
   },
   language: {
-    label: '언어 선택 · 현재 한국어',
+    label: 'Switch to English',
     pending: '언어를 변경하고 있어요.',
     failed: '언어를 바꾸지 못했어요. 다시 선택해 주세요.',
   },

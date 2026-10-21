@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { BoardPreview } from '@/components/BoardPreview';
 import { ProjectCard } from '@/components/ProjectCard';
-import { getPublicProjects } from '@/content/projects';
+import { getPublicProjects } from '@/server/services/projects';
 import { posts, getCategoryLabel } from '@/content/site';
 import s from './page.module.css';
 const tools = [
@@ -35,7 +35,8 @@ const tools = [
   },
 ] as const;
 export default async function Home() {
-  const { messages } = await getMessages();
+  const { messages, locale } = await getMessages();
+  const projects = await getPublicProjects(locale);
   const copy = messages.home;
   return (
     <>
@@ -71,15 +72,14 @@ export default async function Home() {
           </Link>
         </div>
         <div className="projectGrid">
-          {getPublicProjects()
-            .slice(0, 2)
-            .map((project) => (
-              <ProjectCard
-                key={project.slug}
-                project={project}
-                labels={messages}
-              />
-            ))}
+          {projects.slice(0, 2).map((project) => (
+            <ProjectCard
+              key={project.slug}
+              project={project}
+              labels={messages}
+              locale={locale}
+            />
+          ))}
         </div>
       </section>
       <section id="board" tabIndex={-1} className="section">
@@ -164,7 +164,9 @@ export default async function Home() {
                   height={64}
                   alt=""
                   className={
-                    tool.logo === 'synology-standard' ? s.wordmarkLogo : s.toolLogo
+                    tool.logo === 'synology-standard'
+                      ? s.wordmarkLogo
+                      : s.toolLogo
                   }
                 />
                 <span className={s.toolName}>{tool.name}</span>
