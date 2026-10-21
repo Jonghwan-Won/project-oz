@@ -1,4 +1,9 @@
 'use client';
+import { TextArea } from '@/components/ui/TextArea';
+import { SelectBox } from '@/components/ui/SelectBox';
+import { FilePicker } from '@/components/ui/FilePicker';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
 
 import { useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -7,6 +12,8 @@ import * as Menu from '@/components/ui/DropdownMenu';
 import s from './guide.module.css';
 
 export function GuideExamples() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [workKind, setWorkKind] = useState('PERSONAL');
   const [choice, setChoice] = useState('목록');
   const [notice, setNotice] = useState('버튼을 눌러 동작을 확인하세요.');
   const [start, setStart] = useState('');
@@ -40,6 +47,58 @@ export function GuideExamples() {
 
   return (
     <>
+      <section className={s.section} id="form-controls">
+        <h2>공통 폼 · 모달</h2>
+        <p>
+          SelectBox는 값 선택, DropdownMenu는 동작 메뉴에 사용합니다. 파일
+          예제는 선택만 하며 업로드하지 않습니다.
+        </p>
+        <div className={s.row}>
+          <label>
+            제목
+            <Input placeholder="프로젝트 제목" />
+          </label>
+          <label>
+            소개
+            <TextArea placeholder="소개를 입력하세요" />
+          </label>
+          <label>
+            작업 구분
+            <SelectBox
+              aria-label="작업 구분 예제"
+              value={workKind}
+              onValueChange={setWorkKind}
+              options={[
+                { value: 'PERSONAL', label: '개인' },
+                { value: 'COMPANY', label: '회사' },
+              ]}
+            />
+          </label>
+          <FilePicker label="첨부파일 선택 예제" onSelect={() => {}} />
+          <Button onClick={() => setModalOpen(true)}>공통 모달 열기</Button>
+        </div>
+        <Modal
+          open={modalOpen}
+          title="프로젝트 등록"
+          onClose={() => setModalOpen(false)}
+          actions={
+            <>
+              <Button variant="primary" onClick={() => setModalOpen(false)}>
+                저장
+              </Button>
+              <Button onClick={() => setModalOpen(false)}>취소</Button>
+            </>
+          }
+        >
+          <p>
+            제목과 버튼은 고정되고 본문만 스크롤됩니다. 예제 데이터는 저장하지
+            않습니다.
+          </p>
+          {Array.from({ length: 12 }, (_, i) => (
+            <p key={i}>폼 내용 예제 {i + 1}</p>
+          ))}
+        </Modal>
+      </section>
       <section id="alerts" className={s.section}>
         <h2>OzAlert · 사이트 공통 알림</h2>
         <p>
@@ -127,6 +186,95 @@ export function GuideExamples() {
           <Button disabled>사용 불가</Button>
           <ButtonLink href="/projects">프로젝트로 이동</ButtonLink>
         </div>
+        <h3>버튼 스타일 · 컬러</h3>
+        <div className={s.tableScroll}>
+          <table className={s.buttonTable}>
+            <thead>
+              <tr>
+                <th>variant</th>
+                <th>용도</th>
+                <th>배경 / 글자 / 테두리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>primary</td>
+                <td>저장·등록 등 주요 동작</td>
+                <td>
+                  --accent (#BAACFF) / --on-accent (#161025) / 투명 · hover
+                  #D0C6FF
+                </td>
+              </tr>
+              <tr>
+                <td>neutral (기본)</td>
+                <td>취소·수정 등 일반 동작</td>
+                <td>--surface / --ink / --line</td>
+              </tr>
+              <tr>
+                <td>ghost</td>
+                <td>도구·보조 동작</td>
+                <td>투명 / --ink / --line · hover --hover</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          neutral의 다크 배경/글자/테두리는 #141414 / #F5F5F5 / #292929,
+          라이트는 #FFFFFF / #242424 / #DDE0E6입니다. 포커스는 --accent-ink,
+          비활성 상태는 불투명도 40%입니다.
+        </p>
+        <h3>버튼 크기</h3>
+        <div className={s.tableScroll}>
+          <table className={s.buttonTable}>
+            <thead>
+              <tr>
+                <th>size</th>
+                <th>최소 높이</th>
+                <th>패딩 (세로 × 가로)</th>
+                <th>글자 크기</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>sm</td>
+                <td>44px</td>
+                <td>10px × 16px</td>
+                <td>13px</td>
+              </tr>
+              <tr>
+                <td>md (기본)</td>
+                <td>48px</td>
+                <td>14px × 23px</td>
+                <td>14px</td>
+              </tr>
+              <tr>
+                <td>lg</td>
+                <td>56px</td>
+                <td>17px × 28px</td>
+                <td>16px</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {(['primary', 'neutral', 'ghost'] as const).map((variant) => (
+          <div className={s.row} key={variant}>
+            {(['sm', 'md', 'lg'] as const).map((size) => (
+              <Button
+                key={size}
+                variant={variant}
+                size={size}
+                onClick={() => setNotice(variant + ' / ' + size + ' 클릭')}
+              >
+                {variant} · {size}
+              </Button>
+            ))}
+          </div>
+        ))}
+        <pre className={s.code}>
+          {
+            '<Button type="submit" variant="primary">저장</Button>\n<Button variant="neutral" onClick={onCancel}>취소</Button>'
+          }
+        </pre>
         <p role="status">{notice}</p>
         <pre className={s.code}>
           {
@@ -164,7 +312,7 @@ export function GuideExamples() {
         >
           <label>
             제목 (필수, 최대 80자)
-            <input
+            <Input
               name="title"
               required
               maxLength={80}
@@ -173,14 +321,14 @@ export function GuideExamples() {
           </label>
           <label>
             날짜
-            <input name="date" type="date" />
+            <Input name="date" type="date" />
           </label>
           <fieldset>
             <legend>기간 선택</legend>
             <div className={s.row}>
               <label>
                 시작일
-                <input
+                <Input
                   name="start"
                   type="date"
                   value={start}
@@ -190,7 +338,7 @@ export function GuideExamples() {
               </label>
               <label>
                 종료일
-                <input
+                <Input
                   name="end"
                   type="date"
                   value={end}
@@ -208,7 +356,7 @@ export function GuideExamples() {
         </p>
         <pre className={s.code}>
           {
-            '<label>제목<input name="title" required maxLength={80} /></label>\n<label>날짜<input name="date" type="date" /></label>'
+            '<label>제목<Input name="title" required maxLength={80} /></label>\n<label>날짜<Input name="date" type="date" /></label>'
           }
         </pre>
       </section>

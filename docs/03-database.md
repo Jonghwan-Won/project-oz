@@ -66,3 +66,10 @@ menus.route_key는 코드의 허용된 라우트 목록에 매핑한다. 카테�
 
 ## 변경 관리
 로컬: migrate dev → SQL 검토 → 테스트 → migration 커밋. 운영: 백업 → migrate deploy → 상태 확인. 이미 적용된 migration을 수정하지 않는다. 컬럼 제거·타입 축소는 expand/contract 두 단계 배포로 진행한다. 이미지 롤백이 DB 롤백을 의미하지 않는다.
+
+## 2026-10-21 한국어·영어 콘텐츠 지원으로 변경
+
+최신 정책은 한국어·영어 두 언어 지원이다. Project에는 공통 정보를, ProjectTranslation에는 locale(ko/en), title, summary, body, bodySchemaVersion을 저장한다. 아래 원문 단일 저장·번역 제거 기록은 당시 이력이며 이 정책으로 대체한다. 게시글 DB 도입 시에도 Post와 PostTranslation을 분리한다. 게시글 테이블·관리자 영어 입력·공개 화면 DB 조회·언어 버튼 변경은 아직 구현하지 않았다.
+
+### 2026-10-22 고객사·삭제 표시
+Project.customerName(varchar200, 기본 빈 문자열), deletedAt(timestamptz nullable) 추가. 삭제는 version을 확인하고 deletedAt/updatedAt/version을 함께 갱신한다. 공개 조회와 파일 공개 권한 판정은 deletedAt IS NULL 조건을 적용한다. ProjectTranslation/ProjectTag/ProjectAsset와 NAS 파일은 보존하며 복구는 DB에서 수행한다. 개발 DB에 마이그레이션 적용 완료.

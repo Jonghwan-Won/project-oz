@@ -1,3 +1,4 @@
+import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { categories, filterPosts, getCategoryLabel } from '@/content/site';
@@ -37,11 +38,11 @@ export default async function Board({
         ))}
       </div>
       <form className="search" action="/board">
-        <input type="hidden" name="category" value={category} />
+        <Input type="hidden" name="category" value={category} />
         <label className="srOnly" htmlFor="query">
           {copy.searchLabel}
         </label>
-        <input
+        <Input
           id="query"
           name="q"
           maxLength={100}

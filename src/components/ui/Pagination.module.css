@@ -1,0 +1,35 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+  font-size: 13px;
+}
+.pagination p {
+  margin: 0;
+}
+.pagination .pageSize {
+  width: 120px;
+  flex-shrink: 0;
+}
+.pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+.pages button {
+  min-width: 44px;
+  padding: 8px;
+}
+@media (max-width: 600px) {
+  .pagination {
+    justify-content: center;
+  }
+  .pages {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

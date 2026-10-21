@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
-import { getPublicProjects, getUsedProjectTypes } from '@/content/projects';
+import { getPublicProjects } from '@/server/services/projects';
 import { getMessages } from '@/i18n/server';
 
 export async function generateMetadata() {
@@ -13,11 +13,14 @@ export default async function Projects({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
-  const { messages } = await getMessages();
+  const { messages, locale } = await getMessages();
+  const allProjects = await getPublicProjects(locale);
   const { category } = await searchParams;
-  const types = getUsedProjectTypes();
+  const types = [
+    ...new Set(allProjects.flatMap((p) => (p.type ? [p.type] : []))),
+  ];
   const selected = types.find((type) => type === category);
-  const projects = getPublicProjects().filter(
+  const projects = allProjects.filter(
     (project) => !selected || project.type === selected,
   );
   const copy = messages.projects;
@@ -37,14 +40,19 @@ export default async function Projects({
               href={`/projects?category=${encodeURIComponent(type)}`}
               aria-current={selected === type ? 'page' : undefined}
             >
-              {messages.projectTypes[type]}
+              {allProjects.find((p) => p.type === type)?.typeLabel}
             </Link>
           ))}
         </div>
       )}
       <div className="projectGrid">
         {projects.map((project) => (
-          <ProjectCard key={project.slug} project={project} labels={messages} />
+          <ProjectCard
+            key={project.slug}
+            project={project}
+            labels={messages}
+            locale={locale}
+          />
         ))}
       </div>
       {!projects.length && (

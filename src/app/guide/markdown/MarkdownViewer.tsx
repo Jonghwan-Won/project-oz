@@ -1,4 +1,6 @@
 'use client';
+import { SelectBox } from '@/components/ui/SelectBox';
+import { FilePicker } from '@/components/ui/FilePicker';
 
 import { useState } from 'react';
 import Markdown from 'react-markdown';
@@ -21,62 +23,53 @@ export function MarkdownViewer({
       <div className={s.controls}>
         <label>
           프로젝트 문서
-          <select
+          <SelectBox
+            aria-label="프로젝트 문서"
             value={selected}
             disabled={pending}
-            onChange={(event) => {
-              const next = documents.find(
-                (item) => item.name === event.target.value,
-              );
+            onValueChange={(value) => {
+              const next = documents.find((item) => item.name === value);
               if (next) {
                 setDocument(next);
                 setSelected(next.name);
                 setError('');
               }
             }}
-          >
-            <option value="" disabled>
-              내 PC에서 연 파일
-            </option>
-            {documents.map((item) => (
-              <option key={item.name} value={item.name}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          내 PC에서 파일 열기
-          <input
-            type="file"
-            accept=".md,.markdown"
-            disabled={pending}
-            aria-describedby="markdown-file-help"
-            onChange={async (event) => {
-              const file = event.target.files?.[0];
-              event.target.value = '';
-              if (!file) return;
-              setError('');
-              try {
-                validateMarkdownFile(file);
-                setPending(true);
-                const content = decodeMarkdown(await file.arrayBuffer());
-                setDocument({ name: file.name, content });
-                setSelected('');
-              } catch (cause) {
-                setError(
-                  cause instanceof TypeError
-                    ? 'UTF-8 텍스트 파일을 선택해 주세요.'
-                    : cause instanceof Error
-                      ? cause.message
-                      : '파일을 읽지 못했습니다. 다시 선택해 주세요.',
-                );
-              } finally {
-                setPending(false);
-              }
-            }}
+            options={[
+              { value: '', label: '내 PC에서 연 파일', disabled: true },
+              ...documents.map((item) => ({
+                value: item.name,
+                label: item.name,
+              })),
+            ]}
           />
         </label>
+        <FilePicker
+          label="내 PC에서 파일 열기"
+          accept=".md,.markdown"
+          disabled={pending}
+          aria-describedby="markdown-file-help"
+          onSelect={async (file) => {
+            setError('');
+            try {
+              validateMarkdownFile(file);
+              setPending(true);
+              const content = decodeMarkdown(await file.arrayBuffer());
+              setDocument({ name: file.name, content });
+              setSelected('');
+            } catch (cause) {
+              setError(
+                cause instanceof TypeError
+                  ? 'UTF-8 텍스트 파일을 선택해 주세요.'
+                  : cause instanceof Error
+                    ? cause.message
+                    : '파일을 읽지 못했습니다. 다시 선택해 주세요.',
+              );
+            } finally {
+              setPending(false);
+            }
+          }}
+        />
       </div>
       <p id="markdown-file-help" className={s.help}>
         UTF-8 · 최대 1 MiB. 선택한 파일은 브라우저에서만 읽으며 서버에

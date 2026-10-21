@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
@@ -93,6 +94,24 @@ try {
     ).rows[0].table_name,
     null,
   );
+  await client.query(
+    readFileSync(
+      new URL(
+        '../prisma/migrations/20261021020000_project_bilingual_content/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  assert.deepEqual(
+    (
+      await client.query(
+        'SELECT title,summary,body FROM "ProjectTranslation" WHERE "projectId"=$1 AND locale=$2',
+        [legacyId, 'ko'],
+      )
+    ).rows[0],
+    migrated,
+  );
   await client.query('DELETE FROM "Project" WHERE id=$1', [legacyId]);
   assert.equal(await seedDatabase(client), 8);
   assert.equal(await seedDatabase(client), 0);
@@ -102,9 +121,112 @@ try {
     ),
     8,
   );
+  assert.equal(
+    Number(
+      (await client.query('SELECT count(*) FROM "ProjectTranslation"')).rows[0]
+        .count,
+    ),
+    16,
+  );
+  await client.query(
+    'UPDATE "ProjectTranslation" SET title=$1 WHERE locale=$2',
+    ['Edited English', 'en'],
+  );
+  await seedDatabase(client);
+  assert.equal(
+    Number(
+      (
+        await client.query(
+          'SELECT count(*) FROM "ProjectTranslation" WHERE title=$1',
+          ['Edited English'],
+        )
+      ).rows[0].count,
+    ),
+    8,
+  );
   const project = (
     await client.query('SELECT id FROM "Project" ORDER BY position LIMIT 1')
   ).rows[0];
+  await client.query(
+    readFileSync(
+      new URL(
+        '../prisma/migrations/20261021030000_project_thumbnail_url/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await client.query(
+    readFileSync(
+      new URL(
+        '../prisma/migrations/20261022000000_project_customer_soft_delete/migration.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  const { outputText } = ts.transpileModule(
+    readFileSync(
+      new URL('../src/server/services/projects.ts', import.meta.url),
+      'utf8',
+    ),
+    { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+  );
+  const service = {};
+  new Function('require', 'exports', 'process', outputText)(
+    (id) => {
+      if (id === 'server-only') return {};
+      if (id === 'react') return { cache: (fn) => fn };
+      if (id === '@/server/db')
+        return { pool: { query: (...args) => client.query(...args) } };
+      if (id === 'pg')
+        return {
+          default: {
+            Pool: class {
+              query(...args) {
+                return client.query(...args);
+              }
+            },
+          },
+        };
+      throw new Error('Unexpected project service dependency');
+    },
+    service,
+    { env: { DATABASE_URL: 'configured-for-test' } },
+  );
+  await client.query('BEGIN');
+  try {
+    await client.query('UPDATE "Project" SET slug=$1 WHERE id=$2', [
+      'db-only-project',
+      project.id,
+    ]);
+    let publicProjects = await service.getPublicProjects('en');
+    assert.ok(
+      publicProjects.some(
+        (p) => p.slug === 'db-only-project' && p.title === 'Edited English',
+      ),
+    );
+    await client.query(
+      'DELETE FROM "ProjectTranslation" WHERE "projectId"=$1 AND locale=$2',
+      [project.id, 'en'],
+    );
+    publicProjects = await service.getPublicProjects('en');
+    assert.equal(
+      publicProjects.find((p) => p.slug === 'db-only-project').contentLocale,
+      'ko',
+    );
+    await client.query('UPDATE "Project" SET visibility=$1 WHERE id=$2', [
+      'PRIVATE',
+      project.id,
+    ]);
+    assert.ok(
+      !(await service.getPublicProjects('ko')).some(
+        (p) => p.slug === 'db-only-project',
+      ),
+    );
+  } finally {
+    await client.query('ROLLBACK');
+  }
   await rejectsSql(
     'UPDATE "Project" SET "originGroup"=$1,"originCode"=$2 WHERE id=$3',
     ['PROJECT_TYPE', 'website', project.id],
@@ -121,13 +243,28 @@ try {
     '23514',
   );
   await rejectsSql(
-    'UPDATE "Project" SET body=$1 WHERE id=$2',
+    'UPDATE "ProjectTranslation" SET body=$1 WHERE "projectId"=$2',
     ['{}', project.id],
     '23514',
   );
   await rejectsSql(
     'DELETE FROM "CommonCode" WHERE "groupKey"=$1 AND code=$2',
     ['PROJECT_ORIGIN', 'personal'],
+    '23503',
+  );
+  await rejectsSql(
+    'UPDATE "ProjectTranslation" SET locale=$1 WHERE "projectId"=$2 AND locale=$3',
+    ['ja', project.id, 'en'],
+    '23514',
+  );
+  await rejectsSql(
+    'INSERT INTO "ProjectTranslation" SELECT * FROM "ProjectTranslation" WHERE "projectId"=$1 AND locale=$2',
+    [project.id, 'ko'],
+    '23505',
+  );
+  await rejectsSql(
+    'UPDATE "ProjectTranslation" SET "projectId"=$1 WHERE "projectId"=$2',
+    [randomUUID(), project.id],
     '23503',
   );
   const assetId = randomUUID();
@@ -185,6 +322,17 @@ try {
       ).rows[0].count,
     ),
     1,
+  );
+  assert.equal(
+    Number(
+      (
+        await client.query(
+          'SELECT count(*) FROM "ProjectTranslation" WHERE "projectId"=$1',
+          [project.id],
+        )
+      ).rows[0].count,
+    ),
+    0,
   );
   console.log(
     'Database checks passed: migration, seed rerun, original content migration, FK/check/unique constraints, file preservation.',

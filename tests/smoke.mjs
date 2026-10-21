@@ -110,7 +110,7 @@ for (const route of [
   assert.equal(english.status, route === '/missing-page' ? 404 : 200, route);
   const html = await english.text();
   assert.match(html, /<html lang="en"/, route);
-  assert.match(html, /Choose language/, route);
+  assert.match(html, /한국어로 전환/, route);
   assert.ok(
     route.startsWith('/board/') || !/<h1[^>]*>[^<]*[가-힣]/.test(html),
     `${route} title is translated`,

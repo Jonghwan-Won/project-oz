@@ -69,33 +69,33 @@ model CommonCode {
 }
 
 model Project {
-  id                String         @id @default(uuid()) @db.Uuid
-  slug              String         @unique @db.VarChar(80)
-  originGroup       String         @default("PROJECT_ORIGIN") @db.VarChar(60)
-  originCode        String         @db.VarChar(60)
-  typeGroup         String         @default("PROJECT_TYPE") @db.VarChar(60)
-  typeCode          String?        @db.VarChar(60)
-  lifecycle         Lifecycle?
-  visibility        Visibility     @default(PRIVATE)
-  position          Int            @default(0)
-  placeholder       Boolean        @default(false)
-  startedOn         DateTime?      @db.Date
-  endedOn           DateTime?      @db.Date
-  createdById       String?        @db.Uuid
-  updatedById       String?        @db.Uuid
-  createdAt         DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime       @updatedAt @db.Timestamptz(6)
-  version           Int            @default(1)
-  origin            CommonCode     @relation("ProjectOrigin", fields: [originGroup, originCode], references: [groupKey, code], onDelete: Restrict)
-  type              CommonCode?    @relation("ProjectType", fields: [typeGroup, typeCode], references: [groupKey, code], onDelete: Restrict)
-  createdBy         User?          @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  updatedBy         User?          @relation("ProjectUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
-  title             String         @db.VarChar(200)
-  summary           String         @default("")
-  body              Json           @db.JsonB
-  bodySchemaVersion Int            @default(1)
-  tags              ProjectTag[]
-  assets            ProjectAsset[]
+  customerName String               @default("") @db.VarChar(200)
+  deletedAt    DateTime?            @db.Timestamptz(6)
+  id           String               @id @default(uuid()) @db.Uuid
+  slug         String               @unique @db.VarChar(80)
+  originGroup  String               @default("PROJECT_ORIGIN") @db.VarChar(60)
+  originCode   String               @db.VarChar(60)
+  typeGroup    String               @default("PROJECT_TYPE") @db.VarChar(60)
+  typeCode     String?              @db.VarChar(60)
+  lifecycle    Lifecycle?
+  visibility   Visibility           @default(PRIVATE)
+  position     Int                  @default(0)
+  thumbnailUrl String?              @db.VarChar(2048)
+  placeholder  Boolean              @default(false)
+  startedOn    DateTime?            @db.Date
+  endedOn      DateTime?            @db.Date
+  createdById  String?              @db.Uuid
+  updatedById  String?              @db.Uuid
+  createdAt    DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime             @updatedAt @db.Timestamptz(6)
+  version      Int                  @default(1)
+  origin       CommonCode           @relation("ProjectOrigin", fields: [originGroup, originCode], references: [groupKey, code], onDelete: Restrict)
+  type         CommonCode?          @relation("ProjectType", fields: [typeGroup, typeCode], references: [groupKey, code], onDelete: Restrict)
+  createdBy    User?                @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy    User?                @relation("ProjectUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  translations ProjectTranslation[]
+  tags         ProjectTag[]
+  assets       ProjectAsset[]
 
   @@index([visibility, position, id])
   @@index([originGroup, originCode])
@@ -149,4 +149,16 @@ model ProjectAsset {
 
   @@unique([projectId, assetId, usage])
   @@index([assetId])
+}
+
+model ProjectTranslation {
+  projectId         String  @db.Uuid
+  locale            String  @db.VarChar(2)
+  title             String  @db.VarChar(200)
+  summary           String  @default("")
+  body              Json    @db.JsonB
+  bodySchemaVersion Int     @default(1)
+  project           Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, locale])
 }

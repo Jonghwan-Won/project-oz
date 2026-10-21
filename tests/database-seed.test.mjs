@@ -36,6 +36,11 @@ test('seed skips existing projects and rolls back failures', async () => {
     queries.filter((sql) => sql.startsWith('INSERT INTO "Project" ')).length,
     8,
   );
+  assert.equal(
+    queries.filter((sql) => sql.startsWith('INSERT INTO "ProjectTranslation" '))
+      .length,
+    16,
+  );
   assert.equal(queries.at(-1), 'COMMIT');
   queries.length = 0;
   client.query = async (sql) => {

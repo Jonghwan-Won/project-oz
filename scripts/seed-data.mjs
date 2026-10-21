@@ -59,7 +59,7 @@ export async function seedDatabase(client) {
     let inserted = 0;
     for (const project of initialProjects()) {
       const result = await client.query(
-        'INSERT INTO "Project" ("id","slug","originCode","typeCode","lifecycle","visibility","position","placeholder","title","summary","body","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
+        'INSERT INTO "Project" ("id","slug","originCode","typeCode","lifecycle","visibility","position","placeholder","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
         [
           project.id,
           project.slug,
@@ -69,13 +69,30 @@ export async function seedDatabase(client) {
           project.visibility,
           project.order,
           project.placeholder ?? false,
+        ],
+      );
+      if (result.rowCount) inserted++;
+      await client.query(
+        'INSERT INTO "ProjectTranslation" ("projectId",locale,title,summary,body) SELECT id,$2,$3,$4,$5 FROM "Project" WHERE slug=$1 ON CONFLICT DO NOTHING',
+        [
+          project.slug,
+          'ko',
           project.title,
           project.summary,
           JSON.stringify(project.body),
         ],
       );
-      if (!result.rowCount) continue;
-      inserted++;
+      const english = en.projectItems[project.slug];
+      await client.query(
+        'INSERT INTO "ProjectTranslation" ("projectId",locale,title,summary,body) SELECT id,$2,$3,$4,$5 FROM "Project" WHERE slug=$1 ON CONFLICT DO NOTHING',
+        [
+          project.slug,
+          'en',
+          english.title,
+          english.summary,
+          JSON.stringify(documentFromSections(english.sections)),
+        ],
+      );
     }
     await client.query('COMMIT');
     return inserted;
