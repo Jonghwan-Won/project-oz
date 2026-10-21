@@ -1,5 +1,21 @@
 # NAS 배포·운영
 
+## 첫 웹 배포 (2026-10-21 준비)
+
+`.github/workflows/image.yml`은 main push 또는 수동 실행 시 기존 Dockerfile로 linux/amd64 이미지를 빌드한다. 실제 컨테이너의 health·홈 200과 개발 가이드/API 404를 검사한 뒤 GHCR에 전체 커밋 SHA 태그로 게시한다. 이미지 주소는 Actions 실행 요약에서 확인한다. 로컬 `.env.local`은 Docker 빌드에서 제외되며 첫 공개 UI 배포에는 DB 환경변수나 migration이 필요하지 않다.
+
+첫 GHCR 패키지는 비공개일 수 있다. 공개 다운로드를 원하면 GitHub Packages에서 이미지 공개 범위를 별도로 결정한다. 비공개를 유지하면 NAS 다운로드 시 read:packages 권한 인증이 필요하며 토큰을 채팅이나 명령 이력에 넣지 않는다.
+
+NAS에서 이미지 다운로드 후 다음 형태로 실행한다. IMAGE는 Actions에서 게시한 정확한 SHA 태그 또는 digest로 바꾼다. Docker GUI의 포트 설정으로 loopback 바인딩이 불가능하면 이 명령으로 최초 생성하고 이후 상태는 GUI에서 확인한다. 같은 이름의 기존 컨테이너는 자동 삭제하지 않는다.
+
+```sh
+sudo docker pull IMAGE
+sudo docker run -d --name project-oz-web --restart unless-stopped -p 127.0.0.1:13000:3000 IMAGE
+curl -f http://127.0.0.1:13000/api/health
+```
+
+DSM 역방향 프록시의 HTTPS 443을 HTTP 127.0.0.1:13000으로 연결하고 해당 호스트의 인증서를 지정한다. 기존 규칙·포트 사용 여부를 확인한다. 공유기는 필요한 HTTPS 연결만 NAS로 전달한다. Tailscale 없는 외부 연결에서 인증서·홈·정적 자산·health와 개발 가이드/API 404를 확인해야 배포 완료다. health 응답은 DB 연결 검사가 아니다. 워크플로 추가만으로 NAS 배포가 완료되는 것은 아니다.
+
 ## 목표 환경과 확인 항목
 보유 NAS: Synology DS218+. Synology 공식 Container Manager 적용 모델 목록에 포함된다. 실제 DSM 버전, 설치 가능한 패키지 버전, RAM, 디스크 여유, Compose 명령 지원은 장비에서 확인해야 한다. 이 문서는 장비 실측이나 배포 성공을 주장하지 않는다.
 DS218+ 대상 이미지는 linux/amd64. Mac M1에서 만든 arm64 전용 이미지를 그대로 배포하지 않는다. NAS에서는 빌드나 로컬 LLM 추론을 수행하지 않는다.

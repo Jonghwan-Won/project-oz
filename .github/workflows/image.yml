@@ -1,0 +1,31 @@
+name: Build web image
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and check production container
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          tag="$image:$GITHUB_SHA"
+          docker build --platform linux/amd64 -t "$tag" .
+          docker run -d --name oz-check -p 127.0.0.1:13000:3000 "$tag"
+          trap 'docker logs oz-check; docker rm -f oz-check' EXIT
+          curl --fail --retry 12 --retry-connrefused --retry-delay 2 http://127.0.0.1:13000/api/health
+          curl --fail http://127.0.0.1:13000/ > /dev/null
+          for path in /guide '/api/guide?check=api' '/api/guide?check=database'; do
+            test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 404
+          done
+          echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$tag"
+          echo "Image: \`$tag\`" >> "$GITHUB_STEP_SUMMARY"
