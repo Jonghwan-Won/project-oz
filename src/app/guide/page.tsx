@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { GuideExamples } from './GuideExamples';
 import s from './guide.module.css';
 
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 const colors = [
-  ['--accent', '주 강조색 · #C7F36B'],
+  ['--accent', '주 강조색 · #BAACFF'],
+  ['--accent-blue', '블루 보조색 · #86BAFF'],
   ['--on-accent', '강조 배경 위 글자'],
   ['--accent-ink', '강조 글자 · 포커스'],
   ['--bg', '페이지 배경'],
@@ -26,18 +28,30 @@ export default function Guide() {
     <div className={`page ${s.guide}`}>
       <span className="eyebrow">DEVELOPMENT GUIDE</span>
       <h1>
-        만들면서 확인하는 가이드<span className="accentDot">.</span>
+        만들면서 확인하는 가이드<span className="accentDot"></span>
       </h1>
       <p>
         이 사이트의 UI 사용법과 API·DB 연결을 확인하는 개발 전용 페이지입니다.
         npm run dev에서만 열립니다.
       </p>
       <nav className={s.row} aria-label="가이드 목차">
+        <Link className="textLink" href="/guide/ideas">
+          아이디어 저장소 초안 ↗
+        </Link>
+        <Link className="textLink" href="/guide/markdown">
+          Markdown 뷰어 ↗
+        </Link>
+        <Link className="textLink" href="/guide/environment">
+          환경 구조도 ↗
+        </Link>
         <a className="textLink" href="#colors">
           색상
         </a>
         <a className="textLink" href="#examples">
           UI 예제
+        </a>
+        <a className="textLink" href="#alerts">
+          공통 알림
         </a>
         <a className="textLink" href="#roles">
           역할
@@ -49,7 +63,7 @@ export default function Guide() {
       <section id="colors" className={s.section}>
         <h2>색상과 테마</h2>
         <p>
-          라임 한 가지를 강조색으로 사용합니다. 헤더의 테마 버튼으로
+          블루·바이올렛 계열을 강조색으로 사용합니다. 헤더의 테마 버튼으로
           다크·라이트를 비교하세요. 실제 UI에서는 색상값 대신 CSS 변수를
           사용합니다.
         </p>

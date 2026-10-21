@@ -142,6 +142,61 @@ export function Header({
         </Link>
       </nav>
       <div className="headerActions">
+        {process.env.NODE_ENV === 'development' && (
+          <Link
+            className="headerIcon"
+            href="/admin"
+            aria-label="개발 관리자"
+            title="개발 관리자"
+            onClick={() => setOpen(false)}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </Link>
+        )}
+        {process.env.NODE_ENV === 'development' && (
+          <Link
+            className="headerIcon"
+            href="/guide"
+            aria-label={labels.guide}
+            title={labels.guide}
+            aria-current={
+              path === '/guide' || path.startsWith('/guide/')
+                ? 'page'
+                : undefined
+            }
+            onClick={() => setOpen(false)}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 5.5C9 3.5 5.5 3.5 3 4.5v15c2.5-1 6-1 9 1 3-2 6.5-2 9-1v-15c-2.5-1-6-1-9 1Z" />
+              <path d="M12 5.5v15" />
+            </svg>
+          </Link>
+        )}
         <LanguageSwitcher locale={locale} labels={languageLabels} />
         <ThemeToggle theme={theme} labels={themeLabels} />
         <Link className="login" href="/login">

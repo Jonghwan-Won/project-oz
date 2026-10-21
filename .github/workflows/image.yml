@@ -23,8 +23,11 @@ jobs:
           trap 'docker logs oz-check; docker rm -f oz-check' EXIT
           curl --fail --retry 12 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 5 http://127.0.0.1:13000/api/health
           curl --fail http://127.0.0.1:13000/ > /dev/null
-          for path in /guide '/api/guide?check=api' '/api/guide?check=database'; do
+          for path in /guide /guide/markdown /guide/environment /guide/alert-designs /guide/ideas '/api/guide?check=api' '/api/guide?check=database'; do
             test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 404
+          done
+          for path in /admin /admin/projects /admin/board /admin/settings; do
+            test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 307
           done
           echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           docker push "$tag"

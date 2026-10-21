@@ -1,4 +1,6 @@
 .stage {
+  display: block;
+  text-align: initial;
   --motion-bg: color-mix(in srgb, var(--bg) 92%, var(--ink));
   --motion-line: color-mix(in srgb, var(--ink) 24%, var(--motion-bg));
   --motion-glass: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -56,37 +58,6 @@
 .shoe {
   animation: float 7s ease-in-out infinite;
 }
-.signal {
-  stroke-dasharray: 350;
-  animation: signal 9s linear infinite;
-}
-.caption {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  border-top: 1px solid var(--motion-line);
-  margin: 10px 8% 0;
-  padding-top: 15px;
-  font: 8px monospace;
-  letter-spacing: 1px;
-  color: var(--muted);
-}
-.caption button {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 10px;
-  min-height: 44px;
-  min-width: 90px;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-.caption button:hover {
-  color: var(--accent-ink);
-}
 .stage[data-paused='true'] * {
   animation-play-state: paused !important;
 }
@@ -139,11 +110,6 @@
     translate: 0 -9px;
   }
 }
-@keyframes signal {
-  to {
-    stroke-dashoffset: -700;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .stage * {
     animation: none !important;
@@ -164,10 +130,5 @@
   .micro {
     font-size: 10px;
     letter-spacing: 0;
-  }
-  .caption {
-    margin: 0 5%;
-    font-size: 10px;
-    letter-spacing: 0.5px;
   }
 }

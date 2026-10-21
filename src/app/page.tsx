@@ -1,5 +1,6 @@
 import { getMessages } from '@/i18n/server';
-import { OzMotion } from '@/components/OzMotion';
+import { OzParticles } from '@/components/OzParticles';
+import { ButtonLink } from '@/components/ui/Button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BoardPreview } from '@/components/BoardPreview';
@@ -11,32 +12,26 @@ const tools = [
   {
     name: 'Codex',
     logo: 'codex',
-    href: 'https://openai.com/codex/',
   },
   {
     name: 'React',
     logo: 'react',
-    href: 'https://react.dev/',
   },
   {
     name: 'Next.js',
     logo: 'nextjs',
-    href: 'https://nextjs.org/',
   },
   {
     name: 'TypeScript',
     logo: 'typescript',
-    href: 'https://www.typescriptlang.org/',
   },
   {
     name: 'Synology',
-    logo: 'synology',
-    href: 'https://www.synology.com/',
+    logo: 'synology-standard',
   },
   {
     name: 'Docker',
     logo: 'docker',
-    href: 'https://www.docker.com/',
   },
 ] as const;
 export default async function Home() {
@@ -45,30 +40,24 @@ export default async function Home() {
   return (
     <>
       <section id="about" tabIndex={-1} className={s.hero}>
+        <OzParticles label={messages.brandMotion.description} />
         <div className={s.copy}>
-          <span className="eyebrow">THE WORLD OF DDOZA / 2026</span>
+          <span className={s.heroEyebrow}>DDOZA / A WORLD IN THE MAKING</span>
           <h1>
             {copy.heroStart}
             <br />
-            <span className="accentDot">
-              <mark className="textHighlight">{copy.heroHighlight}</mark>{' '}
-              {copy.heroEnd}
-            </span>
+            <span className={s.heroHighlight}>{copy.heroHighlight}</span>{' '}
+            {copy.heroEnd}
+            <span className={s.heroPeriod}>.</span>
           </h1>
           <p>
             {copy.greeting}
             <br />
             {copy.intro}
           </p>
-          <Link className="textLink" href="/about">
+          <ButtonLink className={s.aboutButton} href="/about">
             {copy.aboutLink}
-          </Link>
-          <div className={s.heroNote}>
-            DEVELOP · RECORD · CONNECT <span>THE WORLD OF OZ</span>
-          </div>
-        </div>
-        <div className={s.motionScene}>
-          <OzMotion labels={messages.motion} />
+          </ButtonLink>
         </div>
       </section>
       <section id="projects" tabIndex={-1} className="section">
@@ -96,7 +85,7 @@ export default async function Home() {
       <section id="board" tabIndex={-1} className="section">
         <div className="sectionHeading">
           <div>
-            <span className="eyebrow">02 / NOTES</span>
+            <span className="eyebrow">02 / BOARD</span>
             <h2 className="accentDot">{copy.boardTitle}</h2>
           </div>
           <Link className="textLink" href="/board">
@@ -134,12 +123,12 @@ export default async function Home() {
           </Link>
         </div>
         <div className={s.helpGrid}>
-          <Link href="/help#faq">
+          <Link className="interactiveCard" href="/help#faq">
             <span className="eyebrow">FAQ ↗</span>
             <h3>{copy.faqTitle}</h3>
             <p>{copy.faqDescription}</p>
           </Link>
-          <Link href="/help#contact">
+          <Link className="interactiveCard" href="/help#contact">
             <span className="eyebrow">CONTACT ↗</span>
             <h3>{copy.contactTitle}</h3>
             <p>{copy.contactDescription}</p>
@@ -167,51 +156,28 @@ export default async function Home() {
         </div>
         <div className={s.toolGrid}>
           {tools.map((tool) => (
-            <a
-              key={tool.name}
-              href={tool.href}
-              className={s.toolCard}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`${tool.name} ${copy.officialSite}`}
-            >
+            <div key={tool.name} className={s.toolCard}>
               <div className={s.toolBrand}>
                 <Image
                   src={`/logos/${tool.logo}.svg`}
-                  width={64}
+                  width={tool.logo === 'synology-standard' ? 148 : 64}
                   height={64}
                   alt=""
-                  className={s.toolLogo}
+                  className={
+                    tool.logo === 'synology-standard' ? s.wordmarkLogo : s.toolLogo
+                  }
                 />
                 <span className={s.toolName}>{tool.name}</span>
               </div>
-              <div>
-                <span className={s.toolRole}>{copy.tools[tool.logo].role}</span>
-                <p>{copy.tools[tool.logo].description}</p>
-              </div>
-              <span className={s.toolArrow} aria-hidden="true">
-                ↗
-              </span>
-            </a>
+            </div>
           ))}
           <div className={s.nextCompanion}>
             <span className={s.nextSymbol} aria-hidden="true">
               ＋
             </span>
             <h3>{copy.nextTitle}</h3>
-            <p>
-              {copy.nextIntro}
-              <br />
-              {copy.nextDescription}
-            </p>
-            <span className="eyebrow">THE JOURNEY CONTINUES</span>
           </div>
         </div>
-        <p className={s.creditsNote}>
-          {copy.creditsNoteStart}
-          <br />
-          {copy.creditsNoteEnd}
-        </p>
       </section>
     </>
   );

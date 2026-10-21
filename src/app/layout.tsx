@@ -5,6 +5,7 @@ import { getTheme } from '@/theme/server';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Header } from '@/components/Header';
 import { NavigationScroll } from '@/components/NavigationScroll';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import './globals.css';
 export async function generateMetadata(): Promise<Metadata> {
   const { messages } = await getMessages();
@@ -49,6 +50,7 @@ export default async function RootLayout({
           </div>
           <small>© 2026 ddoza. Made with curiosity.</small>
         </footer>
+        <ScrollToTop label={messages.site.backToTop} />
       </body>
     </html>
   );

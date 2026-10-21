@@ -1,0 +1,463 @@
+.page {
+  max-width: 1360px;
+}
+.heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+.heading h1 {
+  font-size: clamp(34px, 4vw, 54px);
+  margin: 16px 0;
+  line-height: 1.2;
+}
+.heading p {
+  margin: 0;
+  color: var(--muted);
+}
+.prototype {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.prototype > span:first-child {
+  font-size: 24px;
+  color: var(--accent-ink);
+}
+.prototype strong {
+  color: var(--ink);
+}
+.workspace {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 32px;
+  align-items: start;
+}
+.compose {
+  padding: 26px 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.kicker {
+  font-size: 10px;
+  letter-spacing: 1.7px;
+  color: var(--muted);
+}
+.compose h2 {
+  font-size: 21px;
+  margin: 12px 0 26px;
+}
+.compose form {
+  display: grid;
+  gap: 12px;
+}
+.compose label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.compose textarea,
+.compose select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.compose textarea {
+  min-height: 220px;
+  resize: vertical;
+  line-height: 1.9;
+}
+.compose select {
+  min-height: 44px;
+  margin-bottom: 10px;
+}
+.compose textarea:focus-visible,
+.compose select:focus-visible,
+.mapViewport:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+.inputHint {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.compose form > button {
+  justify-content: space-between;
+  border-radius: 999px;
+}
+.composeNote {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 24px 0 0;
+}
+.board {
+  min-width: 0;
+}
+.boardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 22px;
+}
+.boardHeader h2 {
+  margin: 10px 0 0;
+  font-size: 22px;
+}
+.boardHeader h2 > span {
+  font-size: 13px;
+  color: var(--accent-ink);
+  margin-left: 8px;
+}
+.viewSwitch {
+  display: flex;
+  gap: 6px;
+}
+.viewSwitch button {
+  border-radius: 999px;
+}
+.mapViewport {
+  overflow: auto;
+  max-height: 560px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: radial-gradient(circle, var(--line) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.map {
+  position: relative;
+  width: 860px;
+  min-height: 400px;
+}
+.connections {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.connections path {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+.connections .activeLine {
+  stroke: var(--accent-ink);
+}
+.rootNode {
+  position: absolute;
+  left: 350px;
+  width: 160px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--accent-ink);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 0 50px color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.rootNode > span {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--accent-ink);
+}
+.rootNode strong {
+  font-size: 15px;
+}
+.rootNode small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.node {
+  position: absolute;
+  width: 280px;
+  height: 100px;
+  padding: 18px 20px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.node:hover,
+.list button:hover {
+  background: var(--surface-hover);
+}
+.nodeMeta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 10px;
+}
+.nodeMeta > span {
+  font-size: 9px;
+}
+.node strong {
+  display: block;
+  margin-top: 14px;
+  padding-right: 20px;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nodeArrow {
+  position: absolute;
+  right: 18px;
+  bottom: 22px;
+  color: var(--muted);
+}
+.node.selected,
+.list button.selected {
+  border-color: var(--accent-ink);
+}
+.selected .nodeArrow {
+  color: var(--accent-ink);
+}
+.liveNotice {
+  min-height: 20px;
+  font-size: 11px;
+  color: var(--muted);
+  margin: 14px 0 24px;
+}
+.detail {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.detailMeta > :first-child {
+  color: var(--accent-ink);
+}
+.detail h3 {
+  font-size: 22px;
+  margin: 20px 0 14px;
+  overflow-wrap: anywhere;
+}
+.detail p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 14px;
+}
+.detailFoot {
+  display: block;
+  padding-top: 18px;
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--muted);
+}
+.list {
+  display: grid;
+  gap: 10px;
+}
+.list button {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 78px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+}
+.list button > span,
+.list button > small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.list strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .compose textarea {
+    min-height: 150px;
+  }
+  .heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 480px) {
+  .list button {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+.priorityList {
+  display: grid;
+  gap: 12px;
+}
+.ideaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.dragHandle {
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  font-size: 25px;
+  cursor: grab;
+}
+.priorityInput {
+  width: 60px;
+  min-height: 44px;
+  padding: 8px;
+  background: var(--bg);
+  color: var(--accent-ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+.ideaOpen {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 9px;
+  padding: 8px;
+  text-align: left;
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.ideaOpen strong {
+  overflow-wrap: anywhere;
+}
+.ideaOpen small,
+.ideaOpen > span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+.actions .composeNote {
+  margin: 0;
+}
+.branchList,
+.replies {
+  list-style: none;
+  padding: 0;
+}
+.branch {
+  padding: 20px;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.branch h4 {
+  margin: 16px 0 10px;
+}
+.replies {
+  border-left: 2px solid var(--line);
+  padding-left: 12px;
+}
+.branchForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+.branchForm textarea,
+.branchForm select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+}
+.branchForm textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+.branchForm label {
+  font-size: 12px;
+}
+.replyTarget {
+  color: var(--accent-ink);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.boardHeader h2 {
+  overflow-wrap: anywhere;
+}
+.detail + .detail {
+  margin-top: 24px;
+}
+.rootNode strong {
+  max-width: 140px;
+  text-align: center;
+}
+@media (max-width: 480px) {
+  .ideaRow {
+    padding: 10px;
+    gap: 4px;
+  }
+  .dragHandle {
+    min-width: 36px;
+  }
+  .priorityInput {
+    width: 48px;
+  }
+  .branch {
+    padding: 12px;
+  }
+  .replies {
+    padding-left: 6px;
+  }
+}

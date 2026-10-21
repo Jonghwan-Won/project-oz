@@ -22,10 +22,6 @@
   flex-direction: column;
   align-items: flex-start;
   scroll-snap-align: start;
-  transition: background 0.2s;
-}
-.card:hover {
-  background: var(--surface-hover);
 }
 .card:focus-visible {
   outline-offset: -3px;

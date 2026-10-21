@@ -5,11 +5,11 @@ export const ko = {
     heroEnd: '현실로',
     greeting: '안녕하세요, 개발자 또자입니다.',
     intro: '작은 불편함을 해결하고, 만들며 배운 것들을 이곳에 쌓습니다.',
-    aboutLink: '또자와 OZ 소개 ↗',
+    aboutLink: '또자와 OZ 알아보기',
     projectsTitle: '만들고, 참여한 작업',
     projectsLink: '프로젝트 전체 보기 ↗',
     boardTitle: '기록하고, 나누고',
-    boardLink: '기록 전체 보기 ↗',
+    boardLink: '게시판 전체 보기 ↗',
     helpTitle: '궁금한 점이 있나요?',
     helpLink: '연락 안내 보기 ↗',
     faqTitle: '자주 묻는 질문',
@@ -18,41 +18,9 @@ export const ko = {
     contactDescription: '문의 기능과 공개 연락처를 준비하고 있어요.',
     creditsStart: '또자의 OZ 세상을',
     creditsEnd: '함께 만들어가는 도구들',
-    creditsIntro: '생각을 현실로 옮기는 유리구두부터,',
-    creditsDescription: '이 세계를 이루는 작은 기술까지.',
+    creditsIntro: '생각을 현실로 옮길 수 있도록,',
+    creditsDescription: '한 걸음씩 도와주는 나의 유리구두들입니다.',
     nextTitle: '다음 여정의 동료',
-    nextIntro: '새로운 아이디어가 생기면,',
-    nextDescription: '함께할 도구도 하나씩 늘어납니다.',
-    creditsNoteStart:
-      '작은 아이디어를 하나씩 더하며, 또자의 OZ 세상을 만들어갑니다.',
-    creditsNoteEnd: '지금 함께하는 기술과 다음 여정을 준비하는 도구들입니다.',
-    officialSite: '공식 사이트 (새 탭)',
-    tools: {
-      codex: {
-        role: '나의 유리구두',
-        description: '생각을 코드로 옮기며 함께 걷는 AI 개발 도구.',
-      },
-      react: {
-        role: '화면을 만드는 조각',
-        description: '작은 컴포넌트를 모아 상호작용하는 화면으로.',
-      },
-      nextjs: {
-        role: '세상을 연결하는 길',
-        description: '페이지와 서버를 연결하는 웹 프레임워크.',
-      },
-      typescript: {
-        role: '여정을 위한 나침반',
-        description: '타입으로 코드의 의도를 확인하는 언어.',
-      },
-      synology: {
-        role: 'OZ가 머물 집',
-        description: '나만의 세계를 담을 NAS 서버 · 배포 준비 중.',
-      },
-      docker: {
-        role: '어디서든 같은 작업실',
-        description: '실행 환경을 담는 컨테이너 · 배포 준비 중.',
-      },
-    },
     categories: ['AI 정보', '연예 이슈', '채용·공채', '주식·코인', '부동산'],
   },
   boardPreview: {
@@ -61,6 +29,16 @@ export const ko = {
     empty: '첫 번째 기록을 준비하고 있어요.',
     previous: '이전 게시글',
     next: '다음 게시글',
+  },
+  brandMotion: {
+    description: '둥근 OZ와 구체 사이를 오가는 블루·바이올렛 입자 그래픽',
+  },
+  ideaVisual: {
+    steps: ['생각', '연결', '구현'],
+    description:
+      '작은 빛에서 연결선이 뻗어나가 하나의 화면이 완성되고 기록으로 남는 모습',
+    pause: '생각에서 구현으로 이어지는 모션 일시정지',
+    play: '생각에서 구현으로 이어지는 모션 재생',
   },
   motion: {
     title:
@@ -73,13 +51,14 @@ export const ko = {
   navigation: {
     about: '소개',
     projects: '프로젝트',
-    board: '기록',
+    board: '게시판',
     help: '연락',
     home: 'ddoza 홈',
     menu: '주 메뉴',
     open: '메뉴 열기',
     close: '메뉴 닫기',
     login: '로그인 ↗',
+    guide: '개발 가이드',
   },
   projectTypes: {
     website: '웹사이트',
@@ -172,6 +151,7 @@ export const ko = {
     failed: '언어를 바꾸지 못했어요. 다시 선택해 주세요.',
   },
   site: {
+    backToTop: '맨 위로 이동',
     title: 'ddoza — 작은 아이디어를 현실로',
     description: '만들고, 기록하고, 연결하는 ddoza의 작업실.',
     skip: '본문 바로가기',
@@ -179,27 +159,31 @@ export const ko = {
     admin: '관리자',
   },
   about: {
-    title: '안녕하세요, 또자입니다.',
-    intro: '만들고, 기록하고, 관심 있는 것을 나눕니다.',
-    welcome: '작은 아이디어로 넓혀가는 또자의 OZ 세상에 오신 것을 환영합니다.',
+    title: '작은 생각을\n현실로 만드는 사람.',
+    intro: '안녕하세요, 개발자 또자입니다.',
+    welcome:
+      '작은 불편을 그냥 지나치지 않고, 직접 만들어 풀어보는 걸 좋아합니다.',
     sections: [
       {
-        title: 'ddoza, 그 안에서 발견한 oz',
-        body: '익숙한 별명 ddoza를 바라보다 그 안에서 oz를 발견했습니다. 이름 속 작은 발견에서, 직접 만들고 넓혀가는 저만의 OZ 세상이 시작됐습니다.',
+        title: '시작은 거창하지 않아도',
+        body: '“이런 게 있으면 편하겠다”는 생각이 출발점입니다. 떠오른 아이디어를 적어두고, 필요한 기능부터 작게 만들어봅니다. 쓸 수 있는 화면과 기능으로 옮겨가는 과정에서 새로운 가능성을 발견합니다.',
       },
       {
-        title: '내가 만들어가는 OZ',
-        body: 'OZ에서는 필요한 것을 직접 만들어봅니다. AI 도구의 도움을 받아 아이디어를 구현하고, React와 Next.js로 화면과 기능을 연결합니다. 완성된 결과뿐 아니라 실험과 시행착오도 이곳에 남깁니다.',
+        title: '완성만큼 과정도',
+        body: '이곳에는 프로젝트와 개발하며 배운 것, 아직 다듬고 있는 실험이 함께 쌓입니다. 막혔던 부분과 선택한 이유도 기록합니다. 직접 고민하고, AI를 비롯한 도구의 도움도 받으며 조금씩 완성해갑니다.',
       },
       {
-        title: '아이디어를 옮기는 유리구두',
-        body: '유리구두는 생각을 현실로 옮기도록 도와주는 도구의 상징입니다. Codex 같은 AI 도구와 함께 한 걸음씩 나아가며, 이 세계에 필요한 기능을 더합니다.',
+        title: '별명 하나에서 시작된 세계',
+        body: '잠이 많기도 하지만, 금방 또 잠들어서 붙은 별명이 ‘또자’입니다. 익숙한 이름을 ddoza로 적다 그 안의 oz를 발견했습니다. 그렇게 이름 붙인 OZ는, 만들고 기록한 것들로 조금씩 넓혀가는 저의 작업실입니다.',
       },
     ],
-    notice:
-      '경력과 기술, 자세한 프로젝트 경험은 공개용으로 정리한 뒤 이곳에 추가할 예정입니다.',
-    imageAlt:
-      '유리 스니커즈를 신은 뒷모습 너머로 자주색 성과 밝은 OZ 도시가 펼쳐지는 풍경',
+    notice: '작은 생각이 새로운 현실로. OZ는 지금도 만드는 중입니다.',
+    imageAlt: '블루·바이올렛 입자가 모여 만든 둥근 OZ',
+    toolsTitle: '유리구두는 하나가 아닙니다.',
+    toolsBody:
+      '코드를 함께 고민하는 AI, 화면을 만드는 기술, 작업을 세상에 연결하는 서버까지. 이 도구들은 모두 생각을 현실로 옮기도록 돕는 유리구두입니다. 필요한 도구를 배우고 함께 쓰며, 혼자서는 닿기 어려웠던 곳까지 조금씩 나아갑니다.',
+    projectsLink: '만들고 있는 프로젝트',
+    boardLink: '쌓아가는 기록 보기',
   },
   contact: {
     title: '궁금한 점이 있나요?',
@@ -244,12 +228,12 @@ export const ko = {
     searchLabel: '글 제목 검색',
     placeholder: '궁금한 이야기를 검색해 보세요',
     search: '검색',
-    count: '기록',
+    count: '게시글',
     empty: '아직 기록이 없어요.',
     emptyQuery: '다른 검색어로 찾아보세요.',
     emptyCategory: '이 분야의 첫 이야기를 준비하고 있습니다.',
-    allLink: '전체 기록 보기 ↗',
-    back: '← 모든 기록',
+    allLink: '게시판 전체 보기 ↗',
+    back: '← 게시판으로',
     draft: '임시 게시글',
     missing: '기록을 찾을 수 없습니다',
     categories: [

@@ -5,6 +5,12 @@
 
 ## 개발 가이드와 테이블 없는 연결 테스트
 
+개발 모드에서는 GNB 헤더 우측 버튼 영역의 책 아이콘으로 `/guide`에 이동할 수 있다. 아이콘의 접근성 이름과 툴팁은 개발 가이드이며 영어 UI도 지원한다. production 빌드에는 이 바로가기를 표시하지 않고, 가이드 경로 자체도 서버에서 404 처리한다.
+
+`/guide#alerts`에서 사이트 전용 OzAlert의 기본 제목·사용자 지정 제목 예제를 확인한다. `src/components/ui/OzAlert.tsx`의 open/onClose/content와 선택적 title을 사용한다. title은 상단 작은 문구이며 생략 시 `OZ · MESSAGE`다. content는 줄바꿈을 보존하는 본문이고 confirmLabel로 확인 버튼 문구를 바꿀 수 있다. C 시안의 반투명 그라데이션 패널에 B 시안의 둥근 버튼을 결합했다. 네이티브 dialog의 모달 포커스·배경 접근 차단을 활용하며 확인 버튼·Escape로 닫고 배경 클릭으로는 닫지 않는다. 삭제 동의용 confirm이나 toast는 이번 범위가 아니다.
+
+`/guide/markdown`은 README와 docs의 번호 있는 Markdown 문서를 선택해 읽는 개발 전용 뷰어다. 다른 UTF-8 `.md`/`.markdown` 파일(최대 1 MiB)도 브라우저에서 열 수 있다. 선택한 파일은 서버에 업로드하거나 저장하지 않는다. HTML 실행과 이미지 자동 로드는 차단한다. `/guide/environment`는 2026-10-21 개인 작업일지를 바탕으로 공개 웹·개발 DB·배포 흐름을 정리한 구조도이며 실시간 상태판은 아니다. 두 경로 모두 production에서 404다.
+
 `npm run dev` 실행 후 `/guide`에서 공통 UI·색상·기본 날짜 입력·설계된 역할과 API·DB 연결을 확인한다. 페이지와 `/api/guide`는 development 환경에서만 제공하고 production에서는 404다. `/lab` 이동과 공개 메뉴는 유지한다. 인증·역할 검사는 아직 미구현이다.
 
 NAS DB를 쓰려면 PC의 **별도 PowerShell 창**에서 SSH 터널을 열어 유지한다. DSM_USER는 실제 DSM 계정명, DEV_DB_CONTAINER_IP는 개발 DB 컨테이너 IP, NAS_SSH_HOST는 NAS 접속 주소로 바꾼다. 외부에서는 NAS 내부 IP 대신 Tailscale 주소를 사용한다. 실제 주소는 개인 작업일지에서 확인한다.

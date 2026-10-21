@@ -7,11 +7,11 @@ export const en = {
     heroEnd: 'realities',
     greeting: 'Hello, I’m ddoza, a developer.',
     intro: 'I solve everyday problems and share what I learn along the way.',
-    aboutLink: 'About ddoza and OZ ↗',
+    aboutLink: 'Get to know ddoza and OZ',
     projectsTitle: 'Things I build and contribute to',
     projectsLink: 'View all projects ↗',
     boardTitle: 'Taking notes, sharing ideas',
-    boardLink: 'View all notes ↗',
+    boardLink: 'View board ↗',
     helpTitle: 'Have a question?',
     helpLink: 'Contact information ↗',
     faqTitle: 'Frequently asked questions',
@@ -20,43 +20,9 @@ export const en = {
     contactDescription: 'Contact options are coming soon.',
     creditsStart: 'The tools that help',
     creditsEnd: 'build ddoza’s world of OZ',
-    creditsIntro: 'From glass slippers that bring ideas to life,',
-    creditsDescription: 'to the small technologies that shape this world.',
+    creditsIntro: 'All these tools are my glass slippers,',
+    creditsDescription: 'helping me bring ideas to life, one step at a time.',
     nextTitle: 'Companions for the next journey',
-    nextIntro: 'With every new idea,',
-    nextDescription: 'another tool joins the journey.',
-    creditsNoteStart: 'One small idea at a time, ddoza’s world of OZ grows.',
-    creditsNoteEnd:
-      'These are the technologies I use today and the tools for what’s next.',
-    officialSite: 'official website (opens in a new tab)',
-    tools: {
-      codex: {
-        role: 'My glass slippers',
-        description: 'An AI coding tool that helps turn ideas into code.',
-      },
-      react: {
-        role: 'Pieces of the interface',
-        description:
-          'Small components that come together as interactive screens.',
-      },
-      nextjs: {
-        role: 'Paths that connect the world',
-        description: 'A framework connecting pages and server features.',
-      },
-      typescript: {
-        role: 'A compass for the journey',
-        description: 'Types that make the intent of code clearer.',
-      },
-      synology: {
-        role: 'A home for OZ',
-        description: 'A NAS server for this world · deployment in preparation.',
-      },
-      docker: {
-        role: 'A portable studio',
-        description:
-          'Containers for a consistent environment · deployment in preparation.',
-      },
-    },
     categories: [
       'AI',
       'Entertainment',
@@ -72,6 +38,17 @@ export const en = {
     previous: 'Previous posts',
     next: 'Next posts',
   },
+  brandMotion: {
+    description:
+      'Blue and violet particles transforming between rounded OZ letters and a sphere',
+  },
+  ideaVisual: {
+    steps: ['Imagine', 'Connect', 'Build'],
+    description:
+      'A small light grows into connections, becomes a working interface, and leaves a note for the next idea',
+    pause: 'Pause the idea-to-reality animation',
+    play: 'Play the idea-to-reality animation',
+  },
   motion: {
     title:
       'The animated world of OZ: orbiting light, a deep portal, and a glass slipper',
@@ -83,13 +60,14 @@ export const en = {
   navigation: {
     about: 'About',
     projects: 'Projects',
-    board: 'Notes',
+    board: 'Board',
     help: 'Contact',
     home: 'ddoza home',
     menu: 'Main navigation',
     open: 'Open menu',
     close: 'Close menu',
     login: 'Log in ↗',
+    guide: 'Development guide',
   },
   projectTypes: {
     website: 'Website',
@@ -182,6 +160,7 @@ export const en = {
     failed: 'Could not change the language. Please try again.',
   },
   site: {
+    backToTop: 'Back to top',
     title: 'ddoza — Small ideas, new realities',
     description: 'A studio for building, documenting, and connecting.',
     skip: 'Skip to content',
@@ -189,27 +168,31 @@ export const en = {
     admin: 'Admin',
   },
   about: {
-    title: 'Hello, I’m ddoza.',
-    intro: 'I build things, take notes, and share what interests me.',
-    welcome: 'Welcome to my world of OZ, growing one small idea at a time.',
+    title: 'Small ideas.\nMade real.',
+    intro: 'Hello, I’m ddoza, a developer.',
+    welcome:
+      'I like noticing small everyday frustrations and building something to solve them.',
     sections: [
       {
-        title: 'ddoza, and the oz within',
-        body: 'Looking at my familiar nickname, ddoza, I noticed the letters oz. That small discovery became the starting point for a world I could build and expand myself.',
+        title: 'A small thought is enough to start',
+        body: '“It would be useful if this existed” is where it begins. I write down ideas and start with the smallest useful feature. Turning them into interfaces and working tools opens up new possibilities.',
       },
       {
-        title: 'The OZ I’m building',
-        body: 'In OZ, I build things I need. AI tools help bring ideas to life, while React and Next.js connect interfaces and features. I share the experiments and mistakes as well as the results.',
+        title: 'The process matters, too',
+        body: 'Projects, things I learn, and experiments in progress all have a place here. I document where I got stuck and why I made a choice. I work through problems myself and use tools, including AI, to help bring things to life.',
       },
       {
-        title: 'Glass slippers for ideas',
-        body: 'Glass slippers represent the tools that help turn ideas into reality. With AI tools such as Codex, I move forward one step at a time and add what this world needs.',
+        title: 'A world that began with a nickname',
+        body: 'My nickname comes from “또 자”: “asleep again.” I sleep a lot and tend to drift off again quickly. Written as ddoza, the name also holds the letters oz. That became OZ, my personal studio, growing with the things I build and document.',
       },
     ],
-    notice:
-      'More about my background, skills, and project experience will be added when ready for publication.',
-    imageAlt:
-      'A view past a person wearing glass sneakers toward a purple castle and a bright city in OZ',
+    notice: 'Small ideas, new realities. OZ is still taking shape.',
+    imageAlt: 'Rounded OZ letters formed from blue and violet particles',
+    toolsTitle: 'More than one pair of glass slippers.',
+    toolsBody:
+      'AI that helps me work through code, technologies that shape interfaces, and servers that connect my work to the world: all these tools are my glass slippers. Learning and using them together helps me reach a little further than I could alone.',
+    projectsLink: 'Explore my projects',
+    boardLink: 'Read the work in progress',
   },
   contact: {
     title: 'Have a question?',
@@ -254,14 +237,14 @@ export const en = {
     searchLabel: 'Search post titles',
     placeholder: 'Search for a story',
     search: 'Search',
-    count: 'Notes',
-    empty: 'No notes here yet.',
+    count: 'Posts',
+    empty: 'No posts here yet.',
     emptyQuery: 'Try a different search term.',
     emptyCategory: 'The first story in this category is on its way.',
-    allLink: 'View all notes ↗',
-    back: '← All notes',
+    allLink: 'View board ↗',
+    back: '← Back to board',
     draft: 'Draft entry',
-    missing: 'Note not found',
+    missing: 'Post not found',
     categories: [
       'All',
       'Development',

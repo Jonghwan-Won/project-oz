@@ -22,7 +22,7 @@ export default async function Board({
   const selected = filterPosts(category, q);
   return (
     <div className="page">
-      <span className="eyebrow">NOTES / LEARNING & IDEAS</span>
+      <span className="eyebrow">BOARD / LEARNING & IDEAS</span>
       <h1>{copy.title}</h1>
       <p className="lead">{copy.intro}</p>
       <div className="filter" aria-label={copy.filterLabel}>

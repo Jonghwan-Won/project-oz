@@ -1,0 +1,297 @@
+.scene {
+  --visual-line: color-mix(in srgb, var(--ink) 25%, transparent);
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 28px 20px 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      ellipse at 15% 35%,
+      color-mix(in srgb, var(--accent) 7%, transparent),
+      transparent 60%
+    ),
+    var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0 14px;
+  gap: 12px;
+}
+.steps span {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  animation: stage 12s infinite;
+}
+.steps span:nth-child(2) {
+  animation-delay: 3s;
+}
+.steps span:nth-child(3) {
+  animation-delay: 6s;
+}
+.steps small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.canvas :is(path, circle, rect) {
+  vector-effect: non-scaling-stroke;
+}
+.grid {
+  opacity: 0.035;
+  stroke-width: 1;
+}
+.halo {
+  fill: color-mix(in srgb, var(--accent) 5%, transparent);
+  transform-origin: 104px 140px;
+  animation: breathe 12s infinite;
+}
+.ring {
+  fill: none;
+  stroke: var(--visual-line);
+  stroke-width: 1;
+}
+.seed,
+.spark,
+.end {
+  fill: var(--accent-ink);
+}
+.seed {
+  animation: seed 12s infinite;
+  transform-origin: 104px 140px;
+}
+.spark {
+  animation: travel 12s infinite;
+}
+.threadBase,
+.thread {
+  fill: none;
+  stroke: var(--visual-line);
+  stroke-width: 1.5;
+}
+.thread {
+  stroke: var(--accent-ink);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: connect 12s infinite;
+}
+.connections {
+  fill: var(--surface);
+  stroke: var(--visual-line);
+  stroke-width: 1.5;
+  animation: gather 12s infinite;
+}
+.result {
+  animation: build 12s infinite;
+}
+.window {
+  fill: var(--surface);
+  stroke: var(--visual-line);
+  stroke-width: 1.5;
+}
+.windowLine {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.controls {
+  fill: var(--muted);
+  opacity: 0.45;
+}
+.block {
+  fill: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  stroke: color-mix(in srgb, var(--accent-ink) 35%, transparent);
+}
+.check {
+  fill: none;
+  stroke: var(--accent-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.copy {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.5;
+}
+.chip {
+  fill: var(--line);
+}
+.kept {
+  animation: keep 12s infinite;
+}
+.note {
+  fill: var(--surface);
+  stroke: var(--visual-line);
+  stroke-width: 1.5;
+}
+.noteLines {
+  stroke: var(--muted);
+  opacity: 0.45;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.scene[data-paused='true'] * {
+  animation-play-state: paused !important;
+}
+.still * {
+  animation: none !important;
+}
+.still .spark {
+  display: none;
+}
+.still .steps span:last-child {
+  color: var(--accent-ink);
+}
+@keyframes stage {
+  0%,
+  22% {
+    color: var(--accent-ink);
+  }
+  30%,
+  100% {
+    color: var(--muted);
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  22%,
+  72% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+@keyframes seed {
+  0%,
+  100% {
+    transform: scale(0.75);
+  }
+  15%,
+  80% {
+    transform: scale(1);
+  }
+}
+@keyframes gather {
+  0%,
+  8% {
+    opacity: 0.15;
+  }
+  28%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+@keyframes connect {
+  0%,
+  22% {
+    stroke-dashoffset: 1;
+  }
+  52%,
+  92% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+@keyframes travel {
+  0%,
+  22% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  26% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  38% {
+    transform: translate(70px, 36px);
+  }
+  46% {
+    transform: translate(105px, 99px);
+    opacity: 1;
+  }
+  52% {
+    transform: translate(182px, 116px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(182px, 116px);
+    opacity: 0;
+  }
+}
+@keyframes build {
+  0%,
+  38% {
+    opacity: 0.15;
+    translate: 0 8px;
+  }
+  62%,
+  92% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0.15;
+    translate: 0 8px;
+  }
+}
+@keyframes keep {
+  0%,
+  60% {
+    opacity: 0.1;
+  }
+  78%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene * {
+    animation: none !important;
+  }
+  .spark {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .scene {
+    padding: 22px 12px 12px;
+    border-radius: 20px;
+  }
+  .steps {
+    padding: 0 8px;
+  }
+  .steps span {
+    font-size: 14px;
+    gap: 7px;
+  }
+}
