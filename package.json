@@ -15,7 +15,9 @@
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy"
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "node scripts/seed.mjs",
+    "db:test": "node scripts/check-database.mjs"
   },
   "dependencies": {
     "@prisma/client": "7.10.1",
@@ -24,6 +26,8 @@
     "pg": "8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
     "server-only": "0.0.1"
   },
   "devDependencies": {

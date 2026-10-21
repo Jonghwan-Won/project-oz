@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { OzAlert } from '@/components/ui/OzAlert';
 import * as Menu from '@/components/ui/DropdownMenu';
 import s from './guide.module.css';
 
@@ -12,6 +13,11 @@ export function GuideExamples() {
   const [end, setEnd] = useState('');
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState('아직 호출하지 않았습니다.');
+  const [alert, setAlert] = useState<{
+    width?: number;
+    content: string;
+    variant?: 'default' | 'error';
+  } | null>(null);
 
   async function callApi(check: 'api' | 'database') {
     setPending(true);
@@ -34,6 +40,66 @@ export function GuideExamples() {
 
   return (
     <>
+      <section id="alerts" className={s.section}>
+        <h2>OzAlert · 사이트 공통 알림</h2>
+        <p>
+          일반 안내는 메인 색상, 오류는 빨간 그라데이션으로 구분합니다. 제목과
+          아이콘 없이 본문과 회색 확인 버튼을 사용합니다. 기본 너비는 360px이며
+          width로 조정할 수 있습니다. 작은 화면에서는 화면 너비에 맞춥니다.
+          확인이 필요한 짧은 안내에 사용하며, 확인 버튼이나 Escape로 닫으면 원래
+          버튼으로 포커스가 돌아옵니다. 배경 클릭으로는 닫히지 않습니다.
+        </p>
+        <div className={s.row}>
+          <Button
+            onClick={() =>
+              setAlert({
+                content: '변경 사항을 저장했어요.\n다음 작업을 이어가 볼까요?',
+              })
+            }
+          >
+            기본 알림 예제
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              setAlert({
+                variant: 'error',
+                content:
+                  '요청을 처리하지 못했습니다. 입력한 내용은 유지됩니다.\n네트워크 연결을 확인하고 다시 시도해 주세요.',
+              })
+            }
+          >
+            오류 예제
+          </Button>
+          <Button
+            onClick={() =>
+              setAlert({
+                content: '너비를 480px로 지정한 알림입니다.',
+                width: 480,
+              })
+            }
+          >
+            넓은 알림 예제
+          </Button>
+        </div>
+        <pre className={s.code}>
+          {
+            '// 기본값: variant="default", width={360}\n<OzAlert\n  open={open}\n  onClose={() => setOpen(false)}\n  content="변경 사항을 저장했어요."\n/>\n\n<OzAlert\n  open={errorOpen}\n  onClose={() => setErrorOpen(false)}\n  variant="error"\n  width={480}\n  content="네트워크 연결을 확인해 주세요."\n  confirmLabel="닫기"\n/>'
+          }
+        </pre>
+        <p>
+          디자인은 사이트 CSS로 구성하고 모달의 포커스 제한과 배경 접근 차단은
+          브라우저의 dialog 기능을 사용합니다. 삭제 확인·취소 선택이나 자동으로
+          사라지는 토스트는 별도 용도입니다.
+        </p>
+      </section>
+      <OzAlert
+        open={alert !== null}
+        onClose={() => setAlert(null)}
+        width={alert?.width}
+        variant={alert?.variant}
+        content={alert?.content ?? ''}
+      />
       <section id="examples" className={s.section}>
         <h2>UI 예제</h2>
         <h3>Button · ButtonLink</h3>

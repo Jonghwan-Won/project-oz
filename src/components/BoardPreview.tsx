@@ -66,7 +66,7 @@ export function BoardPreview({
             <Link
               href={'/board/' + post.slug}
               key={post.slug}
-              className={s.card}
+              className={`interactiveCard ${s.card}`}
             >
               <span className={s.tag}>{post.category}</span>
               <h3>{post.title}</h3>

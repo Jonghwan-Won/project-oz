@@ -1,0 +1,156 @@
+.shell {
+  max-width: 1280px;
+}
+.intro {
+  max-width: 800px;
+  margin-bottom: 36px;
+}
+.intro p,
+.main p,
+.main small {
+  color: var(--muted);
+}
+.workspace {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.nav {
+  display: grid;
+  gap: 8px;
+  position: sticky;
+  top: 100px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.nav a {
+  padding: 14px 12px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.nav a:hover {
+  background: var(--surface-hover);
+  color: var(--accent-ink);
+}
+.main {
+  min-width: 0;
+}
+.main h2 {
+  margin: 0 0 12px;
+  font-size: 28px;
+}
+.main h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.heading,
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+.heading {
+  flex-wrap: wrap;
+}
+.panel {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  margin-bottom: 24px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.stats .panel {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 20px;
+}
+.stats strong {
+  font-size: 44px;
+}
+.notice {
+  min-height: 24px;
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.panel label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+.panel input,
+.panel select,
+.panel textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+}
+.panel textarea {
+  resize: vertical;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.list {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.row {
+  padding: 22px;
+  background: var(--surface);
+}
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+.row > div {
+  min-width: 0;
+}
+.row p {
+  margin: 8px 0;
+  font-size: 13px;
+}
+.row small {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .nav {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats,
+  .fields {
+    grid-template-columns: 1fr;
+  }
+  .panel,
+  .row {
+    padding: 18px;
+  }
+}

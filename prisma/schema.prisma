@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client"
-  output = "../src/generated/prisma"
+  output   = "../src/generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
+
 enum Lifecycle {
   IDEA
   BUILDING
@@ -12,19 +14,139 @@ enum Lifecycle {
   RELEASED
   ARCHIVED
 }
+
 enum Visibility {
   PRIVATE
   PUBLIC
 }
+
+enum TagKind {
+  TECHNOLOGY
+  TOPIC
+}
+
+enum AssetUsage {
+  COVER
+  INLINE
+  ATTACHMENT
+}
+
+// Identity only; authentication provider/session tables belong to phase 2.
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  displayName     String    @db.VarChar(100)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  createdProjects Project[] @relation("ProjectCreator")
+  updatedProjects Project[] @relation("ProjectUpdater")
+  assets          Asset[]
+}
+
+model CommonCodeGroup {
+  key         String       @id @db.VarChar(60)
+  nameKo      String       @db.VarChar(100)
+  nameEn      String       @db.VarChar(100)
+  description String       @default("")
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(6)
+  codes       CommonCode[]
+}
+
+model CommonCode {
+  groupKey  String          @db.VarChar(60)
+  code      String          @db.VarChar(60)
+  nameKo    String          @db.VarChar(100)
+  nameEn    String          @db.VarChar(100)
+  position  Int             @default(0)
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime        @updatedAt @db.Timestamptz(6)
+  group     CommonCodeGroup @relation(fields: [groupKey], references: [key], onDelete: Restrict)
+  origins   Project[]       @relation("ProjectOrigin")
+  types     Project[]       @relation("ProjectType")
+
+  @@id([groupKey, code])
+}
+
 model Project {
-  id String @id @default(uuid()) @db.Uuid
-  slug String @unique
-  title String @db.VarChar(200)
-  summary String
-  bodyMarkdown String @default("")
-  lifecycle Lifecycle @default(IDEA)
-  visibility Visibility @default(PRIVATE)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-  @@index([visibility, lifecycle])
+  id                String         @id @default(uuid()) @db.Uuid
+  slug              String         @unique @db.VarChar(80)
+  originGroup       String         @default("PROJECT_ORIGIN") @db.VarChar(60)
+  originCode        String         @db.VarChar(60)
+  typeGroup         String         @default("PROJECT_TYPE") @db.VarChar(60)
+  typeCode          String?        @db.VarChar(60)
+  lifecycle         Lifecycle?
+  visibility        Visibility     @default(PRIVATE)
+  position          Int            @default(0)
+  placeholder       Boolean        @default(false)
+  startedOn         DateTime?      @db.Date
+  endedOn           DateTime?      @db.Date
+  createdById       String?        @db.Uuid
+  updatedById       String?        @db.Uuid
+  createdAt         DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(6)
+  version           Int            @default(1)
+  origin            CommonCode     @relation("ProjectOrigin", fields: [originGroup, originCode], references: [groupKey, code], onDelete: Restrict)
+  type              CommonCode?    @relation("ProjectType", fields: [typeGroup, typeCode], references: [groupKey, code], onDelete: Restrict)
+  createdBy         User?          @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy         User?          @relation("ProjectUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  title             String         @db.VarChar(200)
+  summary           String         @default("")
+  body              Json           @db.JsonB
+  bodySchemaVersion Int            @default(1)
+  tags              ProjectTag[]
+  assets            ProjectAsset[]
+
+  @@index([visibility, position, id])
+  @@index([originGroup, originCode])
+  @@index([typeGroup, typeCode])
+}
+
+model Tag {
+  id       String       @id @default(uuid()) @db.Uuid
+  kind     TagKind
+  slug     String       @db.VarChar(80)
+  name     String       @db.VarChar(100)
+  projects ProjectTag[]
+
+  @@unique([kind, slug])
+}
+
+model ProjectTag {
+  projectId String  @db.Uuid
+  tagId     String  @db.Uuid
+  position  Int     @default(0)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Restrict)
+
+  @@id([projectId, tagId])
+  @@index([tagId])
+}
+
+model Asset {
+  id           String         @id @default(uuid()) @db.Uuid
+  storageKey   String         @unique
+  originalName String         @db.VarChar(255)
+  mimeType     String         @db.VarChar(127)
+  byteSize     BigInt
+  width        Int?
+  height       Int?
+  uploadedById String?        @db.Uuid
+  createdAt    DateTime       @default(now()) @db.Timestamptz(6)
+  uploadedBy   User?          @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+  projects     ProjectAsset[]
+}
+
+model ProjectAsset {
+  id        String     @id @default(uuid()) @db.Uuid
+  projectId String     @db.Uuid
+  assetId   String     @db.Uuid
+  usage     AssetUsage
+  position  Int        @default(0)
+  label     String?    @db.VarChar(255)
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  asset     Asset      @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@unique([projectId, assetId, usage])
+  @@index([assetId])
 }

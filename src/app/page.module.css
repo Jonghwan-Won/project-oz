@@ -1,37 +1,70 @@
 .hero {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  max-width: 1440px;
-  margin: auto;
-  min-height: 740px;
-  padding: 32px 6% 50px;
-  gap: 6%;
+  position: relative;
+  isolation: isolate;
+  display: flex;
   align-items: center;
+  min-height: min(860px, calc(100svh - 76px));
+  padding: 100px 6% 110px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 82% 48%, #28204466, transparent 50%),
+    radial-gradient(ellipse at 57% 70%, #10284b55, transparent 48%), #08090f;
+  color: #f3f2f8;
+  border-bottom: 1px solid #ffffff12;
+}
+.copy {
+  position: relative;
+  z-index: 1;
+  width: 58%;
+  pointer-events: none;
+}
+.heroEyebrow {
+  display: block;
+  color: #b0aac7;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 .copy h1 {
-  font-size: clamp(44px, 5.3vw, 78px);
-  line-height: 1.18;
-  letter-spacing: -4px;
-  margin: 36px 0 26px;
+  font-size: clamp(52px, 6.4vw, 108px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -0.07em;
+  margin: 32px 0 28px;
+  text-wrap: balance;
+}
+.heroHighlight {
+  color: var(--accent);
+  background: linear-gradient(110deg, var(--accent), var(--accent-blue));
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.heroPeriod {
+  color: var(--accent);
 }
 .copy p {
-  color: var(--muted);
-  margin-bottom: 30px;
+  color: #a8a7b7;
+  font-size: 15px;
+  line-height: 1.9;
+  max-width: 430px;
+  margin-bottom: 32px;
 }
-.heroNote {
-  margin-top: 70px;
-  font: 10px/1.6 monospace;
-  letter-spacing: 1px;
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  color: var(--muted);
+.copy .aboutButton {
+  pointer-events: auto;
+  font-size: 15px;
+  min-height: 50px;
+  padding: 14px 24px;
+  background: var(--accent);
+  border-color: var(--accent);
+  border-radius: 999px;
+  color: var(--on-accent);
 }
-.motionScene {
-  min-width: 0;
-  width: 100%;
-  max-width: 600px;
-  justify-self: center;
+.copy .aboutButton:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.copy .aboutButton:focus-visible {
+  outline-color: var(--accent-hover);
 }
 .hero ~ section :global(.tag) {
   color: var(--card-ink);
@@ -40,6 +73,17 @@
   border-radius: 5px;
   padding: 6px 9px;
   line-height: 1.25;
+}
+:global([data-theme='light']) .hero ~ section {
+  max-width: none;
+  padding-inline: max(6%, calc((100% - 1280px) / 2));
+  border-top: 1px solid var(--line);
+}
+:global([data-theme='light']) .credits {
+  margin-top: 0;
+}
+:global([data-theme='light']) .nextCompanion {
+  background: #eceef2;
 }
 .categories {
   display: flex;
@@ -71,13 +115,6 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 20px;
-  transition:
-    background 0.2s,
-    transform 0.2s;
-}
-.helpGrid > a:hover {
-  background: var(--surface-hover);
-  transform: translateY(-3px);
 }
 .helpGrid h3 {
   font-size: 26px;
@@ -102,7 +139,7 @@
 .toolCard {
   position: relative;
   min-width: 0;
-  min-height: 310px;
+  min-height: 190px;
   background: var(--card-bg);
   color: var(--card-ink);
   border-radius: 22px;
@@ -110,15 +147,8 @@
   padding: 28px 24px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 32px;
-  transition:
-    transform 0.2s,
-    background 0.2s;
-}
-.toolCard:hover {
-  transform: translateY(-4px);
-  background: var(--card-hover);
+  justify-content: center;
+  gap: 16px;
 }
 .toolBrand {
   display: flex;
@@ -126,7 +156,7 @@
   align-items: center;
   justify-content: center;
   gap: 15px;
-  min-height: 150px;
+  min-height: 0;
 }
 .toolLogo {
   object-fit: contain;
@@ -134,34 +164,12 @@
   height: 64px;
 }
 .toolName {
-  font-size: 27px;
+  font-size: 23px;
   font-weight: 750;
   letter-spacing: -1px;
 }
-.toolRole {
-  font-size: 14px;
-  font-weight: 700;
-}
-.toolCard p {
-  font-size: 12px;
-  color: #60616a;
-  margin: 10px 0 0;
-  line-height: 1.7;
-}
-.toolArrow {
-  position: absolute;
-  right: 18px;
-  top: 14px;
-  color: #777;
-  font-size: 17px;
-}
-.creditsNote {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 26px 0 0;
-}
 .nextCompanion {
-  min-height: 310px;
+  min-height: 190px;
   border: 1px dashed var(--line);
   border-radius: 22px;
   padding: 28px 24px;
@@ -181,15 +189,6 @@
   font-size: 19px;
   margin: 22px 0 0;
 }
-.nextCompanion p {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 14px 0 24px;
-}
-.nextCompanion :global(.eyebrow) {
-  font-size: 9px;
-  letter-spacing: 1px;
-}
 @media (max-width: 1000px) {
   .toolGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -197,21 +196,20 @@
 }
 @media (max-width: 760px) {
   .hero {
-    grid-template-columns: 1fr;
-    padding: 42px 6% 45px;
-    gap: 32px;
-    min-height: 0;
+    align-items: flex-end;
+    padding: 340px 6% 56px;
+    min-height: 790px;
+  }
+  .copy {
+    width: 100%;
   }
   .copy h1 {
-    font-size: clamp(40px, 9.5vw, 66px);
-    letter-spacing: -2.5px;
+    font-size: clamp(42px, 10vw, 66px);
+    margin: 20px 0;
   }
-  .heroNote {
-    margin-top: 36px;
-    font-size: 9px;
-  }
-  .motionScene {
-    max-width: 480px;
+  .copy p {
+    font-size: 14px;
+    max-width: 100%;
   }
   .helpGrid {
     grid-template-columns: 1fr;
@@ -226,13 +224,13 @@
     gap: 12px;
   }
   .toolCard {
-    min-height: 280px;
+    min-height: 170px;
     padding: 22px 18px;
     gap: 22px;
     border-radius: 18px;
   }
   .toolBrand {
-    min-height: 120px;
+    min-height: 0;
   }
   .toolName {
     font-size: 22px;
@@ -241,11 +239,8 @@
     width: 52px;
     height: 52px;
   }
-  .toolRole {
-    font-size: 13px;
-  }
   .nextCompanion {
-    min-height: 280px;
+    min-height: 170px;
     padding: 22px 18px;
     border-radius: 18px;
   }
@@ -257,4 +252,11 @@
   .toolGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.wordmarkLogo {
+  width: 148px;
+  max-width: 100%;
+  height: 64px;
+  object-fit: contain;
 }

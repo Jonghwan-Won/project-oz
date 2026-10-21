@@ -1,6 +1,33 @@
 import assert from 'node:assert/strict';
 const base = process.env.TEST_URL || 'http://localhost:3000';
 const home = await (await fetch(base + '/')).text();
+assert.match(home, /둥근 OZ와 구체 사이를 오가는/);
+assert.doesNotMatch(home, /OZ 입자 모션 일시정지|aria-pressed=/);
+assert.match(home, /또자와 OZ 알아보기/);
+assert.doesNotMatch(home, /01 \/ POSSIBILITY|OZ \/ A WORLD IN THE MAKING/);
+const credits = home.match(
+  /<section[^>]*aria-labelledby="credits-heading"[\s\S]*?<\/section>/,
+)?.[0];
+assert.ok(credits);
+assert.doesNotMatch(credits, /<a\b|↗|나의 유리구두<|AI 개발 도구/);
+for (const name of [
+  'Codex',
+  'React',
+  'Next.js',
+  'TypeScript',
+  'Synology',
+  'Docker',
+])
+  assert.ok(credits.includes(name));
+assert.match(credits, /유리구두들입니다/);
+const about = await (await fetch(base + '/about')).text();
+assert.match(about, /금방 또 잠들어서/);
+assert.match(about, /별명 하나에서 시작된 세계/);
+assert.match(about, /유리구두는 하나가 아닙니다/);
+assert.match(about, /블루·바이올렛 입자가 모여 만든 둥근 OZ/);
+assert.match(about, /만들고 있는 프로젝트/);
+assert.match(about, /쌓아가는 기록 보기/);
+assert.doesNotMatch(about, /oz-two-worlds\.webp|aria-pressed=/);
 for (const section of ['about', 'projects', 'board', 'help']) {
   assert.ok(home.includes(`id="${section}"`), `${section} section exists`);
   assert.ok(
@@ -48,8 +75,12 @@ for (const route of [
 }
 for (const route of ['/admin', '/admin/posts']) {
   const result = await fetch(base + route, { redirect: 'manual' });
-  assert.equal(result.status, 307);
-  assert.equal(result.headers.get('location'), '/login');
+  if (process.env.SMOKE_PRODUCTION === '1') {
+    assert.equal(result.status, 307);
+    assert.equal(result.headers.get('location'), '/login');
+  } else {
+    assert.equal(result.status, route === '/admin' ? 200 : 404);
+  }
 }
 for (const route of ['/board/missing', '/work/missing'])
   assert.equal((await fetch(base + route)).status, 404);
@@ -142,5 +173,5 @@ for (const slug of ['hello-oz', 'project-oz-devlog-01']) {
     koPage.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1],
     enPage.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1],
   );
-  assert.match(enPage, /All notes/);
+  assert.match(enPage, /Back to board/);
 }

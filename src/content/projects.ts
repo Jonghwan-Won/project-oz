@@ -6,6 +6,7 @@ export type Project = {
   origin: keyof Messages['projectOrigins'];
   lifecycle?: keyof Messages['projectStatuses'];
   order: number;
+  thumbnail?: string;
   placeholder?: boolean;
   visibility: 'PUBLIC' | 'PRIVATE';
 };

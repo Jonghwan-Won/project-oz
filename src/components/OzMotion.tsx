@@ -5,10 +5,17 @@ import s from './OzMotion.module.css';
 export function OzMotion({ labels }: { labels: Messages['motion'] }) {
   const [paused, setPaused] = useState(false);
   return (
-    <div className={s.stage} data-paused={paused}>
+    <button
+      type="button"
+      className={s.stage}
+      data-paused={paused}
+      onClick={() => setPaused(!paused)}
+      aria-label={paused ? labels.playLabel : labels.pauseLabel}
+      aria-pressed={paused}
+    >
       <svg
         className={s.canvas}
-        viewBox="0 0 560 600"
+        viewBox="0 0 560 565"
         role="img"
         aria-labelledby="oz-motion-title"
       >
@@ -179,27 +186,7 @@ export function OzMotion({ labels }: { labels: Messages['motion'] }) {
         <text x="285" y="344" className={s.micro}>
           IMAGINE. DEVELOP. REPEAT.
         </text>
-        <g
-          className={s.signal}
-          fill="none"
-          stroke="var(--accent-ink)"
-          strokeWidth="1.6"
-        >
-          <path d="M274 572h236" opacity=".3" />
-          <path d="m274 572 29-15 29 15 30-15 29 15 30-15 29 15 30-15 30 15" />
-        </g>
       </svg>
-      <div className={s.caption}>
-        <span>OZ / A WORLD IN THE MAKING</span>
-        <button
-          type="button"
-          onClick={() => setPaused(!paused)}
-          aria-label={paused ? labels.playLabel : labels.pauseLabel}
-          aria-pressed={paused}
-        >
-          {paused ? labels.play : labels.pause}
-        </button>
-      </div>
-    </div>
+    </button>
   );
 }

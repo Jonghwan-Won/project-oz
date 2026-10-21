@@ -1,0 +1,81 @@
+.alert {
+  --alert-accent: var(--accent);
+  --alert-icon: #4ade80;
+  max-width: calc(100% - 32px);
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  border-radius: 26px;
+  background:
+    radial-gradient(
+      ellipse at top left,
+      color-mix(in srgb, var(--alert-accent) 12%, transparent),
+      transparent 65%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--surface) 94%, transparent),
+      color-mix(in srgb, var(--surface) 86%, transparent)
+    );
+  color: var(--ink);
+  box-shadow:
+    0 32px 100px #0005,
+    inset 0 1px 0 #ffffff0a;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+.alert[data-variant='error'] {
+  --alert-accent: #f87171;
+  --alert-icon: #f87171;
+}
+:global([data-theme='light']) .alert {
+  --alert-icon: #15803d;
+}
+:global([data-theme='light']) .alert[data-variant='error'] {
+  --alert-icon: #b91c1c;
+}
+.alert::backdrop {
+  background: #0008;
+  backdrop-filter: blur(8px);
+}
+.content {
+  padding: 24px;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 20px;
+  border: 1px solid color-mix(in srgb, var(--alert-icon) 35%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--alert-icon) 6%, transparent);
+  color: var(--alert-icon);
+}
+.icon svg {
+  width: 30px;
+  height: 30px;
+}
+.message {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.actions {
+  margin-top: 24px;
+}
+.actions button {
+  width: 100%;
+  border-radius: 999px;
+  min-height: 44px;
+  background: color-mix(in srgb, var(--surface) 88%, var(--ink));
+}
+.actions button:hover {
+  background: color-mix(in srgb, var(--surface) 80%, var(--ink));
+}
