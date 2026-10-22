@@ -1,5 +1,5 @@
 import type { UploadedAsset } from '@/lib/files';
-export function AssetLinks({ assets }: { assets: UploadedAsset[] }) {
+export function CommonAssetLinks({ assets }: { assets: UploadedAsset[] }) {
   return (
     <ul>
       {assets.map((asset) => (

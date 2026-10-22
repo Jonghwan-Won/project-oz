@@ -7,7 +7,12 @@
   background: var(--surface);
 }
 .details {
-  padding: 22px 24px 24px;
+  box-sizing: border-box;
+  height: 184px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .cover {
   position: relative;
@@ -49,33 +54,21 @@
   opacity: 0.16;
   stroke-width: 1;
 }
-.coverTitle {
-  position: relative;
-  z-index: 1;
-  max-width: 88%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: center;
-  font-size: clamp(30px, 4vw, 58px);
-  line-height: 1.2;
-  letter-spacing: -2px;
-  color: var(--ink);
-}
-.card:first-child .coverTitle {
-  color: var(--accent-ink);
-}
 .heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+  min-width: 0;
 }
 .heading h3 {
   margin: 0;
   font-size: clamp(23px, 2.4vw, 30px);
   line-height: 1.35;
   letter-spacing: -0.7px;
+  min-height: 2.7em;
+  max-height: 2.7em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
 }
 .heading > span {
   color: var(--muted);
@@ -83,11 +76,40 @@
 }
 .meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 12px;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 48px;
+  overflow: hidden;
   font-size: 13px;
   color: var(--muted);
+}
+.metaLine,
+.technologies {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 21px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.technology {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 11px;
+  line-height: 19px;
+}
+.period {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.technology {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--surface);
 }
 .card:focus-visible {
   outline-offset: 8px;
@@ -103,9 +125,6 @@
   }
   .preview {
     bottom: 18px;
-  }
-  .coverTitle {
-    font-size: clamp(30px, 8vw, 48px);
   }
   .details {
     padding: 18px 20px 20px;

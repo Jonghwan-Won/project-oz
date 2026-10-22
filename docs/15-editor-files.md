@@ -12,12 +12,12 @@ NAS의 project-oz/uploads/dev와 project-oz/uploads/prod를 분리한다. 개발
 
 ## 공통 업로드·다운로드
 
-- FileUpload: 이미지 또는 이미지/PDF 선택, 최대 10MB, 서버 처리 상태/실패 안내. 업로드 결과를 콜백으로 전달한다.
+- CommonFileUpload: 이미지 또는 이미지/PDF 선택, 최대 10MB, 서버 처리 상태/실패 안내. 업로드 결과를 콜백으로 전달한다.
 - POST /api/assets: 현재는 development + localhost/loopback 호스트 + 동일 Origin만 허용한다. 1초 내 반복 요청을 제한한다. 운영 쓰기는 403이다. 인증 구현 전 운영에서 이 제한을 제거하지 않는다.
 - 서버에서 최대 요청 크기, 파일 확장자/MIME/시그니처를 검사한다. PNG/JPEG/WebP/PDF만 허용하며 SVG/HTML/실행 파일은 차단한다. UUID 키와 경로 경계 검사로 임의 경로 접근을 막고 기존 파일을 덮어쓰지 않는다. 파일 저장 후 DB 기록이 실패하면 생성한 파일을 정리한다.
 - GET /api/assets/:id: 이미지는 inline, ?download=1이면 원본 이름으로 다운로드한다. PDF는 항상 첨부 다운로드다. nosniff/sandbox/private no-store를 적용한다.
 - 공개 조회는 ProjectAsset으로 PUBLIC 프로젝트에 연결된 파일만 허용한다. 로컬 개발에서는 아직 연결하지 않은 업로드를 미리볼 수 있다. 비공개 문의·회원별 첨부 접근은 인증/소유권 검사 도입 전 지원하지 않는다.
-- AssetLinks는 이름·크기·다운로드 링크를 공통 출력한다. 프로젝트 조회는 COVER를 썸네일로, ATTACHMENT를 상세 첨부 목록으로 반환한다.
+- CommonAssetLinks는 이름·크기·다운로드 링크를 공통 출력한다. 프로젝트 조회는 COVER를 썸네일로, ATTACHMENT를 상세 첨부 목록으로 반환한다.
 - 썸네일 URL은 http(s) 또는 사이트 내부 경로만 허용한다. 외부 이미지는 서버에서 가져와 저장하지 않고 브라우저에서 표시한다.
 
 ## 현재 제한

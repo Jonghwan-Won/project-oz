@@ -6,6 +6,8 @@ import { BrandLogo } from '@/components/BrandLogo';
 import { Header } from '@/components/Header';
 import { NavigationScroll } from '@/components/NavigationScroll';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { MantineRoot } from '@/components/MantineRoot';
+import '@mantine/core/styles.css';
 import './globals.css';
 export async function generateMetadata(): Promise<Metadata> {
   const { messages } = await getMessages();
@@ -20,37 +22,39 @@ export default async function RootLayout({
   const { locale, messages } = await getMessages();
   const theme = await getTheme();
   return (
-    <html lang={locale} data-theme={theme}>
+    <html lang={locale} data-theme={theme} data-mantine-color-scheme={theme}>
       <body>
-        <a className="skip" href="#main">
-          {messages.site.skip}
-        </a>
-        <Header
-          labels={messages.navigation}
-          locale={locale}
-          languageLabels={messages.language}
-          theme={theme}
-          themeLabels={messages.theme}
-        />
-        <NavigationScroll />
-        <main id="main">{children}</main>
-        <footer>
-          <Link
-            className="wordmark"
-            href="/"
-            aria-label={messages.navigation.home}
-          >
-            <BrandLogo />
-          </Link>
-          <p>{messages.site.footer}</p>
-          <div>
-            <Link href="/help">{messages.navigation.help}</Link>
-            <Link href="/about">{messages.navigation.about}</Link>
-            <Link href="/admin">{messages.site.admin}</Link>
-          </div>
-          <small>© 2026 ddoza. Made with curiosity.</small>
-        </footer>
-        <ScrollToTop label={messages.site.backToTop} />
+        <MantineRoot colorScheme={theme}>
+          <a className="skip" href="#main">
+            {messages.site.skip}
+          </a>
+          <Header
+            labels={messages.navigation}
+            locale={locale}
+            languageLabels={messages.language}
+            theme={theme}
+            themeLabels={messages.theme}
+          />
+          <NavigationScroll />
+          <main id="main">{children}</main>
+          <footer>
+            <Link
+              className="wordmark"
+              href="/"
+              aria-label={messages.navigation.home}
+            >
+              <BrandLogo />
+            </Link>
+            <p>{messages.site.footer}</p>
+            <div>
+              <Link href="/help">{messages.navigation.help}</Link>
+              <Link href="/about">{messages.navigation.about}</Link>
+              <Link href="/admin">{messages.site.admin}</Link>
+            </div>
+            <small>© 2026 ddoza. Made with curiosity.</small>
+          </footer>
+          <ScrollToTop label={messages.site.backToTop} />
+        </MantineRoot>
       </body>
     </html>
   );

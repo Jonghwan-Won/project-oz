@@ -7,11 +7,11 @@ export const ko = {
     intro: '작은 불편함을 해결하고, 만들며 배운 것들을 이곳에 쌓습니다.',
     aboutLink: '또자와 OZ 알아보기',
     projectsTitle: '만들고, 참여한 작업',
-    projectsLink: '프로젝트 전체 보기 ↗',
+    projectsLink: '더보기',
     boardTitle: '기록하고, 나누고',
-    boardLink: '게시판 전체 보기 ↗',
+    boardLink: '더보기',
     helpTitle: '궁금한 점이 있나요?',
-    helpLink: '연락 안내 보기 ↗',
+    helpLink: '더보기',
     faqTitle: '자주 묻는 질문',
     faqDescription: '작업실과 OZ에 대한 궁금증을 모았어요.',
     contactTitle: '함께 이야기하기',
@@ -25,7 +25,6 @@ export const ko = {
   },
   boardPreview: {
     region: '최근 게시글',
-    read: '읽어보기 ↗',
     empty: '첫 번째 기록을 준비하고 있어요.',
     previous: '이전 게시글',
     next: '다음 게시글',
@@ -59,6 +58,7 @@ export const ko = {
     close: '메뉴 닫기',
     login: '로그인',
     guide: '개발 가이드',
+    lab: '실험실',
   },
   projectTypes: {
     website: '웹사이트',
@@ -81,7 +81,7 @@ export const ko = {
       '개인 작업부터 교육 과정과 회사에서 참여한 프로젝트까지. 각 작업의 역할과 과정을 기록합니다.',
     all: '전체',
     filterLabel: '프로젝트 유형',
-    detailLink: '작업 살펴보기 ↗',
+    detailLink: '작업 살펴보기',
     empty: '공개할 프로젝트를 준비하고 있어요.',
     back: '← 모든 프로젝트',
     preview: '이미지 준비 중',
@@ -110,39 +110,82 @@ export const ko = {
       ],
     },
     'ak-is': {
-      title: 'AK아이에스',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: 'AK아이에스 S&OP 사업관리 시스템 개발',
+      summary: 'AK아이에스 S&OP 사업관리 시스템 개발 프로젝트입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: 'AK아이에스 S&OP 사업관리 시스템을 개발하는 프로젝트입니다.',
+        },
+      ],
     },
     'jeju-air': {
-      title: '제주항공',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '제주항공 기내 통합운영 시스템 고도화',
+      summary: '제주항공 기내 통합운영 시스템을 고도화한 프로젝트입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: '제주항공 기내 통합운영 시스템을 고도화한 프로젝트입니다.',
+        },
+      ],
     },
     'surplus-global': {
-      title: '서플러스글로벌',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '서플러스글로벌 SemiMarket 구축 및 고도화',
+      summary: '서플러스글로벌 SemiMarket 구축 및 고도화 프로젝트입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: '서플러스글로벌 SemiMarket 구축 및 고도화 프로젝트입니다.',
+        },
+        {
+          title: '1차 구축 · 2024.11~2025.06',
+          body: 'SemiMarket 1차 구축을 진행했습니다.',
+        },
+        {
+          title: '2차 고도화 · 2025.07~2025.12',
+          body: 'SemiMarket 2차 고도화를 진행했습니다.',
+        },
+      ],
     },
     'nh-farming': {
-      title: 'NH오늘농사',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '농협 오늘농사 영농 특화 하이브리드 앱 개발',
+      summary:
+        '농협 오늘농사의 영농 특화 하이브리드 앱을 개발한 프로젝트입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: '농협 오늘농사의 영농 특화 하이브리드 앱을 개발한 프로젝트입니다.',
+        },
+      ],
     },
     'nonghyup-mall': {
-      title: '농협몰',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '농협몰 고도화',
+      summary: '농협몰을 고도화한 프로젝트입니다.',
+      sections: [
+        { title: '프로젝트 개요', body: '농협몰을 고도화한 프로젝트입니다.' },
+      ],
     },
     moim: {
-      title: '모임',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '모임 · 생활공간대여 플랫폼 MoiM!',
+      summary:
+        '호스트는 공간을 공유하고 게스트는 원하는 시간만큼 예약하는 생활공간 대여 플랫폼입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: '호스트는 자신만의 소중한 공간을 다른 사람과 공유하고, 게스트는 원하는 공간을 필요한 시간만큼 예약할 수 있는 생활공간 플랫폼입니다.',
+        },
+      ],
     },
     jogong: {
-      title: '조공',
-      summary: '프로젝트 소개를 준비하고 있어요.',
-      sections: [],
+      title: '조공 선물하기 플랫폼, Jogong!',
+      summary:
+        '부모님, 친구, 연인 등 소중한 사람에게 선물할 수 있는 플랫폼입니다.',
+      sections: [
+        {
+          title: '프로젝트 개요',
+          body: '부모님, 친구, 연인 등 소중한 사람에게 마음을 담아 선물할 수 있는 플랫폼입니다.',
+        },
+      ],
     },
   },
   language: {
@@ -219,7 +262,7 @@ export const ko = {
     contactTitle: '함께 이야기하고 싶다면',
     contactDescription:
       '문의 기능과 공개 연락처를 준비하고 있습니다. 로그인 연결 후 본인과 관리자만 볼 수 있는 비공개 문의를 제공할 예정입니다.',
-    accountLink: '계정 기능 안내 ↗',
+    accountLink: '계정 기능 안내',
   },
   board: {
     title: '기록하고, 나누고.',
@@ -232,8 +275,8 @@ export const ko = {
     empty: '아직 기록이 없어요.',
     emptyQuery: '다른 검색어로 찾아보세요.',
     emptyCategory: '이 분야의 첫 이야기를 준비하고 있습니다.',
-    allLink: '게시판 전체 보기 ↗',
-    back: '← 게시판으로',
+    allLink: '게시판 전체 보기',
+    back: '< 게시판으로',
     draft: '임시 게시글',
     missing: '기록을 찾을 수 없습니다',
     categories: [
@@ -252,7 +295,7 @@ export const ko = {
     intro: '로그인과 비공개 문의 기능을 준비하고 있습니다.',
     notice:
       '현재는 공개 콘텐츠를 둘러볼 수 있습니다. 로그인 공급자 연결 전에는 계정을 만들거나 관리자 권한을 부여하지 않습니다.',
-    home: '작업실로 돌아가기 ↗',
+    home: '작업실로 돌아가기',
   },
   theme: {
     light: '라이트 테마로 변경',

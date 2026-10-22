@@ -26,7 +26,6 @@ export default async function Projects({
   const copy = messages.projects;
   return (
     <div className="page">
-      <span className="eyebrow">PROJECTS / IDEAS INTO REALITY</span>
       <h1 className="accentDot">{copy.title}</h1>
       <p className="lead">{copy.description}</p>
       {types.length > 1 && (
@@ -50,7 +49,6 @@ export default async function Projects({
           <ProjectCard
             key={project.slug}
             project={project}
-            labels={messages}
             locale={locale}
           />
         ))}

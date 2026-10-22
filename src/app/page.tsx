@@ -1,6 +1,6 @@
 import { getMessages } from '@/i18n/server';
 import { OzParticles } from '@/components/OzParticles';
-import { ButtonLink } from '@/components/ui/Button';
+import { CommonButtonLink } from '@/components/ui/CommonButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BoardPreview } from '@/components/BoardPreview';
@@ -14,6 +14,10 @@ const tools = [
     logo: 'codex',
   },
   {
+    name: 'GitHub',
+    logo: 'github',
+  },
+  {
     name: 'React',
     logo: 'react',
   },
@@ -24,6 +28,10 @@ const tools = [
   {
     name: 'TypeScript',
     logo: 'typescript',
+  },
+  {
+    name: 'PostgreSQL',
+    logo: 'postgresql',
   },
   {
     name: 'Synology',
@@ -43,7 +51,7 @@ export default async function Home() {
       <section id="about" tabIndex={-1} className={s.hero}>
         <OzParticles label={messages.brandMotion.description} />
         <div className={s.copy}>
-          <span className={s.heroEyebrow}>DDOZA / A WORLD IN THE MAKING</span>
+          {/* <span className={s.heroEyebrow}>DDOZA / A WORLD IN THE MAKING</span> */}
           <h1>
             {copy.heroStart}
             <br />
@@ -56,15 +64,14 @@ export default async function Home() {
             <br />
             {copy.intro}
           </p>
-          <ButtonLink className={s.aboutButton} href="/about">
+          <CommonButtonLink className={s.aboutButton} href="/about">
             {copy.aboutLink}
-          </ButtonLink>
+          </CommonButtonLink>
         </div>
       </section>
       <section id="projects" tabIndex={-1} className="section">
         <div className="sectionHeading">
           <div>
-            <span className="eyebrow">01 / PROJECTS</span>
             <h2 className="accentDot">{copy.projectsTitle}</h2>
           </div>
           <Link className="textLink" href="/projects">
@@ -76,7 +83,6 @@ export default async function Home() {
             <ProjectCard
               key={project.slug}
               project={project}
-              labels={messages}
               locale={locale}
             />
           ))}
@@ -85,7 +91,6 @@ export default async function Home() {
       <section id="board" tabIndex={-1} className="section">
         <div className="sectionHeading">
           <div>
-            <span className="eyebrow">02 / BOARD</span>
             <h2 className="accentDot">{copy.boardTitle}</h2>
           </div>
           <Link className="textLink" href="/board">
@@ -106,7 +111,7 @@ export default async function Home() {
                 key={category}
                 href={'/board?category=' + encodeURIComponent(category)}
               >
-                {copy.categories[index]} ↗
+                {copy.categories[index]}
               </Link>
             ),
           )}
@@ -115,7 +120,6 @@ export default async function Home() {
       <section id="help" tabIndex={-1} className="section">
         <div className="sectionHeading">
           <div>
-            <span className="eyebrow">03 / CONTACT</span>
             <h2>{copy.helpTitle}</h2>
           </div>
           <Link className="textLink" href="/help">
@@ -124,12 +128,10 @@ export default async function Home() {
         </div>
         <div className={s.helpGrid}>
           <Link className="interactiveCard" href="/help#faq">
-            <span className="eyebrow">FAQ ↗</span>
             <h3>{copy.faqTitle}</h3>
             <p>{copy.faqDescription}</p>
           </Link>
           <Link className="interactiveCard" href="/help#contact">
-            <span className="eyebrow">CONTACT ↗</span>
             <h3>{copy.contactTitle}</h3>
             <p>{copy.contactDescription}</p>
           </Link>
@@ -141,7 +143,6 @@ export default async function Home() {
       >
         <div className="sectionHeading">
           <div>
-            <span className="eyebrow">MADE WITH / THE WORLD OF OZ</span>
             <h2 id="credits-heading">
               {copy.creditsStart}
               <br />
@@ -173,12 +174,12 @@ export default async function Home() {
               </div>
             </div>
           ))}
-          <div className={s.nextCompanion}>
+          {/* <div className={s.nextCompanion}>
             <span className={s.nextSymbol} aria-hidden="true">
               ＋
             </span>
             <h3>{copy.nextTitle}</h3>
-          </div>
+          </div> */}
         </div>
       </section>
     </>

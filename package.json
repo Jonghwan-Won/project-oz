@@ -20,9 +20,9 @@
     "db:test": "node scripts/check-database.mjs"
   },
   "dependencies": {
+    "@mantine/core": "9.7.1",
+    "@mantine/hooks": "9.7.1",
     "@prisma/client": "7.10.1",
-    "@radix-ui/react-dropdown-menu": "2.2.1",
-    "@radix-ui/react-select": "2.4.1",
     "@tiptap/core": "3.32.0",
     "@tiptap/extension-image": "3.32.0",
     "@tiptap/extension-table": "3.32.0",

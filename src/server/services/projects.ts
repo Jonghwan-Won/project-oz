@@ -7,6 +7,8 @@ import type { Locale } from '@/i18n/locale';
 
 export type PublicProject = {
   customerName: string;
+  startedOn: string | null;
+  endedOn: string | null;
   slug: string;
   order: number;
   placeholder: boolean;
@@ -28,7 +30,7 @@ export const getPublicProjects = cache(
     if (!process.env.DATABASE_URL) return [];
     try {
       const result = await pool.query<PublicProject>(
-        `SELECT p.slug,p."customerName", p.position AS "order", p.placeholder, p.lifecycle,
+        `SELECT p.slug,p."customerName",to_char(p."startedOn",'YYYY-MM-DD') AS "startedOn",to_char(p."endedOn",'YYYY-MM-DD') AS "endedOn", p.position AS "order", p.placeholder, p.lifecycle,
         p."typeCode" AS type,
         COALESCE((SELECT jsonb_agg(jsonb_build_object('name',t.name,'kind',t.kind) ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id),'[]'::jsonb) AS tags,
         CASE WHEN $1='en' THEN o."nameEn" ELSE o."nameKo" END AS "originLabel",

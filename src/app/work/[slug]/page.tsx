@@ -37,7 +37,7 @@ export default async function Work({
         {messages.projects.back}
       </Link>
       <ProjectDetailContent
-        project={publicProjectDetail(project, messages)}
+        project={publicProjectDetail(project, locale)}
         locale={locale}
         heading="h1"
       />

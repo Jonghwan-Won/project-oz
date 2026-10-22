@@ -1,5 +1,4 @@
 import type { PublicProject } from '@/server/services/projects';
-import type { Messages } from '@/i18n/ko';
 import type { UploadedAsset } from './files';
 export type ProjectDetailData = {
   title: string;
@@ -7,26 +6,37 @@ export type ProjectDetailData = {
   body: unknown;
   thumbnail: string | null;
   customerName: string;
+  period: string;
   originLabel: string;
   typeLabel: string;
-  statusLabel: string;
   technologies: string[];
   tags: string[];
   attachments: UploadedAsset[];
   contentLocale: string;
   placeholder: boolean;
 };
+export function formatProjectPeriod(
+  startedOn: string | null | undefined,
+  endedOn: string | null | undefined,
+  locale = 'ko',
+) {
+  if (!startedOn) return '';
+  // shortcut: dates on the first represent month-only precision, add precision metadata if exact first-day dates are needed.
+  const format = (date: string) =>
+    date.endsWith('-01')
+      ? date.slice(0, 7).replace('-', '.')
+      : date.replace(/-/g, '.');
+  return `${format(startedOn)} ~ ${endedOn ? format(endedOn) : locale === 'en' ? 'Present' : '현재'}`;
+}
 export function publicProjectDetail(
   project: PublicProject,
-  labels: Messages,
+  locale: string = 'ko',
 ): ProjectDetailData {
   return {
     ...project,
     customerName: project.customerName || '',
+    period: formatProjectPeriod(project.startedOn, project.endedOn, locale),
     typeLabel: project.typeLabel || '',
-    statusLabel: project.lifecycle
-      ? labels.projectStatuses[project.lifecycle]
-      : '',
     technologies: project.tags
       .filter((tag) => tag.kind === 'TECHNOLOGY')
       .map((tag) => tag.name),

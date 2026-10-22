@@ -41,10 +41,10 @@ new Function('require', 'exports', outputText)((id) => {
   return require(id);
 }, exports);
 
-test('project cards group details and use orbit/title only without a thumbnail', () => {
+test('project cards group title, period and technologies with an orbit placeholder', () => {
   const render = (project) =>
     renderToStaticMarkup(
-      createElement(exports.ProjectCard, { project, labels: ko }),
+      createElement(exports.ProjectCard, { project }),
     );
   const project = {
     ...projects[0],
@@ -57,11 +57,11 @@ test('project cards group details and use orbit/title only without a thumbnail',
   };
   const fallback = render(project);
   assert.match(fallback, /class="details"/);
-  assert.match(fallback, /class="coverTitle">ddoza/);
   assert.match(fallback, /<svg/);
+  assert.match(fallback, /<h3>ddoza<\/h3>/);
   const image = render({ ...project, thumbnail: '/images/project.webp' });
   assert.match(image, /src="\/images\/project.webp"/);
-  assert.doesNotMatch(image, /class="coverTitle"|<svg/);
+  assert.doesNotMatch(image, /<svg/);
   assert.match(image, /<h3>ddoza<\/h3>/);
 });
 
@@ -83,9 +83,9 @@ test('shared public detail keeps client, content language, attachments and separ
       { kind: 'TOPIC', name: '포트폴리오' },
     ],
   };
-  const detail = publicProjectDetail(project, ko);
+  const detail = publicProjectDetail(project);
   assert.equal(detail.customerName, '고객사');
-  assert.equal(detail.statusLabel, ko.projectStatuses.BUILDING);
+  assert.equal('statusLabel' in detail, false);
   assert.deepEqual(detail.technologies, ['TypeScript']);
   assert.deepEqual(detail.tags, ['포트폴리오']);
   assert.equal(detail.body, project.body);

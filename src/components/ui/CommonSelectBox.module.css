@@ -9,13 +9,16 @@
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
   text-align: left;
 }
-.trigger:focus-visible {
-  outline: 2px solid var(--accent-ink);
+.root .trigger:focus {
+  --input-bd: var(--line);
+}
+.root .trigger:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ink) 24%, transparent);
   outline-offset: 2px;
 }
 .trigger:disabled {
@@ -28,9 +31,8 @@
   white-space: nowrap;
 }
 .content {
-  z-index: 80;
-  max-height: min(320px, var(--radix-select-content-available-height));
-  min-width: var(--radix-select-trigger-width);
+  z-index: 400;
+  max-height: min(320px, 50dvh);
   max-width: calc(100vw - 24px);
   background: var(--surface);
   color: var(--ink);
@@ -54,16 +56,18 @@
   cursor: pointer;
   font-size: 14px;
 }
-.item[data-highlighted] {
+.item[data-combobox-selected],
+.item[data-combobox-active] {
   background: var(--surface-hover);
-}
-.item[data-state='checked'] {
-  color: var(--accent-ink);
-  font-weight: 700;
+  color: var(--ink);
 }
 .item[data-disabled] {
   opacity: 0.45;
   pointer-events: none;
+}
+.trigger:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ink) 24%, transparent);
+  outline-offset: 2px;
 }
 .indicator {
   margin-left: auto;

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { IdeaPlayground } from './IdeaPlayground';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: '아이디어 저장소 초안',
@@ -8,6 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function IdeasPage() {
-  if (process.env.NODE_ENV !== 'development') notFound();
-  return <IdeaPlayground />;
+  redirect('/lab/ideas');
 }

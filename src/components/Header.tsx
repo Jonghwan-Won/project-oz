@@ -7,7 +7,7 @@ import type { Locale } from '@/i18n/locale';
 import type { Messages } from '@/i18n/ko';
 import { BrandLogo } from '@/components/BrandLogo';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 const links = ['about', 'projects', 'board', 'help'] as const;
 
 export function Header({
@@ -28,6 +28,40 @@ export function Header({
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const toggle = useRef<HTMLButtonElement>(null);
+  const nav = useRef<HTMLElement>(null);
+  const [indicator, setIndicator] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  useLayoutEffect(() => {
+    const element = nav.current?.querySelector<HTMLElement>('a[aria-current]');
+    if (!element || !nav.current) {
+      setIndicator(null);
+      return;
+    }
+    const update = () => {
+      const navRect = nav.current?.getBoundingClientRect();
+      const linkRect = element.getBoundingClientRect();
+      if (!navRect) return;
+      setIndicator({
+        left: linkRect.left - navRect.left,
+        top: linkRect.top - navRect.top,
+        width: linkRect.width,
+        height: linkRect.height,
+      });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(nav.current);
+    observer.observe(element);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [active, path]);
   useEffect(() => {
     const update = () => {
       setScrolled(window.scrollY > 24);
@@ -86,10 +120,26 @@ export function Header({
         {open ? '✕' : '☰'}
       </button>
       <nav
+        ref={nav}
         id="navigation"
         aria-label={labels.menu}
         className={open ? 'open' : ''}
       >
+        <span
+          className="navIndicator"
+          aria-hidden="true"
+          style={
+            indicator
+              ? {
+                  left: indicator.left,
+                  top: indicator.top,
+                  width: indicator.width,
+                  height: indicator.height,
+                  opacity: 1,
+                }
+              : { opacity: 0 }
+          }
+        />
         {links.map((id) => (
           <Link
             key={id}
@@ -142,6 +192,33 @@ export function Header({
         </Link>
       </nav>
       <div className="headerActions">
+        {process.env.NODE_ENV === 'development' && (
+          <Link
+            className="headerIcon"
+            href="/lab"
+            aria-label={labels.lab}
+            title={labels.lab}
+            aria-current={
+              path === '/lab' || path.startsWith('/lab/') ? 'page' : undefined
+            }
+            onClick={() => setOpen(false)}
+          >
+            <svg
+              width="19"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 3h6M10 3v6l-5.2 9a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L13 9V3" />
+              <path d="M7.5 16h9" />
+            </svg>
+          </Link>
+        )}
         {process.env.NODE_ENV === 'development' && (
           <Link
             className="headerIcon"

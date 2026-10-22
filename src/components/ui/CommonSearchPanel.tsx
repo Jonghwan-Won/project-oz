@@ -1,10 +1,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Button } from './Button';
-import s from './SearchPanel.module.css';
+import { CommonButton } from './CommonButton';
+import s from './CommonSearchPanel.module.css';
 
-export function SearchPanel({
+export function CommonSearchPanel({
   children,
   onSearch,
   onReset,
@@ -28,12 +28,12 @@ export function SearchPanel({
     >
       <div className={s.fields}>{children}</div>
       <div className={s.actions}>
-        <Button size="sm" type="reset">
+        <CommonButton size="sm" type="reset">
           초기화
-        </Button>
-        <Button size="sm" type="submit" variant="primary">
+        </CommonButton>
+        <CommonButton size="sm" type="submit" variant="primary">
           조회
-        </Button>
+        </CommonButton>
       </div>
     </form>
   );

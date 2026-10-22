@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
-import { Modal } from './ui/Modal';
-import { Button } from './ui/Button';
+import { CommonModal } from './ui/CommonModal';
+import { CommonButton } from './ui/CommonButton';
 import { ProjectDetailContent } from './ProjectDetailContent';
 import type { ProjectDetailData } from '@/lib/project-detail';
 export function ProjectPreviewLink({
@@ -40,18 +40,18 @@ export function ProjectPreviewLink({
         {children}
       </Link>
       {open && (
-        <Modal
+        <CommonModal
           open
           title={locale === 'en' ? 'Project details' : '프로젝트 상세'}
           onClose={() => setOpen(false)}
           actions={
-            <Button onClick={() => setOpen(false)}>
+            <CommonButton onClick={() => setOpen(false)}>
               {locale === 'en' ? 'Close' : '닫기'}
-            </Button>
+            </CommonButton>
           }
         >
           <ProjectDetailContent project={project} locale={locale} />
-        </Modal>
+        </CommonModal>
       )}
     </>
   );

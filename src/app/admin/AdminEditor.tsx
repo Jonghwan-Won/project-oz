@@ -1,22 +1,22 @@
 'use client';
-import { TextArea } from '@/components/ui/TextArea';
-import { SelectBox } from '@/components/ui/SelectBox';
-import { Input } from '@/components/ui/Input';
-import { SearchPanel } from '@/components/ui/SearchPanel';
-import { Pagination } from '@/components/ui/Pagination';
+import { CommonTextArea } from '@/components/ui/CommonTextArea';
+import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
+import { CommonInput } from '@/components/ui/CommonInput';
+import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
+import { CommonPagination } from '@/components/ui/CommonPagination';
 import { emptyBoardSearch, matchesBoard, paginate } from '@/lib/admin-list';
 
 import Image from 'next/image';
 
-import { FileUpload } from '@/components/ui/FileUpload';
-import { AssetLinks } from '@/components/ui/AssetLinks';
+import { CommonFileUpload } from '@/components/ui/CommonFileUpload';
+import { CommonAssetLinks } from '@/components/ui/CommonAssetLinks';
 import { thumbnailUrl, type UploadedAsset } from '@/lib/files';
 import type { JSONContent } from '@tiptap/core';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import { RichTextView } from '@/components/ui/RichTextView';
+import { CommonRichTextEditor } from '@/components/ui/CommonRichTextEditor';
+import { CommonRichTextView } from '@/components/ui/CommonRichTextView';
 import { textDocument } from '@/lib/rich-text';
 import { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { CommonButton } from '@/components/ui/CommonButton';
 import s from './admin.module.css';
 
 type Entry = {
@@ -65,7 +65,7 @@ export function AdminEditor({
 
   return (
     <section>
-      <SearchPanel
+      <CommonSearchPanel
         onSearch={() => {
           setAppliedSearch({ ...search });
           setPage(1);
@@ -78,7 +78,7 @@ export function AdminEditor({
       >
         <label>
           검색어
-          <Input
+          <CommonInput
             type="search"
             value={search.keyword}
             placeholder="제목·주소·본문"
@@ -89,7 +89,7 @@ export function AdminEditor({
         </label>
         <label>
           카테고리
-          <SelectBox
+          <CommonSelectBox
             aria-label="검색 카테고리"
             value={search.category}
             onValueChange={(category) => setSearch({ ...search, category })}
@@ -103,7 +103,7 @@ export function AdminEditor({
         </label>
         <label>
           공개 범위
-          <SelectBox
+          <CommonSelectBox
             aria-label="검색 공개 범위"
             value={search.status}
             onValueChange={(status) => setSearch({ ...search, status })}
@@ -114,7 +114,7 @@ export function AdminEditor({
             ]}
           />
         </label>
-      </SearchPanel>
+      </CommonSearchPanel>
       <div className={s.heading}>
         <div>
           <p aria-live="polite">
@@ -122,7 +122,7 @@ export function AdminEditor({
             확인용 데이터
           </p>
         </div>
-        <Button
+        <CommonButton
           variant="primary"
           onClick={() => {
             setDraft({ ...empty });
@@ -130,7 +130,7 @@ export function AdminEditor({
           }}
         >
           {label} 등록
-        </Button>
+        </CommonButton>
       </div>
       {message && (
         <p role="status" className={s.notice}>
@@ -187,7 +187,7 @@ export function AdminEditor({
           <div className={s.fields}>
             <label>
               제목
-              <Input
+              <CommonInput
                 required
                 maxLength={120}
                 value={draft.title}
@@ -198,7 +198,7 @@ export function AdminEditor({
             </label>
             <label>
               주소(slug)
-              <Input
+              <CommonInput
                 required
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
                 maxLength={80}
@@ -211,7 +211,7 @@ export function AdminEditor({
             </label>
             <label>
               {isProject ? '작업 구분' : '게시판 카테고리'}
-              <Input
+              <CommonInput
                 required
                 maxLength={40}
                 value={draft.category}
@@ -222,7 +222,7 @@ export function AdminEditor({
             </label>
             <label>
               공개 범위
-              <SelectBox
+              <CommonSelectBox
                 aria-label="공개 범위"
                 value={draft.status}
                 onValueChange={(status) => setDraft({ ...draft, status })}
@@ -236,7 +236,7 @@ export function AdminEditor({
           {isProject ? (
             <div>
               <label htmlFor="project-introduction">프로젝트 소개</label>
-              <RichTextEditor
+              <CommonRichTextEditor
                 key={draft.id || 'new'}
                 id="project-introduction"
                 label="프로젝트 소개"
@@ -249,7 +249,7 @@ export function AdminEditor({
               />
               <details>
                 <summary>소개 미리보기</summary>
-                <RichTextView
+                <CommonRichTextView
                   value={draft.introduction ?? textDocument(draft.summary)}
                 />
               </details>
@@ -257,7 +257,7 @@ export function AdminEditor({
           ) : (
             <label>
               게시글 요약
-              <TextArea
+              <CommonTextArea
                 rows={4}
                 maxLength={2000}
                 value={draft.summary}
@@ -270,7 +270,7 @@ export function AdminEditor({
           {!isProject && (
             <label>
               게시글 본문
-              <TextArea
+              <CommonTextArea
                 rows={8}
                 maxLength={50000}
                 value={draft.body}
@@ -284,7 +284,7 @@ export function AdminEditor({
             <div>
               <label>
                 썸네일 URL(선택)
-                <Input
+                <CommonInput
                   placeholder="https://example.com/thumbnail.webp 또는 /api/assets/파일ID"
                   value={draft.thumbnail}
                   onChange={(event) =>
@@ -292,7 +292,7 @@ export function AdminEditor({
                   }
                 />
               </label>
-              <FileUpload
+              <CommonFileUpload
                 label="썸네일 이미지 업로드"
                 imagesOnly
                 onUploaded={(asset) =>
@@ -328,7 +328,7 @@ export function AdminEditor({
                   referrerPolicy="no-referrer"
                 />
               )}
-              <FileUpload
+              <CommonFileUpload
                 label="첨부파일 업로드"
                 onUploaded={(asset) =>
                   setDraft((current) =>
@@ -341,7 +341,7 @@ export function AdminEditor({
                   )
                 }
               />
-              <AssetLinks assets={draft.attachments ?? []} />
+              <CommonAssetLinks assets={draft.attachments ?? []} />
               <p>
                 파일은 NAS에 저장됩니다. 프로젝트와의 연결은 현재 화면에서만
                 유지됩니다. 취소하거나 새로고침해도 업로드한 파일은 NAS에
@@ -350,10 +350,10 @@ export function AdminEditor({
             </div>
           )}
           <div className={s.actions}>
-            <Button type="submit">화면에 임시 반영</Button>
-            <Button variant="ghost" onClick={() => setDraft(null)}>
+            <CommonButton type="submit">화면에 임시 반영</CommonButton>
+            <CommonButton variant="ghost" onClick={() => setDraft(null)}>
               취소
-            </Button>
+            </CommonButton>
           </div>
         </form>
       )}
@@ -387,7 +387,7 @@ export function AdminEditor({
                 <td>{entry.category}</td>
                 <td>{entry.status}</td>
                 <td>
-                  <Button
+                  <CommonButton
                     size="sm"
                     aria-label={`${entry.title} 수정`}
                     onClick={() => {
@@ -396,14 +396,14 @@ export function AdminEditor({
                     }}
                   >
                     수정
-                  </Button>
+                  </CommonButton>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <Pagination
+      <CommonPagination
         page={result.page}
         totalPages={result.totalPages}
         total={filtered.length}

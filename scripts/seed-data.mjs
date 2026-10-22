@@ -42,33 +42,46 @@ export async function seedDatabase(client) {
         'projectOrigins',
       ],
       ['PROJECT_TYPE', '프로젝트 유형', 'Project type', 'projectTypes'],
+      ['TECHNOLOGY', '사용 기술', 'Technologies', null],
     ]) {
       await client.query(
         'INSERT INTO "CommonCodeGroup" ("key","nameKo","nameEn","updatedAt") VALUES ($1,$2,$3,now()) ON CONFLICT DO NOTHING',
         [key, nameKo, nameEn],
       );
-      for (const [position, [code, label]] of Object.entries(
-        ko[field],
-      ).entries()) {
+      const values = field
+        ? Object.entries(ko[field]).map(([code, label]) => [
+            code,
+            label,
+            en[field][code],
+          ])
+        : [
+            ['REACT', 'React', 'React'],
+            ['NEXT_JS', 'Next.js', 'Next.js'],
+            ['POSTGRESQL', 'PostgreSQL', 'PostgreSQL'],
+          ];
+      for (const [position, [code, label, labelEn]] of values.entries()) {
         await client.query(
           'INSERT INTO "CommonCode" ("groupKey","code","nameKo","nameEn","position","updatedAt") VALUES ($1,$2,$3,$4,$5,now()) ON CONFLICT DO NOTHING',
-          [key, code, label, en[field][code], position],
+          [key, code, label, labelEn, position],
         );
       }
     }
     let inserted = 0;
     for (const project of initialProjects()) {
       const result = await client.query(
-        'INSERT INTO "Project" ("id","slug","originCode","typeCode","lifecycle","visibility","position","placeholder","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
+        'INSERT INTO "Project" ("id","slug","customerName","originCode","typeCode","lifecycle","visibility","position","placeholder","startedOn","endedOn","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
         [
           project.id,
           project.slug,
+          project.customerName ?? '',
           project.origin,
           project.type ?? null,
           project.lifecycle ?? null,
           project.visibility,
           project.order,
           project.placeholder ?? false,
+          project.startedOn ?? null,
+          project.endedOn ?? null,
         ],
       );
       if (result.rowCount) inserted++;

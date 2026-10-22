@@ -1,6 +1,6 @@
 'use client';
-import { SelectBox } from '@/components/ui/SelectBox';
-import { FilePicker } from '@/components/ui/FilePicker';
+import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
+import { CommonFilePicker } from '@/components/ui/CommonFilePicker';
 
 import { useState } from 'react';
 import Markdown from 'react-markdown';
@@ -23,7 +23,7 @@ export function MarkdownViewer({
       <div className={s.controls}>
         <label>
           프로젝트 문서
-          <SelectBox
+          <CommonSelectBox
             aria-label="프로젝트 문서"
             value={selected}
             disabled={pending}
@@ -44,7 +44,7 @@ export function MarkdownViewer({
             ]}
           />
         </label>
-        <FilePicker
+        <CommonFilePicker
           label="내 PC에서 파일 열기"
           accept=".md,.markdown"
           disabled={pending}
@@ -115,7 +115,7 @@ export function MarkdownViewer({
                 if (linked)
                   return (
                     <a
-                      href="/guide/markdown"
+                      href="/lab/markdown"
                       onClick={(event) => {
                         event.preventDefault();
                         setDocument(linked);

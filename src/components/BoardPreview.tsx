@@ -73,16 +73,11 @@ export function BoardPreview({
               <p>{post.excerpt}</p>
               <div className={s.art} aria-hidden="true">
                 <MagicEffect />
-                <span className={s.artLabel}>
-                  A LITTLE STORY
-                  <br />A LITTLE MAGIC
-                </span>
               </div>
               <div className={s.meta}>
                 <time dateTime={post.date.replaceAll('.', '-')}>
                   {post.date}
                 </time>
-                <span>{labels.read}</span>
               </div>
             </Link>
           ))}

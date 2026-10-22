@@ -1,23 +1,21 @@
 import { ProjectPreviewLink } from './ProjectPreviewLink';
-import { publicProjectDetail } from '@/lib/project-detail';
+import { formatProjectPeriod, publicProjectDetail } from '@/lib/project-detail';
 import Image from 'next/image';
 import type { PublicProject } from '@/server/services/projects';
-import type { Messages } from '@/i18n/ko';
 import s from './ProjectCard.module.css';
 
 export function ProjectCard({
   project,
-  labels,
   locale = 'ko',
 }: {
   project: PublicProject;
-  labels: Messages;
   locale?: string;
 }) {
-  const item = project;
+  const en = locale === 'en';
+  const technologies = project.tags.filter((tag) => tag.kind === 'TECHNOLOGY');
   return (
     <ProjectPreviewLink
-      project={publicProjectDetail(project, labels)}
+      project={publicProjectDetail(project, locale)}
       locale={locale}
       className={`interactiveCard ${s.card}`}
       href={`/work/${project.slug}`}
@@ -34,9 +32,6 @@ export function ProjectCard({
           />
         ) : (
           <>
-            <span className={s.index}>
-              {String(project.order).padStart(2, '0')} / {project.originLabel}
-            </span>
             <svg className={s.art} viewBox="0 0 600 400" fill="none">
               <circle cx="300" cy="200" r="132" />
               <ellipse
@@ -55,25 +50,45 @@ export function ProjectCard({
               />
               <path d="M38 200h524M300 32v336" strokeDasharray="3 9" />
             </svg>
-            <strong className={s.coverTitle}>{item.title}</strong>
-            <span className={s.preview}>{labels.projects.preview}</span>
+            {/* 이미지 준비 중 */}
+            {/* <span className={s.preview}>{labels.projects.preview}</span> */}
           </>
         )}
       </div>
       <div className={s.details}>
         <div className={s.heading}>
-          <h3>{item.title}</h3>
-          <span aria-hidden="true">↗</span>
+          <h3>{project.title}</h3>
         </div>
         <div className={s.meta}>
-          <span>{project.originLabel}</span>
-          {project.type && <span>{project.typeLabel}</span>}
-          {project.lifecycle && (
-            <span>
-              {labels.projectStatuses[project.lifecycle] ?? project.lifecycle}
-            </span>
+          <div className={s.metaLine}>
+            {project.startedOn && (
+              <span className={s.period}>
+                {formatProjectPeriod(
+                  project.startedOn,
+                  project.endedOn,
+                  locale,
+                )}
+              </span>
+            )}
+          </div>
+          {technologies.length > 0 && (
+            <div
+              className={s.technologies}
+              role="list"
+              aria-label={en ? 'Representative technologies' : '대표 기술'}
+            >
+              {technologies.slice(0, 3).map((tag) => (
+                <span className={s.technology} role="listitem" key={tag.name}>
+                  {tag.name}
+                </span>
+              ))}
+              {technologies.length > 3 && (
+                <span className={s.technology} role="listitem">
+                  +{technologies.length - 3}
+                </span>
+              )}
+            </div>
           )}
-          {project.placeholder && <span>{labels.projects.placeholder}</span>}
         </div>
       </div>
     </ProjectPreviewLink>

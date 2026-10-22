@@ -40,7 +40,6 @@ test('project search combines filters, includes both languages/tags, and handles
       keyword: 'studio',
       originCode: 'personal',
       typeCode: 'website',
-      lifecycle: 'BUILDING',
       visibility: 'PRIVATE',
     }),
   );
@@ -48,10 +47,8 @@ test('project search combines filters, includes both languages/tags, and handles
     { keyword: '없음' },
     { originCode: 'company' },
     { typeCode: 'app' },
-    { lifecycle: 'RELEASED' },
     { visibility: 'PUBLIC' },
     { typeCode: '__unset__' },
-    { lifecycle: '__unset__' },
   ])
     assert.equal(
       matchesProject(project, { ...emptyProjectSearch, ...patch }),
@@ -60,7 +57,7 @@ test('project search combines filters, includes both languages/tags, and handles
   assert.ok(
     matchesProject(
       { ...project, typeCode: '', lifecycle: '' },
-      { ...emptyProjectSearch, typeCode: '__unset__', lifecycle: '__unset__' },
+      { ...emptyProjectSearch, typeCode: '__unset__' },
     ),
   );
   assert.equal(matchesProject(project, emptyProjectSearch), true);

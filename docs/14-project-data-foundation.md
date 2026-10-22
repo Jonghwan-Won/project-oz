@@ -81,4 +81,4 @@ npm run db:seed
 
 ## 2026-10-21 관리자 저장·분류·첨부 연결
 
-프로젝트 관리자를 TS 초안에서 개발 DB 조회/저장으로 전환했다. 분류와 유형은 공통 코드에서 선택하며 기술은 TECHNOLOGY, 주제 태그는 TOPIC으로 저장한다. 언어별 본문/요약/제목과 ProjectTag/ProjectAsset 연결을 트랜잭션으로 저장하고 version 충돌을 차단한다. 외부 썸네일 URL 지원을 위해 20261021030000_project_thumbnail_url migration을 개발 DB에 적용했다. 기존 값은 NULL로 유지하며 데이터 삭제/변경은 없다. 운영은 이 migration을 먼저 적용해야 신규 공개 조회와 호환된다. 운영 저장은 여전히 차단한다.
+프로젝트 관리자를 TS 초안에서 개발 DB 조회/저장으로 전환했다. 분류와 유형은 공통 코드에서 선택하며 기술은 TECHNOLOGY, 주제 태그는 TOPIC으로 저장한다. 기술은 공통 코드 자동완성에서 골라 프로젝트 태그로 저장하며 초기 선택지는 React, Next.js, PostgreSQL이다. 언어별 본문/요약/제목과 ProjectTag/ProjectAsset 연결을 트랜잭션으로 저장하고 version 충돌을 차단한다. 외부 썸네일 URL 지원을 위해 20261021030000_project_thumbnail_url migration을 개발 DB에 적용했다. 기존 값은 NULL로 유지하며 데이터 삭제/변경은 없다. 운영은 이 migration을 먼저 적용해야 신규 공개 조회와 호환된다. 운영 저장은 여전히 차단한다.
