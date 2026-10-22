@@ -1,5 +1,5 @@
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
+import { CommonInput } from '@/components/ui/CommonInput';
+import { CommonButton } from '@/components/ui/CommonButton';
 import Link from 'next/link';
 import { categories, filterPosts, getCategoryLabel } from '@/content/site';
 import { getMessages } from '@/i18n/server';
@@ -23,7 +23,6 @@ export default async function Board({
   const selected = filterPosts(category, q);
   return (
     <div className="page">
-      <span className="eyebrow">BOARD / LEARNING & IDEAS</span>
       <h1>{copy.title}</h1>
       <p className="lead">{copy.intro}</p>
       <div className="filter" aria-label={copy.filterLabel}>
@@ -38,18 +37,18 @@ export default async function Board({
         ))}
       </div>
       <form className="search" action="/board">
-        <Input type="hidden" name="category" value={category} />
+        <CommonInput type="hidden" name="category" value={category} />
         <label className="srOnly" htmlFor="query">
           {copy.searchLabel}
         </label>
-        <Input
+        <CommonInput
           id="query"
           name="q"
           maxLength={100}
           defaultValue={q}
           placeholder={copy.placeholder}
         />
-        <Button
+        <CommonButton
           className="searchButton"
           variant="neutral"
           type="submit"
@@ -69,7 +68,7 @@ export default async function Board({
             <circle cx="10.5" cy="10.5" r="6.5" />
             <path d="m16 16 4.5 4.5" />
           </svg>
-        </Button>
+        </CommonButton>
       </form>
       <p className="eyebrow">
         {getCategoryLabel(category, messages)} · {copy.count}: {selected.length}
@@ -83,7 +82,7 @@ export default async function Board({
             <h2>{post.title}</h2>
             <p>{post.excerpt}</p>
           </div>
-          <span>{post.date} ↗</span>
+          <span>{post.date}</span>
         </Link>
       ))}
       {!selected.length && (

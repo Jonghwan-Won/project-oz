@@ -3,7 +3,7 @@ import { getAdminProjects } from '@/server/services/admin-projects';
 import { redirect, notFound } from 'next/navigation';
 import { posts } from '@/content/site';
 import { AdminEditor } from '../AdminEditor';
-import { ButtonLink } from '@/components/ui/Button';
+import { CommonButtonLink } from '@/components/ui/CommonButton';
 import s from '../admin.module.css';
 
 const planned = {
@@ -54,7 +54,6 @@ export default async function Admin({
     if (!item) notFound();
     return (
       <section className={s.panel}>
-        <span className="eyebrow">PLANNED</span>
         <p>{item.description}</p>
         <p>현재는 메뉴와 용도를 확인하는 준비 화면입니다.</p>
       </section>
@@ -63,17 +62,17 @@ export default async function Admin({
   const projectCount = (await getAdminProjects()).projects.length;
   return (
     <section>
-      <p>프로젝트는 개발 DB, 게시글은 저장소 콘텐츠를 기준으로 표시합니다.</p>
+      {/* <p>프로젝트는 개발 DB, 게시글은 저장소 콘텐츠를 기준으로 표시합니다.</p> */}
       <div className={s.stats}>
         <div className={s.panel}>
           <span>프로젝트</span>
           <strong>{projectCount}</strong>
-          <ButtonLink href="/admin/projects">프로젝트 관리 ↗</ButtonLink>
+          <CommonButtonLink href="/admin/projects">프로젝트 관리</CommonButtonLink>
         </div>
         <div className={s.panel}>
           <span>게시글</span>
           <strong>{posts.length}</strong>
-          <ButtonLink href="/admin/board">게시판 관리 ↗</ButtonLink>
+          <CommonButtonLink href="/admin/board">게시판 관리</CommonButtonLink>
         </div>
       </div>
       <div className={s.panel}>

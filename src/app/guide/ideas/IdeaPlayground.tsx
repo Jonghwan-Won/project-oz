@@ -1,10 +1,10 @@
 'use client';
-import { SelectBox } from '@/components/ui/SelectBox';
-import { TextArea } from '@/components/ui/TextArea';
-import { Input } from '@/components/ui/Input';
+import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
+import { CommonTextArea } from '@/components/ui/CommonTextArea';
+import { CommonInput } from '@/components/ui/CommonInput';
 
 import { useState } from 'react';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { CommonButton, CommonButtonLink } from '@/components/ui/CommonButton';
 import {
   createIdea,
   initialIdeas,
@@ -95,7 +95,7 @@ export function IdeaPlayground() {
           <h4>{branch.title}</h4>
           <p>{branch.content}</p>
           <div className={s.actions}>
-            <Button
+            <CommonButton
               size="sm"
               onClick={() => {
                 setReplyId(branch.id);
@@ -103,10 +103,13 @@ export function IdeaPlayground() {
               }}
             >
               답글 달기
-            </Button>
-            <Button size="sm" onClick={() => edit(branch.id, branch.content)}>
+            </CommonButton>
+            <CommonButton
+              size="sm"
+              onClick={() => edit(branch.id, branch.content)}
+            >
               수정
-            </Button>
+            </CommonButton>
           </div>
           {children.some((child) => child.parentId === branch.id) && (
             <ul className={s.replies}>{renderBranches(branch.id)}</ul>
@@ -119,7 +122,6 @@ export function IdeaPlayground() {
     <div className={`page ${s.page}`}>
       <div className={s.heading}>
         <div>
-          <span className="eyebrow">OZ · IDEA GARDEN</span>
           <h1>
             생각을 모으고,
             <br />
@@ -128,7 +130,7 @@ export function IdeaPlayground() {
           </h1>
           <p>아이디어에서 설계, 구현 이슈까지. 하나의 흐름으로 이어보세요.</p>
         </div>
-        <ButtonLink href="/guide">가이드로 돌아가기 ↗</ButtonLink>
+        <CommonButtonLink href="/lab">실험실로 돌아가기</CommonButtonLink>
       </div>
       <div className={s.prototype}>
         <span aria-hidden="true">◌</span>
@@ -160,7 +162,7 @@ export function IdeaPlayground() {
             }}
           >
             <label htmlFor="idea-draft">아이디어 메모</label>
-            <TextArea
+            <CommonTextArea
               id="idea-draft"
               required
               maxLength={3000}
@@ -175,7 +177,7 @@ export function IdeaPlayground() {
               <span>{draft.length} / 3,000</span>
             </div>
             <label htmlFor="idea-category">어떤 생각인가요?</label>
-            <SelectBox
+            <CommonSelectBox
               id="idea-category"
               value={category}
               onValueChange={setCategory}
@@ -184,9 +186,9 @@ export function IdeaPlayground() {
                 label: value,
               }))}
             />
-            <Button type="submit" variant="primary">
-              아이디어 담기 ↗
-            </Button>
+            <CommonButton type="submit" variant="primary">
+              아이디어 담기
+            </CommonButton>
           </form>
           <p className={s.composeNote}>
             메인은 큰 주제입니다. 내용을 열어 댓글·설계·구현 이슈를
@@ -204,7 +206,7 @@ export function IdeaPlayground() {
             </div>
             <div className={s.viewSwitch} role="group" aria-label="보기 방식">
               {(['list', 'map'] as const).map((mode) => (
-                <Button
+                <CommonButton
                   key={mode}
                   size="sm"
                   variant={view === mode ? 'primary' : 'ghost'}
@@ -212,15 +214,15 @@ export function IdeaPlayground() {
                   onClick={() => setView(mode)}
                 >
                   {mode === 'list' ? '목록' : '마인드맵'}
-                </Button>
+                </CommonButton>
               ))}
             </div>
           </div>
           {selected && (
             <div className={s.actions}>
-              <Button size="sm" onClick={() => openIdea(null)}>
+              <CommonButton size="sm" onClick={() => openIdea(null)}>
                 ← 메인 아이디어 목록
-              </Button>
+              </CommonButton>
               <span className={s.composeNote}>
                 이 아이디어의 가지를 보고 있어요.
               </span>
@@ -279,7 +281,7 @@ export function IdeaPlayground() {
                     <span className={s.nodeMeta}>
                       {idea.category}
                       <span>
-                        {selected ? '내용 수정 ↗' : `우선순위 ${index + 1}`}
+                        {selected ? '내용 수정' : `우선순위 ${index + 1}`}
                       </span>
                     </span>
                     <strong>{idea.title}</strong>
@@ -316,7 +318,7 @@ export function IdeaPlayground() {
                   >
                     ⠿
                   </button>
-                  <Input
+                  <CommonInput
                     key={`${idea.id}-${index}`}
                     className={s.priorityInput}
                     type="number"
@@ -347,7 +349,7 @@ export function IdeaPlayground() {
                         branches.filter((branch) => branch.ideaId === idea.id)
                           .length
                       }
-                      개 ↗
+                      개
                     </span>
                   </button>
                 </article>
@@ -371,12 +373,12 @@ export function IdeaPlayground() {
               </div>
               <h3>{selected.title}</h3>
               <p>{selected.content}</p>
-              <Button
+              <CommonButton
                 size="sm"
                 onClick={() => edit(selected.id, selected.content)}
               >
                 아이디어 수정
-              </Button>
+              </CommonButton>
               <h3>
                 연결된 가지 <small>{children.length}</small>
               </h3>
@@ -413,7 +415,7 @@ export function IdeaPlayground() {
                 }}
               >
                 <label htmlFor="branch-kind">덧붙일 내용 유형</label>
-                <SelectBox
+                <CommonSelectBox
                   id="branch-kind"
                   value={branchKind}
                   onValueChange={setBranchKind}
@@ -425,15 +427,15 @@ export function IdeaPlayground() {
                   <div className={s.replyTarget}>
                     답글 대상:{' '}
                     {children.find((branch) => branch.id === replyId)?.title}{' '}
-                    <Button size="sm" onClick={() => setReplyId(null)}>
+                    <CommonButton size="sm" onClick={() => setReplyId(null)}>
                       답글 취소
-                    </Button>
+                    </CommonButton>
                   </div>
                 )}
                 <label htmlFor="branch-content">
                   {replyId ? '답글 내용' : '새 가지 내용'}
                 </label>
-                <TextArea
+                <CommonTextArea
                   id="branch-content"
                   value={branchDraft}
                   onChange={(event) => setBranchDraft(event.target.value)}
@@ -441,9 +443,9 @@ export function IdeaPlayground() {
                   maxLength={3000}
                   placeholder="첫 줄은 제목, 다음 줄부터 상세 내용을 적어주세요."
                 />
-                <Button variant="primary" type="submit">
+                <CommonButton variant="primary" type="submit">
                   {replyId ? '답글 추가' : '가지 추가'}
-                </Button>
+                </CommonButton>
               </form>
             </section>
           )}
@@ -458,7 +460,7 @@ export function IdeaPlayground() {
                 }}
               >
                 <label htmlFor="edit-content">수정할 내용</label>
-                <TextArea
+                <CommonTextArea
                   autoFocus
                   id="edit-content"
                   required
@@ -467,10 +469,12 @@ export function IdeaPlayground() {
                   onChange={(event) => setEditContent(event.target.value)}
                 />
                 <div className={s.actions}>
-                  <Button variant="primary" type="submit">
+                  <CommonButton variant="primary" type="submit">
                     수정 적용
-                  </Button>
-                  <Button onClick={() => setEditingId(null)}>수정 취소</Button>
+                  </CommonButton>
+                  <CommonButton onClick={() => setEditingId(null)}>
+                    수정 취소
+                  </CommonButton>
                 </div>
               </form>
             </section>

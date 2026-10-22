@@ -1,14 +1,14 @@
 'use client';
-import { Input } from '@/components/ui/Input';
+import { CommonInput } from '@/components/ui/CommonInput';
 
 import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react';
 import { richTextExtensions, parseRichText } from '@/lib/rich-text';
-import { SelectBox } from './SelectBox';
-import { FileUpload } from './FileUpload';
-import { Button } from './Button';
-import s from './RichText.module.css';
-export function RichTextEditor({
+import { CommonSelectBox } from './CommonSelectBox';
+import { CommonFileUpload } from './CommonFileUpload';
+import { CommonButton } from './CommonButton';
+import s from './CommonRichText.module.css';
+export function CommonRichTextEditor({
   id,
   label,
   value,
@@ -97,7 +97,7 @@ export function RichTextEditor({
   return (
     <div className={s.editor}>
       <div className={s.toolbar} role="group" aria-label={label + ' 서식'}>
-        <SelectBox
+        <CommonSelectBox
           className={s.blockStyle}
           aria-label="문단 스타일"
           value={
@@ -123,7 +123,7 @@ export function RichTextEditor({
           ]}
         />
         {tools.map((tool) => (
-          <Button
+          <CommonButton
             key={tool.label}
             size="sm"
             variant="ghost"
@@ -146,25 +146,25 @@ export function RichTextEditor({
                 '코드 블록': '</>',
               }[tool.label]
             }
-          </Button>
+          </CommonButton>
         ))}
-        <Button
+        <CommonButton
           size="sm"
           disabled={!editor.can().undo()}
           onClick={() => editor.chain().focus().undo().run()}
         >
           되돌리기
-        </Button>
-        <Button
+        </CommonButton>
+        <CommonButton
           size="sm"
           disabled={!editor.can().redo()}
           onClick={() => editor.chain().focus().redo().run()}
         >
           다시 실행
-        </Button>
+        </CommonButton>
       </div>
       <div className={s.imageTools}>
-        <FileUpload
+        <CommonFileUpload
           label="이미지 삽입"
           onBusyChange={onUploadBusyChange}
           imagesOnly
@@ -178,18 +178,18 @@ export function RichTextEditor({
                 .run();
           }}
         />
-        <Button
+        <CommonButton
           size="sm"
           disabled={!editor.isActive('image')}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => editor.chain().focus().deleteSelection().run()}
         >
           선택한 이미지 삭제
-        </Button>
+        </CommonButton>
         {editor.isActive('image') && (
           <label>
             이미지 너비(px)
-            <Input
+            <CommonInput
               aria-label="이미지 너비"
               type="number"
               min={50}
@@ -229,7 +229,7 @@ export function RichTextEditor({
       <div className={s.tableTools}>
         <label>
           행{' '}
-          <Input
+          <CommonInput
             aria-label="표 행 수"
             type="number"
             min={1}
@@ -240,7 +240,7 @@ export function RichTextEditor({
         </label>
         <label>
           열{' '}
-          <Input
+          <CommonInput
             aria-label="표 열 수"
             type="number"
             min={1}
@@ -249,7 +249,7 @@ export function RichTextEditor({
             onChange={(event) => setColumns(Number(event.target.value))}
           />
         </label>
-        <Button
+        <CommonButton
           size="sm"
           disabled={
             !Number.isInteger(rows) ||
@@ -268,53 +268,53 @@ export function RichTextEditor({
           }
         >
           표 삽입
-        </Button>
+        </CommonButton>
         {editor.isActive('table') && (
           <>
-            <Button
+            <CommonButton
               size="sm"
               onClick={() => editor.chain().focus().addRowAfter().run()}
             >
               행 추가
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               onClick={() => editor.chain().focus().addColumnAfter().run()}
             >
               열 추가
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               onClick={() => editor.chain().focus().deleteRow().run()}
             >
               행 삭제
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               onClick={() => editor.chain().focus().deleteColumn().run()}
             >
               열 삭제
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               disabled={!editor.can().mergeCells()}
               onClick={() => editor.chain().focus().mergeCells().run()}
             >
               셀 병합
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               disabled={!editor.can().splitCell()}
               onClick={() => editor.chain().focus().splitCell().run()}
             >
               셀 나누기
-            </Button>
-            <Button
+            </CommonButton>
+            <CommonButton
               size="sm"
               onClick={() => editor.chain().focus().deleteTable().run()}
             >
               표 삭제
-            </Button>
+            </CommonButton>
           </>
         )}
       </div>

@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import { RichTextView } from './ui/RichTextView';
-import { AssetLinks } from './ui/AssetLinks';
+import { CommonRichTextView } from './ui/CommonRichTextView';
+import { CommonAssetLinks } from './ui/CommonAssetLinks';
 import type { ProjectDetailData } from '@/lib/project-detail';
 import s from './ProjectDetailContent.module.css';
 
@@ -17,9 +17,9 @@ export function ProjectDetailContent({
   const Heading = heading;
   const rows = [
     { label: en ? 'Client' : '고객사', value: project.customerName },
+    { label: en ? 'Period' : '기간', value: project.period },
     { label: en ? 'Origin' : '작업 구분', value: project.originLabel },
     { label: en ? 'Type' : '유형', value: project.typeLabel },
-    { label: en ? 'Status' : '진행 상태', value: project.statusLabel },
     { label: en ? 'Technologies' : '사용 기술', value: project.technologies },
     { label: en ? 'Tags' : '태그', value: project.tags },
   ];
@@ -77,12 +77,12 @@ export function ProjectDetailContent({
           </p>
         )}
         <div className={s.content} lang={project.contentLocale}>
-          <RichTextView value={project.body} />
+          <CommonRichTextView value={project.body} />
         </div>
         {project.attachments.length > 0 && (
           <section>
             <h3>{en ? 'Attachments' : '첨부파일'}</h3>
-            <AssetLinks assets={project.attachments} />
+            <CommonAssetLinks assets={project.attachments} />
           </section>
         )}
       </div>

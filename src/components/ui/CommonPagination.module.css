@@ -20,10 +20,6 @@
   justify-content: center;
   gap: 4px;
 }
-.pages button {
-  min-width: 44px;
-  padding: 8px;
-}
 @media (max-width: 600px) {
   .pagination {
     justify-content: center;

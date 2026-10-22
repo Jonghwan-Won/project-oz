@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useId, useRef, useState } from 'react';
-import { FilePicker } from './FilePicker';
+import { CommonFilePicker } from './CommonFilePicker';
+import { CommonLoading } from './CommonLoading';
 import {
   isUploadedAsset,
   maxUploadBytes,
   type UploadedAsset,
 } from '@/lib/files';
-export function FileUpload({
+export function CommonFileUpload({
   label,
   imagesOnly = false,
   compact = false,
@@ -26,7 +27,7 @@ export function FileUpload({
   const [message, setMessage] = useState('');
   return (
     <div>
-      <FilePicker
+      <CommonFilePicker
         label={busy ? '업로드 중…' : label}
         compact={compact}
         disabled={busy}
@@ -95,6 +96,7 @@ export function FileUpload({
         {message ||
           '최대 10MB · PNG, JPEG, WebP' + (imagesOnly ? '' : ' · PDF')}
       </small>
+      <CommonLoading open={busy} />
     </div>
   );
 }

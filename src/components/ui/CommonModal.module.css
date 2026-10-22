@@ -1,4 +1,5 @@
 .modal {
+  --modal-size: min(1180px, calc(100vw - 32px));
   width: min(1180px, calc(100vw - 32px));
   max-width: none;
   max-height: calc(100dvh - 32px);
@@ -9,6 +10,9 @@
   color: var(--ink);
   overflow: hidden;
   box-shadow: 0 24px 100px #0006;
+}
+.mantineBody {
+  padding: 0;
 }
 .modal::backdrop {
   background: #0009;

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ButtonLink } from '@/components/ui/Button';
+import { CommonButtonLink } from '@/components/ui/CommonButton';
 import s from './environment.module.css';
 import { NetworkDiagram } from './NetworkDiagram';
 
@@ -113,7 +113,6 @@ export default function EnvironmentPage() {
   if (process.env.NODE_ENV !== 'development') notFound();
   return (
     <div className={`page ${s.page}`}>
-      <span className="eyebrow">OZ ENVIRONMENT</span>
       <h1>
         개발부터 배포까지
         <span className="accentDot" />
@@ -123,8 +122,10 @@ export default function EnvironmentPage() {
         구성 설명이며, 실제 주소와 인증 정보는 개인 설정에 보관합니다.
       </p>
       <div className={s.links}>
-        <ButtonLink href="/guide">가이드로 돌아가기</ButtonLink>
-        <ButtonLink href="/guide/markdown">Markdown 문서 보기</ButtonLink>
+        <CommonButtonLink href="/guide">가이드로 돌아가기</CommonButtonLink>
+        <CommonButtonLink href="/lab/markdown">
+          Markdown 문서 보기
+        </CommonButtonLink>
       </div>
       <div className={s.summary}>
         <div>

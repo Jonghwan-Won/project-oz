@@ -1,20 +1,27 @@
 'use client';
-import { Input } from '@/components/ui/Input';
-import { TextArea } from '@/components/ui/TextArea';
-import { SelectBox } from '@/components/ui/SelectBox';
-import { Modal } from '@/components/ui/Modal';
-import { SearchPanel } from '@/components/ui/SearchPanel';
-import { Pagination } from '@/components/ui/Pagination';
+import { CommonInput } from '@/components/ui/CommonInput';
+import { TagsInput } from '@mantine/core';
+import { CommonTextArea } from '@/components/ui/CommonTextArea';
+import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
+import { CommonModal } from '@/components/ui/CommonModal';
+import { CommonConfirm } from '@/components/ui/CommonConfirm';
+import { CommonAlert } from '@/components/ui/CommonAlert';
+import { CommonLoading } from '@/components/ui/CommonLoading';
+import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
+import { CommonPagination } from '@/components/ui/CommonPagination';
 import { emptyProjectSearch, matchesProject, paginate } from '@/lib/admin-list';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Button } from '@/components/ui/Button';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import { RichTextView } from '@/components/ui/RichTextView';
+import { CommonButton } from '@/components/ui/CommonButton';
+import { CommonRichTextEditor } from '@/components/ui/CommonRichTextEditor';
+import { CommonRichTextView } from '@/components/ui/CommonRichTextView';
 import { ProjectDetailContent } from '@/components/ProjectDetailContent';
-import type { ProjectDetailData } from '@/lib/project-detail';
-import { FileUpload } from '@/components/ui/FileUpload';
+import {
+  formatProjectPeriod,
+  type ProjectDetailData,
+} from '@/lib/project-detail';
+import { CommonFileUpload } from '@/components/ui/CommonFileUpload';
 import { thumbnailUrl } from '@/lib/files';
 import {
   blankProject,
@@ -23,14 +30,6 @@ import {
   type ProjectCopy,
 } from '@/lib/project-form';
 import s from './admin.module.css';
-const states = [
-  ['', '미지정'],
-  ['IDEA', '구상 중'],
-  ['BUILDING', '개발 중'],
-  ['TESTING', '테스트 중'],
-  ['RELEASED', '운영 중'],
-  ['ARCHIVED', '종료'],
-];
 export function ProjectManager({
   projects,
   codes,
@@ -56,6 +55,12 @@ export function ProjectManager({
   const [locale, setLocale] = useState<'ko' | 'en'>('ko');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [confirmSave, setConfirmSave] = useState(false);
+  const [saveAlert, setSaveAlert] = useState<{
+    content: string;
+    variant: 'default' | 'error';
+    closeDraftOnClose: boolean;
+  } | null>(null);
   const [preview, setPreview] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -74,6 +79,42 @@ export function ProjectManager({
   });
   const change = (patch: Partial<ProjectForm>) =>
     setDraft((current) => (current ? { ...current, ...patch } : current));
+  async function saveProject() {
+    if (!draft) return;
+    setSaving(true);
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draft),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok)
+        throw Error(
+          result &&
+            typeof result === 'object' &&
+            'message' in result &&
+            typeof result.message === 'string'
+            ? result.message
+            : '저장하지 못했습니다.',
+        );
+      setSaveAlert({
+        content: '저장되었습니다.',
+        variant: 'default',
+        closeDraftOnClose: true,
+      });
+    } catch (error) {
+      setSaveAlert({
+        content:
+          error instanceof Error ? error.message : '저장하지 못했습니다.',
+        variant: 'error',
+        closeDraftOnClose: false,
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
   const copy = (patch: Partial<ProjectCopy>) =>
     setDraft((current) =>
       current
@@ -107,6 +148,7 @@ export function ProjectManager({
         ...draft.translations[contentLocale],
         thumbnail: thumbnailUrl(draft.thumbnail) ? draft.thumbnail : null,
         customerName: draft.customerName,
+        period: formatProjectPeriod(draft.startedOn, draft.endedOn, locale),
         originLabel:
           options('PROJECT_ORIGIN').find(
             (code) => code.value === draft.originCode,
@@ -114,8 +156,6 @@ export function ProjectManager({
         typeLabel:
           options('PROJECT_TYPE').find((code) => code.value === draft.typeCode)
             ?.label || '',
-        statusLabel:
-          states.find(([value]) => value === draft.lifecycle)?.[1] || '',
         technologies: draft.technologies,
         tags: draft.tags,
         attachments: (draft.files || []).filter((file) =>
@@ -127,7 +167,7 @@ export function ProjectManager({
     : null;
   return (
     <section>
-      <SearchPanel
+      <CommonSearchPanel
         onSearch={() => {
           setAppliedSearch({ ...search });
           setPage(1);
@@ -141,7 +181,7 @@ export function ProjectManager({
       >
         <label>
           검색어
-          <Input
+          <CommonInput
             type="search"
             value={search.keyword}
             placeholder="프로젝트명·고객사·기술·태그"
@@ -152,7 +192,7 @@ export function ProjectManager({
         </label>
         <label>
           작업 구분
-          <SelectBox
+          <CommonSelectBox
             aria-label="검색 작업 구분"
             value={search.originCode}
             onValueChange={(originCode) => setSearch({ ...search, originCode })}
@@ -167,7 +207,7 @@ export function ProjectManager({
         </label>
         <label>
           프로젝트 유형
-          <SelectBox
+          <CommonSelectBox
             aria-label="검색 프로젝트 유형"
             value={search.typeCode}
             onValueChange={(typeCode) => setSearch({ ...search, typeCode })}
@@ -182,23 +222,8 @@ export function ProjectManager({
           />
         </label>
         <label>
-          진행 상태
-          <SelectBox
-            aria-label="검색 진행 상태"
-            value={search.lifecycle}
-            onValueChange={(lifecycle) => setSearch({ ...search, lifecycle })}
-            options={[
-              { value: '', label: '전체' },
-              ...states.map(([value, label]) => ({
-                value: value || '__unset__',
-                label,
-              })),
-            ]}
-          />
-        </label>
-        <label>
           공개 범위
-          <SelectBox
+          <CommonSelectBox
             aria-label="검색 공개 범위"
             value={search.visibility}
             onValueChange={(visibility) => setSearch({ ...search, visibility })}
@@ -209,45 +234,46 @@ export function ProjectManager({
             ]}
           />
         </label>
-      </SearchPanel>
-      <div className={s.heading}>
-        <p aria-live="polite">
-          전체 {projects.length}건 · 검색 결과 {filtered.length}건
-        </p>
-        <div className={s.actions}>
-          <Button
-            variant="primary"
-            disabled={saving || uploads > 0}
-            onClick={() => {
-              setDraft(blankProject());
-              setMode('create');
-              setLocale('ko');
-              setMessage('');
-            }}
-          >
-            등록
-          </Button>
-          <Button
-            disabled={selectedProjects.length === 0 || saving || uploads > 0}
-            onClick={() => {
-              setMessage('');
-              setConfirmDelete(true);
-            }}
-          >
-            삭제
-            {selectedProjects.length > 0
-              ? ' (' + selectedProjects.length + ')'
-              : ''}
-          </Button>
+      </CommonSearchPanel>
+      <div className={s.listPanel}>
+        <div className={s.heading}>
+          <p aria-live="polite">
+            전체 {projects.length}건 · 검색 결과 {filtered.length}건
+          </p>
+          <div className={s.actions}>
+            <CommonButton
+              variant="primary"
+              disabled={saving || uploads > 0}
+              onClick={() => {
+                setDraft(blankProject());
+                setMode('create');
+                setLocale('ko');
+                setMessage('');
+              }}
+            >
+              등록
+            </CommonButton>
+            <CommonButton
+              disabled={selectedProjects.length === 0 || saving || uploads > 0}
+              onClick={() => {
+                setMessage('');
+                setConfirmDelete(true);
+              }}
+            >
+              삭제
+              {selectedProjects.length > 0
+                ? ' (' + selectedProjects.length + ')'
+                : ''}
+            </CommonButton>
+          </div>
         </div>
-      </div>
-      {!draft && message && (
-        <p role="status" className={s.notice}>
-          {message}
-        </p>
-      )}
+        {!draft && message && (
+          <p role="status" className={s.notice}>
+            {message}
+          </p>
+        )}
       {draft && (
-        <Modal
+        <CommonModal
           open
           title={mode === 'create' ? '프로젝트 등록' : '프로젝트 수정'}
           onClose={() => {
@@ -255,28 +281,31 @@ export function ProjectManager({
           }}
           actions={
             <>
-              <Button
+              <CommonButton
                 key="preview"
                 disabled={saving || uploads > 0}
                 onClick={() => setPreview(true)}
+                size="sm"
               >
                 미리보기
-              </Button>
-              <Button
+              </CommonButton>
+              <CommonButton
                 key="save"
                 type="submit"
                 form="project-editor-form"
                 variant="primary"
+                className={s.adminPrimary}
                 disabled={saving || uploads > 0}
+                size="sm"
               >
-                {saving ? '저장 중…' : '저장'}
-              </Button>
-              <Button
+                저장
+              </CommonButton>
+              <CommonButton
                 disabled={saving || uploads > 0}
                 onClick={() => setDraft(null)}
               >
                 취소
-              </Button>
+              </CommonButton>
             </>
           }
         >
@@ -285,36 +314,7 @@ export function ProjectManager({
             className={s.projectForm}
             onSubmit={async (event) => {
               event.preventDefault();
-              setSaving(true);
-              setMessage('저장 중…');
-              try {
-                const response = await fetch('/api/admin/projects', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(draft),
-                });
-                const result: unknown = await response.json();
-                if (!response.ok)
-                  throw Error(
-                    result &&
-                      typeof result === 'object' &&
-                      'message' in result &&
-                      typeof result.message === 'string'
-                      ? result.message
-                      : '저장하지 못했습니다.',
-                  );
-                setDraft(null);
-                setMessage('개발 DB에 저장했습니다.');
-                router.refresh();
-              } catch (error) {
-                setMessage(
-                  error instanceof Error
-                    ? error.message
-                    : '저장하지 못했습니다.',
-                );
-              } finally {
-                setSaving(false);
-              }
+              if (!saving && uploads === 0) setConfirmSave(true);
             }}
           >
             <p role="status" className={s.notice}>
@@ -327,7 +327,7 @@ export function ProjectManager({
               <div className={s.fields}>
                 <label>
                   고객사
-                  <Input
+                  <CommonInput
                     maxLength={200}
                     value={draft.customerName}
                     onChange={(event) =>
@@ -337,8 +337,28 @@ export function ProjectManager({
                   />
                 </label>
                 <label>
+                  시작일
+                  <CommonInput
+                    type="date"
+                    value={draft.startedOn}
+                    onChange={(event) =>
+                      change({ startedOn: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  종료일
+                  <CommonInput
+                    type="date"
+                    value={draft.endedOn}
+                    onChange={(event) =>
+                      change({ endedOn: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
                   주소(slug)
-                  <Input
+                  <CommonInput
                     required
                     maxLength={80}
                     pattern="[a-z0-9]+(-[a-z0-9]+)*"
@@ -348,7 +368,7 @@ export function ProjectManager({
                 </label>
                 <label>
                   작업 구분
-                  <SelectBox
+                  <CommonSelectBox
                     aria-label="작업 구분"
                     value={draft.originCode}
                     required
@@ -358,7 +378,7 @@ export function ProjectManager({
                 </label>
                 <label>
                   프로젝트 유형
-                  <SelectBox
+                  <CommonSelectBox
                     aria-label="프로젝트 유형"
                     value={draft.typeCode}
                     onValueChange={(typeCode) => change({ typeCode })}
@@ -369,20 +389,8 @@ export function ProjectManager({
                   />
                 </label>
                 <label>
-                  진행 상태
-                  <SelectBox
-                    aria-label="진행 상태"
-                    value={draft.lifecycle}
-                    onValueChange={(lifecycle) => change({ lifecycle })}
-                    options={states.map(([value, label]) => ({
-                      value,
-                      label,
-                    }))}
-                  />
-                </label>
-                <label>
                   공개 범위
-                  <SelectBox
+                  <CommonSelectBox
                     aria-label="공개 범위"
                     value={draft.visibility}
                     onValueChange={(visibility) =>
@@ -399,7 +407,7 @@ export function ProjectManager({
                 </label>
                 <label>
                   표시 순서
-                  <Input
+                  <CommonInput
                     type="number"
                     min={0}
                     max={100000}
@@ -412,37 +420,45 @@ export function ProjectManager({
                 </label>
                 <label>
                   사용 기술
-                  <Input
-                    value={draft.technologies.join(', ')}
-                    placeholder="React, Next.js, PostgreSQL"
-                    onChange={(e) =>
+                  <TagsInput
+                    placeholder="기술 검색"
+                    data={codes
+                      .filter(
+                        (code) =>
+                          code.groupKey === 'TECHNOLOGY' && code.isActive,
+                      )
+                      .map((code) => code.nameKo)}
+                    value={draft.technologies}
+                    onChange={(values) => {
+                      const allowed = new Set(
+                        codes
+                          .filter(
+                            (code) =>
+                              code.groupKey === 'TECHNOLOGY' && code.isActive,
+                          )
+                          .map((code) => code.nameKo),
+                      );
                       change({
-                        technologies: e.target.value
-                          .split(',')
-                          .map((value) => value.trim()),
-                      })
-                    }
+                        technologies: values.filter((value) =>
+                          allowed.has(value),
+                        ),
+                      });
+                    }}
+                    splitChars={[',']}
                   />
-                  <small>쉼표로 구분 · 기술 태그로 저장</small>
                 </label>
                 <label>
                   태그
-                  <Input
-                    value={draft.tags.join(', ')}
-                    placeholder="포트폴리오, 개인 프로젝트"
-                    onChange={(e) =>
-                      change({
-                        tags: e.target.value
-                          .split(',')
-                          .map((value) => value.trim()),
-                      })
-                    }
+                  <TagsInput
+                    value={draft.tags}
+                    onChange={(tags) => change({ tags })}
+                    placeholder="태그를 입력하고 Enter"
+                    splitChars={[',']}
                   />
-                  <small>쉼표로 구분 · 주제 태그로 저장</small>
                 </label>
               </div>
               <label className={s.checkLabel}>
-                <Input
+                <CommonInput
                   type="checkbox"
                   checked={draft.placeholder}
                   onChange={(e) => change({ placeholder: e.target.checked })}
@@ -450,20 +466,20 @@ export function ProjectManager({
                 임시 데이터 안내 표시
               </label>
               <div className={s.actions} role="group" aria-label="편집 언어">
-                <Button
+                <CommonButton
                   aria-pressed={locale === 'ko'}
                   variant={locale === 'ko' ? 'primary' : 'neutral'}
                   onClick={() => setLocale('ko')}
                 >
                   한국어
-                </Button>
-                <Button
+                </CommonButton>
+                <CommonButton
                   aria-pressed={locale === 'en'}
                   variant={locale === 'en' ? 'primary' : 'neutral'}
                   onClick={() => setLocale('en')}
                 >
                   English
-                </Button>
+                </CommonButton>
               </div>
               <p>
                 {locale === 'ko'
@@ -472,7 +488,7 @@ export function ProjectManager({
               </p>
               <label>
                 {locale === 'ko' ? '한국어 제목' : '영어 제목'}
-                <Input
+                <CommonInput
                   required={locale === 'ko'}
                   maxLength={200}
                   value={draft.translations[locale].title}
@@ -481,7 +497,7 @@ export function ProjectManager({
               </label>
               <label>
                 한 줄 소개
-                <TextArea
+                <CommonTextArea
                   rows={3}
                   maxLength={4000}
                   value={draft.translations[locale].summary}
@@ -489,7 +505,7 @@ export function ProjectManager({
                 />
               </label>
               <label htmlFor="project-introduction">프로젝트 소개</label>
-              <RichTextEditor
+              <CommonRichTextEditor
                 key={draft.id + locale}
                 id="project-introduction"
                 label="프로젝트 소개"
@@ -500,17 +516,17 @@ export function ProjectManager({
               />
               <details>
                 <summary>소개 미리보기</summary>
-                <RichTextView value={draft.translations[locale].body} />
+                <CommonRichTextView value={draft.translations[locale].body} />
               </details>
               <label>
                 썸네일 URL
-                <Input
+                <CommonInput
                   value={draft.thumbnail}
                   placeholder="https://… 또는 이미지 업로드"
                   onChange={(e) => change({ thumbnail: e.target.value })}
                 />
               </label>
-              <FileUpload
+              <CommonFileUpload
                 label="썸네일 이미지 업로드"
                 onBusyChange={uploadBusy}
                 imagesOnly
@@ -531,7 +547,7 @@ export function ProjectManager({
                   }}
                 />
               )}
-              <FileUpload
+              <CommonFileUpload
                 label="첨부파일 업로드"
                 onBusyChange={uploadBusy}
                 onUploaded={(asset) =>
@@ -551,7 +567,7 @@ export function ProjectManager({
                       {draft.files?.find((file) => file.id === id)?.name ??
                         '첨부파일 다운로드'}
                     </a>{' '}
-                    <Button
+                    <CommonButton
                       size="sm"
                       onClick={() =>
                         change({
@@ -562,7 +578,7 @@ export function ProjectManager({
                       }
                     >
                       연결 해제
-                    </Button>
+                    </CommonButton>
                   </li>
                 ))}
               </ul>
@@ -572,20 +588,22 @@ export function ProjectManager({
               </p>
             </fieldset>
           </form>
-        </Modal>
+        </CommonModal>
       )}
       {preview && previewData && (
-        <Modal
+        <CommonModal
           open
           title="프로젝트 미리보기"
           onClose={() => setPreview(false)}
-          actions={<Button onClick={() => setPreview(false)}>닫기</Button>}
+          actions={
+            <CommonButton onClick={() => setPreview(false)}>닫기</CommonButton>
+          }
         >
           <ProjectDetailContent project={previewData} locale={locale} />
-        </Modal>
+        </CommonModal>
       )}
       {confirmDelete && (
-        <Modal
+        <CommonModal
           open
           title="프로젝트 삭제"
           onClose={() => {
@@ -593,7 +611,7 @@ export function ProjectManager({
           }}
           actions={
             <>
-              <Button
+              <CommonButton
                 variant="primary"
                 disabled={saving}
                 onClick={async () => {
@@ -635,11 +653,14 @@ export function ProjectManager({
                   }
                 }}
               >
-                {saving ? '삭제 중…' : '삭제'}
-              </Button>
-              <Button disabled={saving} onClick={() => setConfirmDelete(false)}>
+                삭제
+              </CommonButton>
+              <CommonButton
+                disabled={saving}
+                onClick={() => setConfirmDelete(false)}
+              >
                 취소
-              </Button>
+              </CommonButton>
             </>
           }
         >
@@ -653,7 +674,7 @@ export function ProjectManager({
             ))}
           </ul>
           {message && <p role="alert">{message}</p>}
-        </Modal>
+        </CommonModal>
       )}
       <div className={s.gridWrap}>
         <table className={s.grid + ' ' + s.projectGrid}>
@@ -663,7 +684,7 @@ export function ProjectManager({
           <thead>
             <tr>
               <th>
-                <Input
+                <CommonInput
                   type="checkbox"
                   aria-label="현재 페이지 전체 선택"
                   checked={
@@ -703,9 +724,9 @@ export function ProjectManager({
               </th>
               <th>프로젝트명</th>
               <th>고객사</th>
+              <th>기간</th>
               <th>작업 구분</th>
               <th>유형</th>
-              <th>진행 상태</th>
               <th>수정일시</th>
             </tr>
           </thead>
@@ -729,7 +750,7 @@ export function ProjectManager({
                 }}
               >
                 <td>
-                  <Input
+                  <CommonInput
                     type="checkbox"
                     aria-label={project.translations.ko.title + ' 선택'}
                     checked={selected.includes(project.id)}
@@ -752,6 +773,10 @@ export function ProjectManager({
                 </td>
                 <td>{project.customerName || '미입력'}</td>
                 <td>
+                  {formatProjectPeriod(project.startedOn, project.endedOn) ||
+                    '미입력'}
+                </td>
+                <td>
                   {
                     options('PROJECT_ORIGIN').find(
                       (code) => code.value === project.originCode,
@@ -764,9 +789,6 @@ export function ProjectManager({
                   )?.label || '미지정'}
                 </td>
                 <td>
-                  {states.find(([value]) => value === project.lifecycle)?.[1]}
-                </td>
-                <td>
                   {project.updatedAt
                     ? dateFormat.format(new Date(project.updatedAt))
                     : '—'}
@@ -776,7 +798,7 @@ export function ProjectManager({
           </tbody>
         </table>
       </div>
-      <Pagination
+      <CommonPagination
         page={result.page}
         totalPages={result.totalPages}
         total={filtered.length}
@@ -787,6 +809,31 @@ export function ProjectManager({
           setPage(1);
         }}
       />
+      </div>
+      <CommonConfirm
+        open={confirmSave}
+        title="프로젝트 저장"
+        content="입력한 내용을 저장하시겠습니까?"
+        confirmLabel="저장"
+        onConfirm={() => {
+          setConfirmSave(false);
+          void saveProject();
+        }}
+        onCancel={() => setConfirmSave(false)}
+      />
+      <CommonAlert
+        open={saveAlert !== null}
+        onClose={() => {
+          if (saveAlert?.closeDraftOnClose) {
+            setDraft(null);
+            router.refresh();
+          }
+          setSaveAlert(null);
+        }}
+        variant={saveAlert?.variant}
+        content={saveAlert?.content ?? ''}
+      />
+      <CommonLoading open={saving} />
     </section>
   );
 }

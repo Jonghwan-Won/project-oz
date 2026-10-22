@@ -54,9 +54,9 @@ assert.match(
   await (await fetch(base + '/projects?category=unknown')).text(),
   /AK아이에스/,
 );
-const labRedirect = await fetch(base + '/lab', { redirect: 'manual' });
-assert.equal(labRedirect.status, 308);
-assert.equal(labRedirect.headers.get('location'), '/projects');
+const lab = await fetch(base + '/lab');
+assert.equal(lab.status, 200);
+assert.match(await lab.text(), /실험실/);
 for (const route of [
   '/',
   '/about',

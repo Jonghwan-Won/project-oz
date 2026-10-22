@@ -1,15 +1,16 @@
 # 로컬 개발
 
 ## 원칙
+
 2026-10-21 변경: 현재 기본 구성은 각 PC의 Next.js + NAS 공용 개발 PostgreSQL이다. 아래 PC별 Compose 절차는 대안으로 보존한다. 운영 DB에 연결해 개발하지 않는다.
 
 ## 개발 가이드와 테이블 없는 연결 테스트
 
 개발 모드에서는 GNB 헤더 우측 버튼 영역의 책 아이콘으로 `/guide`에 이동할 수 있다. 아이콘의 접근성 이름과 툴팁은 개발 가이드이며 영어 UI도 지원한다. production 빌드에는 이 바로가기를 표시하지 않고, 가이드 경로 자체도 서버에서 404 처리한다.
 
-`/guide#alerts`에서 사이트 전용 OzAlert의 기본 제목·사용자 지정 제목 예제를 확인한다. `src/components/ui/OzAlert.tsx`의 open/onClose/content와 선택적 title을 사용한다. title은 상단 작은 문구이며 생략 시 `OZ · MESSAGE`다. content는 줄바꿈을 보존하는 본문이고 confirmLabel로 확인 버튼 문구를 바꿀 수 있다. C 시안의 반투명 그라데이션 패널에 B 시안의 둥근 버튼을 결합했다. 네이티브 dialog의 모달 포커스·배경 접근 차단을 활용하며 확인 버튼·Escape로 닫고 배경 클릭으로는 닫지 않는다. 삭제 동의용 confirm이나 toast는 이번 범위가 아니다.
+`/guide#alerts`에서 사이트 전용 CommonAlert의 기본 제목·사용자 지정 제목 예제를 확인한다. `src/components/ui/CommonAlert.tsx`의 open/onClose/content와 선택적 title을 사용한다. title은 상단 작은 문구이며 생략 시 `OZ · MESSAGE`다. content는 줄바꿈을 보존하는 본문이고 confirmLabel로 확인 버튼 문구를 바꿀 수 있다. C 시안의 반투명 그라데이션 패널에 B 시안의 둥근 버튼을 결합했다. 네이티브 dialog의 모달 포커스·배경 접근 차단을 활용하며 확인 버튼·Escape로 닫고 배경 클릭으로는 닫지 않는다. 삭제 동의용 confirm이나 toast는 이번 범위가 아니다.
 
-`/guide/markdown`은 README와 docs의 번호 있는 Markdown 문서를 선택해 읽는 개발 전용 뷰어다. 다른 UTF-8 `.md`/`.markdown` 파일(최대 1 MiB)도 브라우저에서 열 수 있다. 선택한 파일은 서버에 업로드하거나 저장하지 않는다. HTML 실행과 이미지 자동 로드는 차단한다. `/guide/environment`는 2026-10-21 개인 작업일지를 바탕으로 공개 웹·개발 DB·배포 흐름을 정리한 구조도이며 실시간 상태판은 아니다. 두 경로 모두 production에서 404다.
+`/lab/markdown`은 README와 docs의 번호 있는 Markdown 문서를 선택해 읽는 개발 전용 뷰어다. 다른 UTF-8 `.md`/`.markdown` 파일(최대 1 MiB)도 브라우저에서 열 수 있다. 선택한 파일은 서버에 업로드하거나 저장하지 않는다. HTML 실행과 이미지 자동 로드는 차단한다. `/guide/environment`는 2026-10-21 개인 작업일지를 바탕으로 공개 웹·개발 DB·배포 흐름을 정리한 구조도이며 실시간 상태판은 아니다. 두 경로 모두 production에서 404다.
 
 `npm run dev` 실행 후 `/guide`에서 공통 UI·색상·기본 날짜 입력·설계된 역할과 API·DB 연결을 확인한다. 페이지와 `/api/guide`는 development 환경에서만 제공하고 production에서는 404다. `/lab` 이동과 공개 메뉴는 유지한다. 인증·역할 검사는 아직 미구현이다.
 
@@ -34,12 +35,14 @@ DATABASE_URL="postgresql://oz_dev_app:CHANGE_ME@127.0.0.1:15432/oz_dev"
 Mac M1 또는 개인 Windows에서 Next 개발 서버를 직접 실행하고 PostgreSQL만 Docker로 띄운다. 운영 NAS DB에 연결해 개발하지 않는다. 로컬 DB/스토리지/키/테스트 계정은 운영과 분리한다. 회사 PC는 회사의 설치·외부 저장소·AI 사용 정책이 허용할 때만 사용한다.
 
 ## 준비
+
 - Git, 지원 중인 Node LTS, npm, Docker Desktop 또는 해당 OS의 Docker 환경.
 - 버전은 package.json engines, .node-version, package-lock.json에 고정한다.
 - Next App Router + TypeScript + src 디렉터리 + ESLint를 사용한다. 초기 CSS Modules, Tailwind는 필수가 아니다.
 - 이 문서의 명령은 실제 scaffold가 구성된 후의 목표 명령이며 현재 ZIP에서 실행할 수 없다.
 
 ## 최초 실행 절차
+
 1. 새 저장소 clone, 이 문서 패키지를 루트에 배치한다.
 2. .env.example을 .env.local로 복사하고 로컬 값만 설정한다.
 3. `docker compose -f docker/compose.dev.yml up -d db`
@@ -49,19 +52,21 @@ Mac M1 또는 개인 Windows에서 Next 개발 서버를 직접 실행하고 Pos
 7. `npm run dev`, http://localhost:3000 접속.
 
 ## 환경변수 계약
-| 변수 | 용도 |
-|---|---|
-| DATABASE_URL | 실행용 제한 DB 계정 |
+
+| 변수                   | 용도                                     |
+| ---------------------- | ---------------------------------------- |
+| DATABASE_URL           | 실행용 제한 DB 계정                      |
 | MIGRATION_DATABASE_URL | migration 전용 계정; 도구 실행 시만 주입 |
-| APP_URL | OAuth redirect와 canonical 기준 |
-| AUTH_SECRET | 인증 라이브러리가 요구하는 서버 비밀 |
-| OAUTH_CLIENT_ID/SECRET | 공급자 확정 후 실제 키 이름 적용 |
-| STORAGE_ROOT | 로컬 업로드 루트, public/ 밖 |
-| AI_API_KEY / AI_MODEL | 자동화 단계에서 추가, 브라우저 비공개 |
+| APP_URL                | OAuth redirect와 canonical 기준          |
+| AUTH_SECRET            | 인증 라이브러리가 요구하는 서버 비밀     |
+| OAUTH_CLIENT_ID/SECRET | 공급자 확정 후 실제 키 이름 적용         |
+| STORAGE_ROOT           | 로컬 업로드 루트, public/ 밖             |
+| AI_API_KEY / AI_MODEL  | 자동화 단계에서 추가, 브라우저 비공개    |
 
 Next는 .env.local을 읽지만 Prisma/별도 CLI가 같은 파일을 자동으로 읽는다고 가정하지 않는다. db:* 및 jobs:* 스크립트에서 환경 로딩을 명시하고 운영에서는 파일 대신 환경을 주입한다. 환경 검증에서 누락·오류를 조기 실패시킨다.
 
 ## 개발용 Compose 계약
+
 - PostgreSQL은 `127.0.0.1:5432:5432`에만 노출하고 로컬 볼륨으로 영속화한다.
 - 이미지 major는 로컬/운영 동일하게, 패치/digest도 관리한다.
 - 로컬 Node에서 DB hostname은 localhost, 컨테이너 앱에서는 서비스명 db를 사용한다.
@@ -69,9 +74,11 @@ Next는 .env.local을 읽지만 Prisma/별도 CLI가 같은 파일을 자동으�
 - 테스트 DB는 개발 DB와도 분리한다. seed는 가짜 데이터이며 운영 관리자 자동 생성 금지.
 
 ## 작업 흐름
+
 main에서 feature/* 브랜치 → 작은 변경 → 관련 테스트 → lint/typecheck/build → commit/push → PR/MR → merge.
 기존 운영 데이터 dump를 개발 PC로 무심코 복제하지 않는다. 필요하면 익명화 데이터만 사용한다.
 
 ## 목표 스크립트
+
 dev / build / start / lint / typecheck / test / test:e2e / db:generate / db:migrate:dev / db:migrate:deploy / db:seed / jobs:tick.
 정확한 실행 명령과 인증 콜백 URL은 버전/공급자 확정 후 README에 기록한다. 의존성 설치 시 확인되지 않은 버전 번호를 복사하지 않는다.

@@ -1,4 +1,4 @@
-import { ButtonLink } from '@/components/ui/Button';
+import { CommonButtonLink } from '@/components/ui/CommonButton';
 import { getMessages } from '@/i18n/server';
 
 export async function generateMetadata() {
@@ -11,13 +11,12 @@ export default async function Login() {
   const copy = messages.account;
   return (
     <div className="page">
-      <span className="eyebrow">ACCOUNT</span>
       <h1>{copy.title}</h1>
       <p className="lead">{copy.intro}</p>
       <div className="notice">{copy.notice}</div>
-      <ButtonLink href="/" variant="primary">
+      <CommonButtonLink href="/" variant="primary">
         {copy.home}
-      </ButtonLink>
+      </CommonButtonLink>
     </div>
   );
 }

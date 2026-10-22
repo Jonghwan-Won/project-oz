@@ -5,6 +5,9 @@ export type Project = {
   type?: keyof Messages['projectTypes'];
   origin: keyof Messages['projectOrigins'];
   lifecycle?: keyof Messages['projectStatuses'];
+  customerName?: string;
+  startedOn?: string;
+  endedOn?: string;
   order: number;
   thumbnail?: string;
   placeholder?: boolean;
@@ -24,51 +27,63 @@ export const projects: Project[] = [
   {
     slug: 'ak-is',
     origin: 'company',
+    lifecycle: 'BUILDING',
+    customerName: 'AK아이에스',
+    startedOn: '2026-06-01',
     order: 2,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'jeju-air',
     origin: 'company',
+    customerName: '제주항공',
+    startedOn: '2026-02-01',
+    endedOn: '2026-06-01',
     order: 3,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'surplus-global',
     origin: 'company',
+    customerName: '서플러스글로벌',
+    startedOn: '2024-11-01',
+    endedOn: '2025-12-01',
     order: 4,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'nh-farming',
     origin: 'company',
+    customerName: '농협',
+    startedOn: '2024-01-01',
+    endedOn: '2024-10-01',
     order: 5,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'nonghyup-mall',
     origin: 'company',
+    customerName: '농협',
+    startedOn: '2023-02-01',
+    endedOn: '2023-12-01',
     order: 6,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'moim',
     origin: 'education',
+    startedOn: '2022-11-05',
+    endedOn: '2022-12-09',
     order: 7,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
   {
     slug: 'jogong',
     origin: 'education',
+    startedOn: '2022-09-18',
+    endedOn: '2022-10-16',
     order: 8,
     visibility: 'PUBLIC',
-    placeholder: true,
   },
 ];
 

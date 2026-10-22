@@ -30,10 +30,17 @@
   --alert-accent: #f87171;
   --alert-icon: #f87171;
 }
+.alert.error {
+  --alert-accent: #f87171;
+  --alert-icon: #f87171;
+}
 :global([data-theme='light']) .alert {
   --alert-icon: #15803d;
 }
 :global([data-theme='light']) .alert[data-variant='error'] {
+  --alert-icon: #b91c1c;
+}
+:global([data-theme='light']) .alert.error {
   --alert-icon: #b91c1c;
 }
 .alert::backdrop {
@@ -78,4 +85,9 @@
 }
 .actions button:hover {
   background: color-mix(in srgb, var(--surface) 80%, var(--ink));
+}
+.confirmActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }

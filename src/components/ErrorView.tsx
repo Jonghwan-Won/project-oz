@@ -1,4 +1,4 @@
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { CommonButton, CommonButtonLink } from '@/components/ui/CommonButton';
 import type { errorMessages } from '@/i18n/errors';
 import s from './ErrorView.module.css';
 
@@ -28,13 +28,13 @@ export function ErrorView({
       </p>
       <div className={s.actions}>
         {onRetry && (
-          <Button variant="ghost" onClick={onRetry}>
+          <CommonButton variant="ghost" onClick={onRetry}>
             {labels.retry}
-          </Button>
+          </CommonButton>
         )}
-        <ButtonLink href="/" variant="primary">
+        <CommonButtonLink href="/" variant="primary">
           {labels.home}
-        </ButtonLink>
+        </CommonButtonLink>
       </div>
     </section>
   );

@@ -71,7 +71,7 @@ try {
     placeholder: false,
     thumbnail: asset.url,
     customerName: '검증 고객사',
-    technologies: ['check-tech-' + token],
+    technologies: ['React'],
     tags: ['check-tag-' + token],
     attachmentIds: [asset.id],
     translations: {
@@ -163,7 +163,7 @@ try {
   const html = await (await fetch(base + '/work/' + payload.slug)).text();
   assert.match(html, /<table/);
   assert.ok(html.includes('셀 하나'));
-  assert.ok(html.includes('check-tech-' + token));
+  assert.ok(html.includes('React'));
   assert.ok(html.includes(asset.url));
   assert.ok(html.includes('width="320"'));
   assert.ok(html.includes('height="180"'));

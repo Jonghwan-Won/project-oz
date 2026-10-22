@@ -9,7 +9,6 @@ const menus = [
   ['/admin/categories', '분류 관리'],
   ['/admin/media', '미디어 관리'],
   ['/admin/settings', '사이트 관리'],
-  ['/guide', '개발 가이드 ↗'],
 ];
 export function AdminNav() {
   const pathname = usePathname().replace(/\/$/, '');

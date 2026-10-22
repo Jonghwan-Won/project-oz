@@ -9,11 +9,11 @@ export const en = {
     intro: 'I solve everyday problems and share what I learn along the way.',
     aboutLink: 'Get to know ddoza and OZ',
     projectsTitle: 'Things I build and contribute to',
-    projectsLink: 'View all projects ↗',
+    projectsLink: 'More',
     boardTitle: 'Taking notes, sharing ideas',
-    boardLink: 'View board ↗',
+    boardLink: 'More',
     helpTitle: 'Have a question?',
-    helpLink: 'Contact information ↗',
+    helpLink: 'More',
     faqTitle: 'Frequently asked questions',
     faqDescription: 'A few answers about this studio and OZ.',
     contactTitle: 'Let’s talk',
@@ -33,7 +33,6 @@ export const en = {
   },
   boardPreview: {
     region: 'Recent posts',
-    read: 'Read more ↗',
     empty: 'The first note is on its way.',
     previous: 'Previous posts',
     next: 'Next posts',
@@ -68,6 +67,7 @@ export const en = {
     close: 'Close menu',
     login: 'Log in',
     guide: 'Development guide',
+    lab: 'Lab',
   },
   projectTypes: {
     website: 'Website',
@@ -90,7 +90,7 @@ export const en = {
       'Personal work, coursework, and team projects. A record of my role and the process behind each one.',
     all: 'All',
     filterLabel: 'Project type',
-    detailLink: 'Explore the project ↗',
+    detailLink: 'Explore the project',
     empty: 'Projects are on their way.',
     back: '← All projects',
     preview: 'Image coming soon',
@@ -119,39 +119,83 @@ export const en = {
       ],
     },
     'ak-is': {
-      title: 'AK IS',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      title: 'AK IS S&OP Business Management System Development',
+      summary: 'Development of the AK IS S&OP business management system.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'A project to develop the AK IS S&OP business management system.',
+        },
+      ],
     },
     'jeju-air': {
-      title: 'JEJU air',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      title: 'JEJU air Inflight Integrated Operations System Enhancement',
+      summary:
+        'Enhancement of JEJU air’s inflight integrated operations system.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'A project to enhance JEJU air’s inflight integrated operations system.',
+        },
+      ],
     },
     'surplus-global': {
-      title: 'SurplusGLOBAL',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      title: 'SemiMarket Build and Enhancement',
+      summary: 'Build and enhancement of SemiMarket for SurplusGLOBAL.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'Build and enhancement of SemiMarket for SurplusGLOBAL.',
+        },
+        {
+          title: 'Phase 1 · Build · Nov 2024–Jun 2025',
+          body: 'Completed the first phase of SemiMarket development.',
+        },
+        {
+          title: 'Phase 2 · Enhancement · Jul 2025–Dec 2025',
+          body: 'Completed the second phase of SemiMarket enhancements.',
+        },
+      ],
     },
     'nh-farming': {
-      title: 'NH Today Farming',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      title: 'NH Today Farming Agriculture-Focused Hybrid App Development',
+      summary:
+        'Development of an agriculture-focused hybrid app for NH Today Farming.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'A project to develop an agriculture-focused hybrid app for NH Today Farming.',
+        },
+      ],
     },
     'nonghyup-mall': {
-      title: 'Nonghyup Mall',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      title: 'Nonghyup Mall Enhancement',
+      summary: 'Enhancement of Nonghyup Mall.',
+      sections: [
+        { title: 'Overview', body: 'A project to enhance Nonghyup Mall.' },
+      ],
     },
     moim: {
       title: 'Moim',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      summary:
+        'A space rental platform where hosts share spaces and guests book them for the time they need.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'Hosts can share their spaces, and guests can reserve the spaces they want for the time they need.',
+        },
+      ],
     },
     jogong: {
       title: 'Jogong',
-      summary: 'Project details are being prepared.',
-      sections: [],
+      summary:
+        'A gifting platform for the people you care about, including family, friends, and partners.',
+      sections: [
+        {
+          title: 'Overview',
+          body: 'A platform for sending gifts to people you care about, including family, friends, and partners.',
+        },
+      ],
     },
   },
   language: {
@@ -228,7 +272,7 @@ export const en = {
     contactTitle: 'Let’s talk',
     contactDescription:
       'Contact options are coming soon. After sign-in is connected, private inquiries will be visible only to you and the administrator.',
-    accountLink: 'About accounts ↗',
+    accountLink: 'About accounts',
   },
   board: {
     title: 'Taking notes, sharing ideas.',
@@ -241,8 +285,8 @@ export const en = {
     empty: 'No posts here yet.',
     emptyQuery: 'Try a different search term.',
     emptyCategory: 'The first story in this category is on its way.',
-    allLink: 'View board ↗',
-    back: '← Back to board',
+    allLink: 'View board',
+    back: '< Back to board',
     draft: 'Draft entry',
     missing: 'Post not found',
     categories: [
@@ -261,7 +305,7 @@ export const en = {
     intro: 'Sign-in and private inquiries are in preparation.',
     notice:
       'For now, you can explore public content. Accounts and administrator access are not available until an authentication provider is connected.',
-    home: 'Back to the studio ↗',
+    home: 'Back to the studio',
   },
   theme: {
     light: 'Switch to light theme',

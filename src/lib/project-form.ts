@@ -5,6 +5,8 @@ import { thumbnailUrl } from './files';
 export type ProjectCopy = { title: string; summary: string; body: JSONContent };
 export type ProjectForm = {
   customerName: string;
+  startedOn: string;
+  endedOn: string;
   updatedAt?: string;
   id: string;
   version: number;
@@ -35,6 +37,8 @@ export const blankCopy = (): ProjectCopy => ({
 });
 export const blankProject = (): ProjectForm => ({
   customerName: '',
+  startedOn: '',
+  endedOn: '',
   id: '',
   version: 0,
   slug: '',
@@ -91,6 +95,23 @@ export function parseProjectForm(value: unknown): ProjectForm {
     )
   )
     throw Error('진행 상태를 확인해 주세요.');
+  const date = (key: string) => {
+    const v = value[key];
+    if (v === undefined || v === '') return '';
+    if (
+      typeof v !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(v) ||
+      !Number.isFinite(Date.parse(v + 'T00:00:00Z')) ||
+      new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) !== v
+    )
+      throw Error('프로젝트 기간을 확인해 주세요.');
+    return v;
+  };
+  const startedOn = date('startedOn');
+  const endedOn = date('endedOn');
+  if (endedOn && !startedOn) throw Error('시작일을 먼저 입력해 주세요.');
+  if (startedOn && endedOn && endedOn < startedOn)
+    throw Error('종료일은 시작일보다 빠를 수 없습니다.');
   if (
     typeof value.version !== 'number' ||
     !Number.isSafeInteger(value.version) ||
@@ -127,6 +148,8 @@ export function parseProjectForm(value: unknown): ProjectForm {
     id,
     customerName:
       value.customerName === undefined ? '' : string('customerName', 200),
+    startedOn,
+    endedOn,
     version: value.version,
     slug,
     originCode: string('originCode', 60),

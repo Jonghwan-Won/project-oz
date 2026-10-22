@@ -1,8 +1,8 @@
 'use client';
 import { useId, useRef, useState } from 'react';
-import { Button } from './Button';
-import s from './FilePicker.module.css';
-export function FilePicker({
+import { CommonButton } from './CommonButton';
+import s from './CommonFilePicker.module.css';
+export function CommonFilePicker({
   label,
   accept,
   disabled = false,
@@ -26,7 +26,7 @@ export function FilePicker({
         {label}
       </span>
       <div className={compact ? s.compact : s.picker}>
-        <Button
+        <CommonButton
           size="sm"
           disabled={disabled}
           aria-label={label + ' 파일 선택'}
@@ -35,7 +35,7 @@ export function FilePicker({
           onClick={() => input.current?.click()}
         >
           {compact ? label : '파일 선택'}
-        </Button>
+        </CommonButton>
         {!compact && (
           <span className={s.filename} title={name}>
             {name || '선택된 파일 없음'}
@@ -53,10 +53,9 @@ export function FilePicker({
         onChange={(event) => {
           const file = event.target.files?.[0];
           event.target.value = '';
-          if (file) {
-            setName(file.name);
-            onSelect(file);
-          }
+          if (!file) return;
+          setName(file.name);
+          onSelect(file);
         }}
       />
     </div>

@@ -25,7 +25,7 @@ export async function getAdminProjects() {
     throw Error('Development database required');
   const [projects, codes] = await Promise.all([
     pool.query<ProjectForm>(
-      `SELECT p.id,p.version,p.slug,p."customerName",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p.visibility,p.position,p.placeholder,
+      `SELECT p.id,p.version,p.slug,p."customerName",COALESCE(to_char(p."startedOn",'YYYY-MM-DD'),'') AS "startedOn",COALESCE(to_char(p."endedOn",'YYYY-MM-DD'),'') AS "endedOn",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p.visibility,p.position,p.placeholder,
  COALESCE(p."thumbnailUrl",(SELECT '/api/assets/'||"assetId" FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='COVER'),'') AS thumbnail,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TECHNOLOGY'),'{}') AS technologies,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TOPIC'),'{}') AS tags,
@@ -98,10 +98,28 @@ export async function saveProject(input: unknown) {
       if (!row || (!row.isActive && old !== code))
         throw new ProjectError(400, '사용할 수 없는 프로젝트 분류입니다.');
     }
+    const technologyCodes = await client.query(
+      'SELECT "nameKo" FROM "CommonCode" WHERE "groupKey"=$1 AND "isActive"=true AND "nameKo"=ANY($2::text[])',
+      ['TECHNOLOGY', form.technologies],
+    );
+    const previousTechnologies = form.id
+      ? (
+          await client.query<{ name: string }>(
+            'SELECT t.name FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=$1 AND t.kind=\'TECHNOLOGY\'',
+            [form.id],
+          )
+        ).rows
+      : [];
+    const allowedTechnologies = new Set([
+      ...technologyCodes.rows.map((row) => row.nameKo),
+      ...previousTechnologies.map((row) => row.name),
+    ]);
+    if (form.technologies.some((name) => !allowedTechnologies.has(name)))
+      throw new ProjectError(400, '사용 기술은 공통 코드 목록에서 선택해 주세요.');
     const id = form.id || randomUUID();
     if (form.id)
       await client.query(
-        'UPDATE "Project" SET slug=$2,"originCode"=$3,"typeCode"=$4,lifecycle=$5,visibility=$6,position=$7,placeholder=$8,"thumbnailUrl"=$9,version=version+1,"updatedAt"=now() WHERE id=$1',
+        'UPDATE "Project" SET slug=$2,"originCode"=$3,"typeCode"=$4,lifecycle=$5,visibility=$6,position=$7,placeholder=$8,"thumbnailUrl"=$9,"startedOn"=NULLIF($10,\'\')::date,"endedOn"=NULLIF($11,\'\')::date,version=version+1,"updatedAt"=now() WHERE id=$1',
         [
           id,
           form.slug,
@@ -112,11 +130,13 @@ export async function saveProject(input: unknown) {
           form.position,
           form.placeholder,
           form.thumbnail || null,
+          form.startedOn,
+          form.endedOn,
         ],
       );
     else
       await client.query(
-        'INSERT INTO "Project" (id,slug,"originCode","typeCode",lifecycle,visibility,position,placeholder,"thumbnailUrl","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,now())',
+        'INSERT INTO "Project" (id,slug,"originCode","typeCode",lifecycle,visibility,position,placeholder,"thumbnailUrl","startedOn","endedOn","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NULLIF($10,\'\')::date,NULLIF($11,\'\')::date,now())',
         [
           id,
           form.slug,
@@ -127,6 +147,8 @@ export async function saveProject(input: unknown) {
           form.position,
           form.placeholder,
           form.thumbnail || null,
+          form.startedOn,
+          form.endedOn,
         ],
       );
     await client.query('UPDATE "Project" SET "customerName"=$2 WHERE id=$1', [

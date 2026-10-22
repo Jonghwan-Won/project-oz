@@ -1,9 +1,27 @@
 .shell {
-  max-width: 1280px;
+  max-width: 1600px;
+  --accent: #228be6;
+  --accent-ink: #228be6;
+  --accent-hover: #1c7ed6;
+  --on-accent: #fff;
+  --mantine-primary-color-filled: #228be6;
+  --mantine-primary-color-filled-hover: #1c7ed6;
+  --mantine-primary-color-light: rgb(34 139 230 / 10%);
+  --mantine-primary-color-light-hover: rgb(34 139 230 / 15%);
+  --mantine-primary-color-light-color: #1c7ed6;
+  --mantine-primary-color-contrast: #fff;
+}
+.shell:global(.page) {
+  max-width: 1600px;
+  padding: 18px 4% 48px;
 }
 .intro {
-  max-width: 800px;
-  margin-bottom: 36px;
+  margin-bottom: 16px;
+}
+.shell .intro h1 {
+  margin: 0;
+  font-size: clamp(24px, 2vw, 30px);
+  letter-spacing: -0.5px;
 }
 .intro p,
 .main p,
@@ -13,7 +31,7 @@
 .workspace {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  gap: 32px;
+  gap: 24px;
   align-items: start;
 }
 .nav {
@@ -30,16 +48,28 @@
   padding: 14px 12px;
   min-height: 44px;
   border-radius: 8px;
+  border: 1px solid transparent;
   font-size: 14px;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
 }
 .nav a:hover {
   background: var(--surface-hover);
   color: var(--accent-ink);
 }
 .nav a[aria-current='page'] {
-  background: var(--hover);
+  border-color: color-mix(in srgb, var(--ink) 16%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ink) 6%, transparent),
+    color-mix(in srgb, var(--ink) 2%, transparent)
+  );
   color: var(--accent-ink);
-  box-shadow: inset 3px 0 var(--accent);
+  box-shadow: 0 4px 14px #0001;
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   font-weight: 700;
 }
 .projectGrid th {
@@ -90,6 +120,12 @@
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
+.listPanel {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
 .empty {
   text-align: center;
   padding: 48px 16px !important;
@@ -121,14 +157,26 @@
 }
 .fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 16px;
 }
 .panel label {
   display: grid;
   gap: 8px;
   margin-bottom: 18px;
   font-size: 14px;
+}
+.projectForm .fields > label {
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.actions button[aria-pressed='true'] {
+  background: #228be6;
+  color: #fff;
 }
 .panel input,
 .panel select,
@@ -187,7 +235,8 @@
     grid-template-columns: 1fr;
   }
   .panel,
-  .row {
+  .row,
+  .listPanel {
     padding: 18px;
   }
 }
@@ -208,8 +257,15 @@
   min-height: 20px;
 }
 .actions button[aria-pressed='true'] {
-  outline: 2px solid var(--accent-ink);
+  outline: 2px solid color-mix(in srgb, var(--ink) 24%, transparent);
   outline-offset: 2px;
+}
+.adminPrimary {
+  background: #228be6;
+  color: #fff;
+}
+.adminPrimary:hover {
+  background: #1c7ed6;
 }
 
 .projectForm {
