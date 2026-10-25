@@ -28,6 +28,8 @@ test('seed skips existing projects and rolls back failures', async () => {
   const client = {
     async query(sql) {
       queries.push(sql);
+      if (sql.startsWith('SELECT id FROM "Tag"'))
+        return { rows: [{ id: 'test-tag' }], rowCount: 1 };
       return { rowCount: 0 };
     },
   };
