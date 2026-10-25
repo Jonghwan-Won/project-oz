@@ -77,7 +77,7 @@ export function AdminEditor({
         }}
       >
         <label>
-          검색어
+          <span>검색어</span>
           <CommonInput
             type="search"
             value={search.keyword}
@@ -88,7 +88,7 @@ export function AdminEditor({
           />
         </label>
         <label>
-          카테고리
+          <span>카테고리</span>
           <CommonSelectBox
             aria-label="검색 카테고리"
             value={search.category}
@@ -102,7 +102,7 @@ export function AdminEditor({
           />
         </label>
         <label>
-          공개 범위
+          <span>공개 범위</span>
           <CommonSelectBox
             aria-label="검색 공개 범위"
             value={search.status}

@@ -4,10 +4,11 @@
 
 - 버튼과 링크: 기존 `CommonButton`, `CommonButtonLink`를 사용합니다.
 - 카드 링크: `interactiveCard`를 사용해 26px 모서리·은은한 배경 전환·2px 상승을 통일합니다. 키보드 포커스에도 적용하며 동작 줄이기 설정에서는 이동하지 않습니다.
-- 알림: `CommonAlert`의 `variant`는 `default`(생략 가능)/`error`입니다. 제목 없이 그라데이션·본문·회색 확인 버튼을 표시하고 아이콘 JSX는 주석으로 보관합니다. 본문은 16px, `width`는 px 단위 숫자(기본 360)이며 화면 너비를 넘지 않습니다. 높이는 본문에 맞추고 긴 내용은 모달 안에서 스크롤합니다. `confirmLabel` 기본값은 `확인`이고 `open/onClose/content`로 제어합니다.
+- 알림: `CommonAlert`의 `variant`는 `default`(생략 가능)/`error`입니다. 본문과 확인 버튼은 가운데 정렬하며 확인은 강조색을 사용합니다. 본문은 16px, `width`는 px 단위 숫자(기본 360)이며 화면 너비를 넘지 않습니다. 높이는 본문에 맞추고 긴 내용은 모달 안에서 스크롤합니다. `confirmLabel` 기본값은 `확인`이고 `open/onClose/content`로 제어합니다.
 - 확인과 로딩: `CommonConfirm`은 `CommonAlert`와 같은 카드 스타일로 확인/취소를 받고, `CommonLoading`은 브랜드 강조색의 원형 회전 스피너를 전체 화면에 표시합니다. 저장 결과 알림은 응답 성공/오류에 맞춰 `CommonAlert`로 표시합니다.
 - 선택 목록과 메뉴: 값 선택에는 Mantine `Select`를 감싼 `CommonSelectBox`, 동작 메뉴에는 Mantine `Menu`를 사용합니다.
 - 헤더 아이콘: `headerIcon` 클래스의 44px 버튼을 사용합니다.
+- 관리자 프로젝트 폼의 Mantine 선택 컨트롤은 사이트 강조색 대신 기본 블루를 명시하고, 기술·태그 다음에 노출 여부(Y/N)를 배치합니다.
 - 색상: 배경은 `--bg`, 카드/메뉴는 `--surface`, 본문은 `--ink`, 보조 문구는 `--muted`, 테두리는 `--line`입니다. 바이올렛 배경은 `--accent`, 그 위 글자는 `--on-accent`를 사용합니다.
 - 기본 배경은 다크 `#000000`, 라이트 `#FFFFFF`입니다. 카드·메뉴·테두리에는 중립 회색을 사용하고 블루·바이올렛을 강조색으로 사용합니다.
 - 강조 글자와 포커스는 `--accent-ink`를 사용합니다. 라이트 테마에서는 읽기 쉽도록 짙은 바이올렛 `#5940AD`를 사용합니다. 주 강조색은 `#BAACFF`, 블루 보조색은 `--accent-blue`(`#86BAFF`)입니다.
@@ -34,12 +35,12 @@ CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 
 
 프로젝트 검색: 검색어(한·영 제목/소개·주소·기술·태그), 작업 구분, 유형, 공개 범위. 미지정·비활성 분류도 검색 가능하다. 게시판 검색: 검색어(제목·주소·요약·본문), 카테고리, 공개 범위. 현재 전달받은 개발 목록을 검색하며 운영·대량 데이터 연결 시 서버 검색/페이징으로 전환한다. 대시보드는 집계 화면, 분류/미디어/사이트 관리는 준비 화면이다.
 
-CommonInput/CommonTextArea는 Mantine TextInput/Textarea, 체크·라디오는 Mantine Checkbox/Radio, CommonSelectBox는 Mantine Select 기반이다. 프로젝트 사용 기술과 주제 태그에는 Mantine TagsInput을 쓴다. CommonFilePicker는 네이티브 파일 input과 OZ 버튼을 결합한 컴포넌트이며, Mantine 기본 Select와 FileInput은 /guide에서 비교할 수 있다. CommonFileUpload는 파일 선택에 NAS 업로드를 연결하고 CommonAssetLinks는 업로드된 파일 링크를 표시한다. CommonModal은 Mantine Modal의 포커스 제한·복귀 동작을 사용하면서 제목·actions·스크롤 영역은 사이트 스타일로 구성한다. /guide의 공통 UI 탭에서 에디터와 첨부 예제도 확인한다. 프로젝트 관리에는 이 공통 컴포넌트를 적용했다.
+CommonInput/CommonTextArea는 Mantine TextInput/Textarea, 체크·라디오는 Mantine Checkbox/Radio, CommonSelectBox는 Mantine Select 기반이다. 프로젝트 사용 기술은 Mantine Autocomplete 추천 목록에서, 주제 태그는 CommonInput에서 입력한다. 선택한 기술과 태그는 `ProjectTag`로 폼·카드·상세 화면에서 같은 모양으로 표시한다. 사용 기술 추천 목록은 활성 TECHNOLOGY 공통 코드에서 가져온다. CommonFilePicker는 기본 파일 선택 input을 OZ 스타일로 표시하고 CommonFileUpload는 NAS 업로드를 처리한다. CommonModal은 Mantine Modal의 포커스 제한·복귀 동작을 사용하면서 제목·actions·스크롤 영역은 사이트 스타일로 구성한다. /guide의 공통 UI 탭에서 에디터와 첨부 예제도 확인한다. 프로젝트 관리에는 이 공통 컴포넌트를 적용했다.
 
 Tiptap Image의 네 모서리 핸들로 이미지 크기를 비율 유지하며 변경한다. width/height는 JSON에 저장하고 출력에도 반영한다. Tiptap 사용 확장은 MIT 라이선스로 수정·상업 이용 가능하나 저작권 및 라이선스 고지를 유지해야 한다.
 
 ## 프로젝트 공통 상세
 
-ProjectDetailContent는 공개 카드 팝업·관리자 미리보기·직접 상세 URL에서 같은 커버/제목/속성/태그/본문/첨부를 렌더링한다. ProjectPreviewLink는 일반 클릭을 CommonModal로 열고 수정키를 누른 링크 클릭과 직접 URL은 원래 상세 경로를 유지한다. 관리자 미리보기는 현재 편집값을 사용하며 저장하지 않는다.
+ProjectDetailContent는 공개 카드 팝업·관리자 미리보기·직접 상세 URL에서 같은 제목/기술/프로젝트 정보/커버/본문/태그/첨부를 렌더링한다. ProjectPreviewLink는 일반 클릭을 CommonModal로 열고 수정키를 누른 링크 클릭과 직접 URL은 원래 상세 경로를 유지한다. 관리자 미리보기는 현재 편집값을 사용하며 저장하지 않는다.
 
 검색 버튼은 sm(최소44px)로 표시한다. 프로젝트 체크박스는 현재 페이지 전체 선택과 개별 선택을 제공하고 선택이 없으면 삭제 버튼을 비활성화한다. 삭제 확인은 공통 CommonModal을 사용한다.

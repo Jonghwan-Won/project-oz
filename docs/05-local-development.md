@@ -20,6 +20,8 @@ NAS DB를 쓰려면 PC의 **별도 PowerShell 창**에서 SSH 터널을 열어 �
 ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -L 127.0.0.1:15432:DEV_DB_CONTAINER_IP:5432 DSM_USER@NAS_SSH_HOST
 ```
 
+SSH가 비밀번호를 물으면 DSM 계정 비밀번호를 입력한다. 입력 중 문자가 표시되지 않는 것은 정상이다. 연결 성공 시 별도 완료 문구 없이 터미널이 계속 대기하고, 그 창을 닫으면 터널도 종료된다. `Connection reset` 또는 인증 오류가 나오면 터널이 열린 것이 아니므로 NAS 주소·계정·접속 허용 상태를 확인한다.
+
 프로젝트 루트 `.env.local`에 아래 항목을 직접 설정한다. CHANGE_ME는 비밀번호를 URL 인코딩한 값으로 바꾼다. 기존 파일 전체를 덮어쓰지 않는다. 비밀번호를 채팅·Git·로그에 남기지 않는다.
 
 ```dotenv

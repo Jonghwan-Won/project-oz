@@ -15,11 +15,6 @@ enum Lifecycle {
   ARCHIVED
 }
 
-enum Visibility {
-  PRIVATE
-  PUBLIC
-}
-
 enum TagKind {
   TECHNOLOGY
   TOPIC
@@ -78,8 +73,7 @@ model Project {
   typeGroup    String               @default("PROJECT_TYPE") @db.VarChar(60)
   typeCode     String?              @db.VarChar(60)
   lifecycle    Lifecycle?
-  visibility   Visibility           @default(PRIVATE)
-  position     Int                  @default(0)
+  isVisible    Boolean              @default(false)
   thumbnailUrl String?              @db.VarChar(2048)
   placeholder  Boolean              @default(false)
   startedOn    DateTime?            @db.Date
@@ -97,7 +91,7 @@ model Project {
   tags         ProjectTag[]
   assets       ProjectAsset[]
 
-  @@index([visibility, position, id])
+  @@index([isVisible])
   @@index([originGroup, originCode])
   @@index([typeGroup, typeCode])
 }

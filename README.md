@@ -99,7 +99,7 @@ OAuth 공급자 확정 → DB 세션과 권한 → 콘텐츠 CRUD → 비공개 
 
 ## 2026-10-21 공개 프로젝트 DB 조회 연결
 
-홈 카드·프로젝트 목록·상세 및 상세 메타데이터는 server/services/projects.ts에서 개발/운영 환경의 DATABASE_URL로 조회한다. Project.visibility=PUBLIC만 읽고 position/id 순으로 정렬하며 홈은 앞의 2개를 표시한다. 공통 코드 표시명과 ProjectTranslation의 ko/en 내용을 사용하고, 영어 누락 시 한국어로 대체한다. 상세에는 원문 표시 안내를 제공한다. src/content/projects.ts와 언어 사전의 프로젝트 항목은 seed 및 개발 관리자 초안 자료로 유지하며 공개 화면의 데이터 원본은 아니다. 관리자 저장·파일 조회/업로드는 아직 연결하지 않았다. 본문은 heading/paragraph의 텍스트만 안전하게 렌더링하며 다른 에디터 노드는 추후 구현한다.
+홈 카드·프로젝트 목록·상세 및 상세 메타데이터는 server/services/projects.ts에서 개발/운영 환경의 DATABASE_URL로 조회한다. Project.isVisible=true만 읽고 startedOn 내림차순으로 정렬하며 홈은 앞의 2개를 표시한다. 공통 코드 표시명과 ProjectTranslation의 ko/en 내용을 사용하고, 영어 누락 시 한국어로 대체한다. 상세에는 원문 표시 안내를 제공한다. src/content/projects.ts와 언어 사전의 프로젝트 항목은 seed 자료로 유지한다.
 
 이제 홈·프로젝트 화면에는 DB 연결이 필요하다. 로컬은 SSH 터널, 운영은 별도 운영 DATABASE_URL과 migration/seed를 먼저 준비해야 한다. DB 실패 시 오류 화면을 표시하며 TS 예시 데이터로 대체하지 않는다.
 
@@ -115,6 +115,6 @@ OAuth 공급자 확정 → DB 세션과 권한 → 콘텐츠 CRUD → 비공개 
 
 이 절이 위 개발 이력의 미구현 표기를 대체합니다. 공개 메인/목록 카드는 공통 프로젝트 상세 팝업으로 열리며 직접 상세 URL도 유지합니다. 로컬 관리자에서는 검색·프론트 페이지네이션, 고객사·한/영 소개·태그·썸네일/첨부의 실제 DB 저장, 선택 논리 삭제를 지원합니다. 에디터는 표·NAS 이미지 삽입·크기 조절을 지원합니다. 삭제는 원본 데이터/NAS 파일을 보존하고 복구 UI는 아직 없습니다. 서버 LIMIT/OFFSET 페이징은 IDEA-006 후속 개선사항입니다.
 
-DATABASE_URL 미설정 시 프로젝트는 빈 목록으로 표시하므로 DB 없는 컨테이너 시작 검사와 기본 UI 실행이 가능합니다. URL을 설정한 뒤 DB 연결에 실패하면 오류 화면으로 안내하며 예시 데이터로 대체하지 않습니다. 운영에서 실제 프로젝트를 표시하려면 운영 DB에 migration/seed를 적용하고 DATABASE_URL 및 파일 읽기용 STORAGE_ROOT를 런타임 환경으로 전달해야 합니다. 이번 변경의 migration 세 개(한국어/영어 분리, 썸네일 URL, 고객사/삭제 표시)를 앱 업데이트 전에 적용합니다. 로컬 관리자 쓰기와 업로드는 계속 개발 환경의 loopback+same-origin+oz_dev DB로 제한하며 운영 관리자 인증·쓰기·게시판 DB 저장은 후속 작업입니다.
+DATABASE_URL 미설정 시 프로젝트는 빈 목록으로 표시하므로 DB 없는 컨테이너 시작 검사와 기본 UI 실행이 가능합니다. URL을 설정한 뒤 DB 연결에 실패하면 오류 화면으로 안내하며 예시 데이터로 대체하지 않습니다. 운영에서 실제 프로젝트를 표시하려면 운영 DB에 migration/seed를 적용하고 DATABASE_URL 및 파일 읽기용 STORAGE_ROOT를 런타임 환경으로 전달해야 합니다. 프로젝트 노출/정렬 변경 migration은 앱 업데이트 전에 적용합니다. 로컬 관리자 쓰기와 업로드는 계속 개발 환경의 loopback+same-origin+oz_dev DB로 제한하며 운영 관리자 인증·쓰기·게시판 DB 저장은 후속 작업입니다.
 
 사용자의 명시적 요청이 있을 때만 브라우저 UI 검증을 수행합니다. 기본 확인은 lint/typecheck/test/build 등 터미널 검사로 진행하며 사용자 실행 서버를 임의로 시작·종료·재시작하지 않습니다.

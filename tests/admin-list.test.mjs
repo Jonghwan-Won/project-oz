@@ -14,7 +14,7 @@ const project = {
   originCode: 'personal',
   typeCode: 'website',
   lifecycle: 'BUILDING',
-  visibility: 'PRIVATE',
+  isVisible: false,
   technologies: ['Next.js'],
   tags: ['포트폴리오'],
   translations: {
@@ -40,14 +40,14 @@ test('project search combines filters, includes both languages/tags, and handles
       keyword: 'studio',
       originCode: 'personal',
       typeCode: 'website',
-      visibility: 'PRIVATE',
+      isVisible: 'false',
     }),
   );
   for (const patch of [
     { keyword: '없음' },
     { originCode: 'company' },
     { typeCode: 'app' },
-    { visibility: 'PUBLIC' },
+    { isVisible: 'true' },
     { typeCode: '__unset__' },
   ])
     assert.equal(

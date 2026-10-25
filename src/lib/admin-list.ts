@@ -4,7 +4,7 @@ export const emptyProjectSearch = {
   keyword: '',
   originCode: '',
   typeCode: '',
-  visibility: '',
+  isVisible: '',
 };
 export const emptyBoardSearch = { keyword: '', category: '', status: '' };
 
@@ -31,7 +31,8 @@ export function matchesProject(
       (search.typeCode === '__unset__'
         ? !project.typeCode
         : project.typeCode === search.typeCode)) &&
-    (!search.visibility || project.visibility === search.visibility)
+    (search.isVisible === '' ||
+      project.isVisible === (search.isVisible === 'true'))
   );
 }
 

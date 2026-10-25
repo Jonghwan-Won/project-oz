@@ -66,8 +66,7 @@ try {
     originCode: 'personal',
     typeCode: 'website',
     lifecycle: 'BUILDING',
-    visibility: 'PRIVATE',
-    position: 999,
+    isVisible: false,
     placeholder: false,
     thumbnail: asset.url,
     customerName: '검증 고객사',
@@ -147,7 +146,7 @@ try {
   assert.equal((await fetch(base + '/work/' + payload.slug)).status, 404);
   payload.id = project.id;
   payload.version = project.version;
-  payload.visibility = 'PUBLIC';
+  payload.isVisible = true;
   response = await post(payload);
   assert.equal(response.status, 200, await response.clone().text());
   project = await response.json();
@@ -262,7 +261,7 @@ try {
   );
   assert.equal((await post(payload)).status, 409);
   console.log(
-    'Project DB save, translations/table/images/tags/assets, private visibility, stale/duplicate/invalid input rollback and fallback checks passed.',
+    'Project DB save, translations/table/images/tags/assets, hidden visibility, stale/duplicate/invalid input rollback and fallback checks passed.',
   );
 } finally {
   if (deletionProject)

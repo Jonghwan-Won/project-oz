@@ -9,7 +9,7 @@ import { ko } from '../src/i18n/ko.ts';
 
 test('only public projects and their distinct types are exposed', () => {
   const item = projects[0];
-  const hidden = { ...item, visibility: 'PRIVATE', type: 'internal-only' };
+  const hidden = { ...item, isVisible: false, type: 'internal-only' };
   assert.deepEqual(getPublicProjects([hidden, item]), [item]);
   assert.deepEqual(getUsedProjectTypes([hidden, item, item]), ['website']);
   assert.deepEqual(getUsedProjectTypes([hidden]), []);
@@ -29,7 +29,7 @@ test('registered projects have translated codes and content', () => {
   }
 });
 
-test('latest projects follow the supplied order and home selects only two', () => {
+test('projects sort by latest start date and home selects only two', () => {
   const sorted = getPublicProjects([...projects].reverse());
   assert.deepEqual(
     sorted.map((project) => ko.projectItems[project.slug].title),

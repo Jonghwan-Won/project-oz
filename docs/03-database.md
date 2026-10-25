@@ -44,11 +44,11 @@ menus.route_key는 코드의 허용된 라우트 목록에 매핑한다. 카테�
 ## 프로젝트
 | 테이블 | 핵심 필드·제약 |
 |---|---|
-| projects | id, slug UNIQUE, category_id, title, summary, body_markdown, lifecycle, visibility, released_at, position, version |
+| projects | id, slug UNIQUE, category_id, title, summary, body_markdown, lifecycle, is_visible BOOLEAN, released_at, version |
 | project_links | id, project_id, type(WEBSITE/APP_STORE/GOOGLE_PLAY/REPOSITORY/DEMO), label, url, position |
 | project_updates | id, project_id, title, body_markdown, visibility, created_at |
 
-실험실과 프로젝트 테이블을 따로 만들지 않는다. 인덱스: (visibility,lifecycle,position). 공개 전환은 링크 검증과 권한 확인 후 수행한다. 실험실에서의 세부 기록 공개 여부도 각각 유지한다.
+실험실과 프로젝트 테이블을 따로 만들지 않는다. 프로젝트는 is_visible로 노출을 제어하고 시작일 최신순으로 보여준다. 공개 전환은 링크 검증과 권한 확인 후 수행한다. 실험실에서의 세부 기록 공개 여부도 각각 유지한다.
 
 ## 문의·파일·운영
 | 테이블 | 핵심 필드·제약 |

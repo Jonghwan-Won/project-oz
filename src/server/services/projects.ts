@@ -10,7 +10,6 @@ export type PublicProject = {
   startedOn: string | null;
   endedOn: string | null;
   slug: string;
-  order: number;
   placeholder: boolean;
   lifecycle: keyof Messages['projectStatuses'] | null;
   originLabel: string;
@@ -30,7 +29,7 @@ export const getPublicProjects = cache(
     if (!process.env.DATABASE_URL) return [];
     try {
       const result = await pool.query<PublicProject>(
-        `SELECT p.slug,p."customerName",to_char(p."startedOn",'YYYY-MM-DD') AS "startedOn",to_char(p."endedOn",'YYYY-MM-DD') AS "endedOn", p.position AS "order", p.placeholder, p.lifecycle,
+        `SELECT p.slug,p."customerName",to_char(p."startedOn",'YYYY-MM-DD') AS "startedOn",to_char(p."endedOn",'YYYY-MM-DD') AS "endedOn", p.placeholder, p.lifecycle,
         p."typeCode" AS type,
         COALESCE((SELECT jsonb_agg(jsonb_build_object('name',t.name,'kind',t.kind) ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id),'[]'::jsonb) AS tags,
         CASE WHEN $1='en' THEN o."nameEn" ELSE o."nameKo" END AS "originLabel",
@@ -48,8 +47,8 @@ export const getPublicProjects = cache(
         WHERE "projectId"=p.id AND locale IN ($1,'ko')
         ORDER BY CASE WHEN locale=$1 THEN 0 ELSE 1 END LIMIT 1
       ) t ON true
-      WHERE p.visibility='PUBLIC' AND p."deletedAt" IS NULL
-      ORDER BY p.position,p.id`,
+      WHERE p."isVisible"=true AND p."deletedAt" IS NULL
+      ORDER BY p."startedOn" DESC NULLS LAST,p.id`,
         [locale],
       );
       return result.rows;

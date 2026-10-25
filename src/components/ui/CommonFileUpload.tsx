@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useId, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { CommonFilePicker } from './CommonFilePicker';
 import { CommonLoading } from './CommonLoading';
+import s from './CommonFileUpload.module.css';
 import {
   isUploadedAsset,
   maxUploadBytes,
@@ -10,13 +12,23 @@ import {
 export function CommonFileUpload({
   label,
   imagesOnly = false,
+  duplicateNames = [],
   compact = false,
+  native = false,
+  hideHint = false,
+  icon,
+  children,
   onUploaded,
   onBusyChange,
 }: {
   label: string;
   imagesOnly?: boolean;
+  duplicateNames?: string[];
   compact?: boolean;
+  native?: boolean;
+  hideHint?: boolean;
+  icon?: ReactNode;
+  children?: ReactNode;
   onUploaded: (asset: UploadedAsset) => void;
   onBusyChange?: (busy: boolean) => void;
 }) {
@@ -26,10 +38,12 @@ export function CommonFileUpload({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   return (
-    <div>
+    <div className={compact ? s.withFiles : undefined}>
       <CommonFilePicker
         label={busy ? '업로드 중…' : label}
         compact={compact}
+        native={native}
+        icon={icon}
         disabled={busy}
         accept={
           imagesOnly
@@ -38,6 +52,16 @@ export function CommonFileUpload({
         }
         aria-describedby={id}
         onSelect={async (file) => {
+          const normalize = (name: string) =>
+            name.normalize('NFKC').toLocaleLowerCase();
+          if (
+            duplicateNames.some(
+              (name) => normalize(name) === normalize(file.name),
+            )
+          ) {
+            setMessage('같은 이름의 파일이 이미 첨부되어 있습니다.');
+            return;
+          }
           if (file.size > maxUploadBytes) {
             setMessage('파일은 10MB 이하여야 합니다.');
             return;
@@ -74,7 +98,7 @@ export function CommonFileUpload({
               );
             if (signal.aborted) return;
             onUploaded(result);
-            setMessage('NAS에 업로드했습니다.');
+            setMessage('');
           } catch (error) {
             if (!signal.aborted)
               setMessage(
@@ -88,10 +112,11 @@ export function CommonFileUpload({
           }
         }}
       />
+      {children}
       <small
         id={id}
         role="status"
-        className={compact && !message ? 'srOnly' : undefined}
+        className={(compact || hideHint) && !message ? 'srOnly' : undefined}
       >
         {message ||
           '최대 10MB · PNG, JPEG, WebP' + (imagesOnly ? '' : ' · PDF')}
