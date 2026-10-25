@@ -24,7 +24,7 @@
 
 ## 프로젝트와 실험실
 - 한 프로젝트의 lifecycle: IDEA → BUILDING → TESTING → RELEASED → ARCHIVED.
-- lifecycle과 visibility(PUBLIC/PRIVATE)는 별도 필드다. 개발 중이라도 공개 실험실 소개가 가능하다.
+- lifecycle과 프로젝트 노출 여부(`isVisible` boolean)는 별도 필드다. 개발 중이라도 사이트에 표시할 수 있다.
 - 공개 프로젝트는 RELEASED + PUBLIC, 실험실은 IDEA/BUILDING/TESTING + PUBLIC.
 - RELEASED로 바꿔도 ID·slug·기록·링크를 유지한다. 상세 URL은 /work/[slug]로 통일한다.
 - 프로젝트 유형은 카테고리로 분류한다. 웹사이트, 앱스토어 등 외부 링크는 여러 개 등록 가능하다.

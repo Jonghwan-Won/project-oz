@@ -1,0 +1,36 @@
+.assets {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.assets li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.assets svg {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+  transform: translateY(3px);
+}
+.assets a {
+  min-width: 0;
+  color: var(--accent-ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.assets a:hover {
+  text-decoration: underline;
+}
+.assets small {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+}

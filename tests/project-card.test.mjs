@@ -7,7 +7,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import ts from 'typescript';
 import { projects } from '../src/content/projects.ts';
 import { ko } from '../src/i18n/ko.ts';
-import { publicProjectDetail } from '../src/lib/project-detail.ts';
+import {
+  formatProjectPeriod,
+  publicProjectDetail,
+} from '../src/lib/project-detail.ts';
 
 const require = createRequire(import.meta.url);
 const { outputText } = ts.transpileModule(
@@ -29,7 +32,13 @@ new Function('require', 'exports', outputText)((id) => {
       ProjectPreviewLink: ({ href, className, children }) =>
         createElement('a', { href, className }, children),
     };
-  if (id === '@/lib/project-detail') return { publicProjectDetail };
+  if (id === './ProjectTag')
+    return {
+      ProjectTag: ({ label, className, role }) =>
+        createElement('span', { className, role }, label),
+    };
+  if (id === '@/lib/project-detail')
+    return { formatProjectPeriod, publicProjectDetail };
   if (id === 'next/link')
     return {
       default: ({ children, ...props }) => createElement('a', props, children),

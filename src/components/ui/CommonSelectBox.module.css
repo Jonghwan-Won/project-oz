@@ -32,6 +32,7 @@
 }
 .content {
   z-index: 400;
+  min-width: 160px;
   max-height: min(320px, 50dvh);
   max-width: calc(100vw - 24px);
   background: var(--surface);
@@ -55,6 +56,7 @@
   outline: none;
   cursor: pointer;
   font-size: 14px;
+  white-space: nowrap;
 }
 .item[data-combobox-selected],
 .item[data-combobox-active] {

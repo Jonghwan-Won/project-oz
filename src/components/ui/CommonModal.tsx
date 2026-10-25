@@ -10,12 +10,14 @@ export function CommonModal({
   actions,
   onClose,
   children,
+  closeOnEscape = true,
 }: {
   open: boolean;
   title: string;
   actions: ReactNode;
   onClose: () => void;
   children: ReactNode;
+  closeOnEscape?: boolean;
 }) {
   const id = useId();
   return (
@@ -27,6 +29,7 @@ export function CommonModal({
       padding={0}
       withCloseButton={false}
       closeOnClickOutside={false}
+      closeOnEscape={closeOnEscape}
       aria-labelledby={id}
       classNames={{ content: s.modal, body: s.mantineBody }}
     >

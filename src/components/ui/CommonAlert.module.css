@@ -71,6 +71,7 @@
   font-size: 16px;
   font-weight: 500;
   line-height: 1.65;
+  text-align: center;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -81,10 +82,6 @@
   width: 100%;
   border-radius: 999px;
   min-height: 44px;
-  background: color-mix(in srgb, var(--surface) 88%, var(--ink));
-}
-.actions button:hover {
-  background: color-mix(in srgb, var(--surface) 80%, var(--ink));
 }
 .confirmActions {
   display: grid;

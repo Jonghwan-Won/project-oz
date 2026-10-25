@@ -44,7 +44,7 @@ export function CommonAlert({
         {content}
       </p>
       <div className={s.actions}>
-        <CommonButton variant="neutral" onClick={onClose}>
+        <CommonButton variant="primary" onClick={onClose}>
           {confirmLabel}
         </CommonButton>
       </div>

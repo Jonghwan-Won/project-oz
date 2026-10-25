@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { projects } from '../src/content/projects.ts';
 import { ko } from '../src/i18n/ko.ts';
 import { en } from '../src/i18n/en.ts';
@@ -57,7 +57,36 @@ export async function seedDatabase(client) {
         : [
             ['REACT', 'React', 'React'],
             ['NEXT_JS', 'Next.js', 'Next.js'],
+            ['TYPESCRIPT', 'TypeScript', 'TypeScript'],
+            ['JAVASCRIPT', 'JavaScript', 'JavaScript'],
+            ['HTML', 'HTML', 'HTML'],
+            ['CSS', 'CSS', 'CSS'],
+            ['TAILWIND_CSS', 'Tailwind CSS', 'Tailwind CSS'],
+            ['VUE_JS', 'Vue.js', 'Vue.js'],
+            ['ANGULAR', 'Angular', 'Angular'],
+            ['NODE_JS', 'Node.js', 'Node.js'],
+            ['JAVA', 'Java', 'Java'],
+            ['SPRING_BOOT', 'Spring Boot', 'Spring Boot'],
+            ['PYTHON', 'Python', 'Python'],
+            ['DJANGO', 'Django', 'Django'],
+            ['FASTAPI', 'FastAPI', 'FastAPI'],
+            ['CSHARP', 'C#', 'C#'],
+            ['DOTNET', '.NET', '.NET'],
             ['POSTGRESQL', 'PostgreSQL', 'PostgreSQL'],
+            ['MYSQL', 'MySQL', 'MySQL'],
+            ['MARIADB', 'MariaDB', 'MariaDB'],
+            ['MONGODB', 'MongoDB', 'MongoDB'],
+            ['REDIS', 'Redis', 'Redis'],
+            ['AWS', 'AWS', 'AWS'],
+            ['DOCKER', 'Docker', 'Docker'],
+            ['KUBERNETES', 'Kubernetes', 'Kubernetes'],
+            ['GIT', 'Git', 'Git'],
+            ['GITHUB', 'GitHub', 'GitHub'],
+            ['LINUX', 'Linux', 'Linux'],
+            ['NGINX', 'Nginx', 'Nginx'],
+            ['PRISMA', 'Prisma', 'Prisma'],
+            ['MANTINE', 'Mantine', 'Mantine'],
+            ['TIPTAP', 'Tiptap', 'Tiptap'],
           ];
       for (const [position, [code, label, labelEn]] of values.entries()) {
         await client.query(
@@ -69,7 +98,7 @@ export async function seedDatabase(client) {
     let inserted = 0;
     for (const project of initialProjects()) {
       const result = await client.query(
-        'INSERT INTO "Project" ("id","slug","customerName","originCode","typeCode","lifecycle","visibility","position","placeholder","startedOn","endedOn","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
+        'INSERT INTO "Project" ("id","slug","customerName","originCode","typeCode","lifecycle","isVisible","placeholder","startedOn","endedOn","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now()) ON CONFLICT ("slug") DO NOTHING RETURNING "id"',
         [
           project.id,
           project.slug,
@@ -77,8 +106,7 @@ export async function seedDatabase(client) {
           project.origin,
           project.type ?? null,
           project.lifecycle ?? null,
-          project.visibility,
-          project.order,
+          project.isVisible,
           project.placeholder ?? false,
           project.startedOn ?? null,
           project.endedOn ?? null,
@@ -95,6 +123,25 @@ export async function seedDatabase(client) {
           JSON.stringify(project.body),
         ],
       );
+      for (const [position, name] of (project.technologies ?? []).entries()) {
+        const slug = createHash('sha256')
+          .update(name.normalize('NFKC').toLowerCase())
+          .digest('hex');
+        await client.query(
+          'INSERT INTO "Tag" (id,kind,slug,name) VALUES ($1,$2,$3,$4) ON CONFLICT (kind,slug) DO NOTHING',
+          [randomUUID(), 'TECHNOLOGY', slug, name],
+        );
+        const tag = (
+          await client.query('SELECT id FROM "Tag" WHERE kind=$1 AND slug=$2', [
+            'TECHNOLOGY',
+            slug,
+          ])
+        ).rows[0];
+        await client.query(
+          'INSERT INTO "ProjectTag" ("projectId","tagId",position) SELECT id,$2,$3 FROM "Project" WHERE slug=$1 ON CONFLICT DO NOTHING',
+          [project.slug, tag.id, position],
+        );
+      }
       const english = en.projectItems[project.slug];
       await client.query(
         'INSERT INTO "ProjectTranslation" ("projectId",locale,title,summary,body) SELECT id,$2,$3,$4,$5 FROM "Project" WHERE slug=$1 ON CONFLICT DO NOTHING',

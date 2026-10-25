@@ -45,7 +45,7 @@ export function ProjectPreviewLink({
           title={locale === 'en' ? 'Project details' : '프로젝트 상세'}
           onClose={() => setOpen(false)}
           actions={
-            <CommonButton onClick={() => setOpen(false)}>
+            <CommonButton size="sm" onClick={() => setOpen(false)}>
               {locale === 'en' ? 'Close' : '닫기'}
             </CommonButton>
           }

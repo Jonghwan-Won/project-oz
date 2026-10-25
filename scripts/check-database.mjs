@@ -145,7 +145,7 @@ try {
     8,
   );
   const project = (
-    await client.query('SELECT id FROM "Project" ORDER BY position LIMIT 1')
+    await client.query('SELECT id FROM "Project" ORDER BY "startedOn" DESC NULLS LAST LIMIT 1')
   ).rows[0];
   await client.query(
     readFileSync(
@@ -215,8 +215,8 @@ try {
       publicProjects.find((p) => p.slug === 'db-only-project').contentLocale,
       'ko',
     );
-    await client.query('UPDATE "Project" SET visibility=$1 WHERE id=$2', [
-      'PRIVATE',
+    await client.query('UPDATE "Project" SET "isVisible"=$1 WHERE id=$2', [
+      false,
       project.id,
     ]);
     assert.ok(

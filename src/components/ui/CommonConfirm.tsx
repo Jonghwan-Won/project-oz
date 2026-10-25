@@ -43,7 +43,7 @@ export function CommonConfirm({
         {content}
       </p>
       <div className={`${s.actions} ${s.confirmActions}`}>
-        <CommonButton variant="neutral" onClick={onConfirm}>
+        <CommonButton variant="primary" onClick={onConfirm}>
           {confirmLabel}
         </CommonButton>
         <CommonButton variant="neutral" onClick={onCancel}>

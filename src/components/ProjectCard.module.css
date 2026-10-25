@@ -8,7 +8,7 @@
 }
 .details {
   box-sizing: border-box;
-  height: 184px;
+  height: 218px;
   padding: 22px 24px;
   display: flex;
   flex-direction: column;
@@ -89,17 +89,9 @@
   align-items: center;
   gap: 8px;
   min-width: 0;
-  height: 21px;
+  height: 22px;
   overflow: hidden;
   white-space: nowrap;
-}
-.technology {
-  flex: 0 0 auto;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0 8px;
-  font-size: 11px;
-  line-height: 19px;
 }
 .period {
   overflow: hidden;
@@ -109,7 +101,9 @@
   max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: var(--surface);
+}
+.metaLine {
+  text-overflow: ellipsis;
 }
 .card:focus-visible {
   outline-offset: 8px;

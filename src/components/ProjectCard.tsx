@@ -1,4 +1,5 @@
 import { ProjectPreviewLink } from './ProjectPreviewLink';
+import { ProjectTag } from './ProjectTag';
 import { formatProjectPeriod, publicProjectDetail } from '@/lib/project-detail';
 import Image from 'next/image';
 import type { PublicProject } from '@/server/services/projects';
@@ -13,6 +14,12 @@ export function ProjectCard({
 }) {
   const en = locale === 'en';
   const technologies = project.tags.filter((tag) => tag.kind === 'TECHNOLOGY');
+  const context = [
+    project.customerName || project.originLabel,
+    project.typeLabel,
+  ]
+    .filter(Boolean)
+    .join(' · ');
   return (
     <ProjectPreviewLink
       project={publicProjectDetail(project, locale)}
@@ -71,6 +78,7 @@ export function ProjectCard({
               </span>
             )}
           </div>
+          {context && <div className={s.metaLine}>{context}</div>}
           {technologies.length > 0 && (
             <div
               className={s.technologies}
@@ -78,14 +86,19 @@ export function ProjectCard({
               aria-label={en ? 'Representative technologies' : '대표 기술'}
             >
               {technologies.slice(0, 3).map((tag) => (
-                <span className={s.technology} role="listitem" key={tag.name}>
-                  {tag.name}
-                </span>
+                <ProjectTag
+                  label={tag.name}
+                  className={s.technology}
+                  role="listitem"
+                  key={tag.name}
+                />
               ))}
               {technologies.length > 3 && (
-                <span className={s.technology} role="listitem">
-                  +{technologies.length - 3}
-                </span>
+                <ProjectTag
+                  label={`+${technologies.length - 3}`}
+                  className={s.technology}
+                  role="listitem"
+                />
               )}
             </div>
           )}

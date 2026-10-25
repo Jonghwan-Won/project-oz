@@ -14,10 +14,10 @@ export type ProjectForm = {
   originCode: string;
   typeCode: string;
   lifecycle: string;
-  visibility: 'PRIVATE' | 'PUBLIC';
-  position: number;
+  isVisible: boolean;
   placeholder: boolean;
   thumbnail: string;
+  thumbnailFile?: UploadedAsset | null;
   technologies: string[];
   tags: string[];
   attachmentIds: string[];
@@ -45,8 +45,7 @@ export const blankProject = (): ProjectForm => ({
   originCode: 'personal',
   typeCode: '',
   lifecycle: 'BUILDING',
-  visibility: 'PRIVATE',
-  position: 0,
+  isVisible: false,
   placeholder: false,
   thumbnail: '',
   technologies: [],
@@ -85,9 +84,8 @@ export function parseProjectForm(value: unknown): ProjectForm {
     !thumbnailUrl(thumbnail)
   )
     throw Error('주소 또는 썸네일 URL을 확인해 주세요.');
-  const visibility = value.visibility;
-  if (visibility !== 'PRIVATE' && visibility !== 'PUBLIC')
-    throw Error('공개 범위를 확인해 주세요.');
+  const isVisible = value.isVisible;
+  if (typeof isVisible !== 'boolean') throw Error('노출 여부를 확인해 주세요.');
   const lifecycle = string('lifecycle', 20);
   if (
     !['', 'IDEA', 'BUILDING', 'TESTING', 'RELEASED', 'ARCHIVED'].includes(
@@ -116,13 +114,9 @@ export function parseProjectForm(value: unknown): ProjectForm {
     typeof value.version !== 'number' ||
     !Number.isSafeInteger(value.version) ||
     value.version < 0 ||
-    typeof value.position !== 'number' ||
-    !Number.isSafeInteger(value.position) ||
-    value.position < 0 ||
-    value.position > 100000 ||
     typeof value.placeholder !== 'boolean'
   )
-    throw Error('순서·버전을 확인해 주세요.');
+    throw Error('버전 또는 프로젝트 정보를 확인해 주세요.');
   const translations = value.translations;
   if (!record(translations)) throw Error('언어별 내용을 확인해 주세요.');
   const copy = (locale: string): ProjectCopy => {
@@ -155,8 +149,7 @@ export function parseProjectForm(value: unknown): ProjectForm {
     originCode: string('originCode', 60),
     typeCode: string('typeCode', 60),
     lifecycle,
-    visibility,
-    position: value.position,
+    isVisible,
     placeholder: value.placeholder,
     thumbnail,
     technologies: list('technologies'),

@@ -15,7 +15,7 @@
 ## 데이터와 제약
 
 - 프로젝트 작업 구분은 PROJECT_ORIGIN, 유형은 PROJECT_TYPE 그룹만 참조할 수 있다. 복합 FK와 CHECK로 그룹 혼입과 없는 코드를 차단한다.
-- 상태와 공개 범위는 enum이다. 코드 관리 화면에서 항목을 추가한다고 새로운 동작이 생기지 않는다.
+- 진행 상태는 enum이며, 프로젝트 노출 여부는 boolean `isVisible`이다. 코드 관리 화면에서 항목을 추가한다고 새로운 동작이 생기지 않는다.
 - title/summary/body는 Project에 저장한다. body는 doc/content 구조의 JSONB이며 bodySchemaVersion으로 형식을 구분한다. 편집기 선정 시 전체 노드 검증과 안전한 렌더링을 구현해야 한다.
 - 대표 이미지는 ProjectAsset의 COVER로 관리하며 부분 유일 인덱스로 프로젝트당 최대 1개를 보장한다. INLINE/ATTACHMENT도 같은 파일 테이블을 참조한다.
 - 프로젝트 삭제 시 연결 행은 제거하지만 원본 파일과 태그는 남긴다. 사용 중인 파일/태그/코드/사용자는 FK로 삭제를 거부한다.
@@ -75,7 +75,7 @@ npm run db:seed
 
 ## 2026-10-21 공개 프로젝트 DB 조회 연결
 
-홈 카드·프로젝트 목록·상세 및 상세 메타데이터는 server/services/projects.ts에서 개발/운영 환경의 DATABASE_URL로 조회한다. Project.visibility=PUBLIC만 읽고 position/id 순으로 정렬하며 홈은 앞의 2개를 표시한다. 공통 코드 표시명과 ProjectTranslation의 ko/en 내용을 사용하고, 영어 누락 시 한국어로 대체한다. 상세에는 원문 표시 안내를 제공한다. src/content/projects.ts와 언어 사전의 프로젝트 항목은 seed 및 개발 관리자 초안 자료로 유지하며 공개 화면의 데이터 원본은 아니다. 관리자 저장·파일 조회/업로드는 아직 연결하지 않았다. 본문은 heading/paragraph의 텍스트만 안전하게 렌더링하며 다른 에디터 노드는 추후 구현한다.
+홈 카드·프로젝트 목록·상세 및 상세 메타데이터는 server/services/projects.ts에서 개발/운영 환경의 DATABASE_URL로 조회한다. Project.isVisible=true만 읽고 시작일 내림차순, NULL은 마지막으로 정렬한다. 공통 코드 표시명과 ProjectTranslation의 ko/en 내용을 사용하고, 영어 누락 시 한국어로 대체한다. 상세에는 원문 표시 안내를 제공한다. src/content/projects.ts와 언어 사전의 프로젝트 항목은 seed 자료로 유지한다.
 
 이제 홈·프로젝트 화면에는 DB 연결이 필요하다. 로컬은 SSH 터널, 운영은 별도 운영 DATABASE_URL과 migration/seed를 먼저 준비해야 한다. DB 실패 시 오류 화면을 표시하며 TS 예시 데이터로 대체하지 않는다.
 

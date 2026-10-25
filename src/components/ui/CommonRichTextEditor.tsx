@@ -3,7 +3,12 @@ import { CommonInput } from '@/components/ui/CommonInput';
 
 import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react';
-import { richTextExtensions, parseRichText } from '@/lib/rich-text';
+import {
+  parseRichText,
+  richTextExtensions,
+  textStyleFontOptions,
+  textStyleSizeOptions,
+} from '@/lib/rich-text';
 import { CommonSelectBox } from './CommonSelectBox';
 import { CommonFileUpload } from './CommonFileUpload';
 import { CommonButton } from './CommonButton';
@@ -23,8 +28,9 @@ export function CommonRichTextEditor({
   disabled?: boolean;
   onUploadBusyChange?: (busy: boolean) => void;
 }) {
-  const [rows, setRows] = useState(3);
-  const [columns, setColumns] = useState(3);
+  const [tablePickerOpen, setTablePickerOpen] = useState(false);
+  const [tableSize, setTableSize] = useState({ rows: 2, columns: 3 });
+  const [imageWidth, setImageWidth] = useState<string | null>(null);
   const editor = useEditor({
     extensions: richTextExtensions,
     content: parseRichText(value) ?? undefined,
@@ -57,6 +63,29 @@ export function CommonRichTextEditor({
       editor.commands.setContent(content, { emitUpdate: false });
   }, [editor, value]);
   if (!editor) return <p role="status">에디터를 준비하고 있어요.</p>;
+  const commitImageWidth = (value: string) => {
+    const width = Number(value);
+    if (!Number.isFinite(width) || width < 50 || width > 20000) return;
+    const attrs = editor.getAttributes('image');
+    const image = Array.from(editor.view.dom.querySelectorAll('img')).find(
+      (candidate) => candidate.getAttribute('src') === attrs.src,
+    );
+    const ratio =
+      attrs.width && attrs.height
+        ? attrs.height / attrs.width
+        : image?.naturalWidth
+          ? image.naturalHeight / image.naturalWidth
+          : null;
+    if (!ratio) return;
+    editor
+      .chain()
+      .focus()
+      .updateAttributes('image', {
+        width,
+        height: Math.round(width * ratio),
+      })
+      .run();
+  };
   const tools = [
     {
       label: '굵게',
@@ -94,6 +123,17 @@ export function CommonRichTextEditor({
       run: () => editor.chain().focus().toggleCodeBlock().run(),
     },
   ];
+  const textStyle = editor.getAttributes('textStyle');
+  const updateTextStyle = (
+    attribute: 'fontFamily' | 'fontSize',
+    value: string,
+  ) => {
+    const attrs = { ...textStyle, [attribute]: value || null };
+    const chain = editor.chain().focus();
+    if (!attrs.fontFamily && !attrs.fontSize)
+      chain.unsetMark('textStyle').run();
+    else chain.setMark('textStyle', attrs).run();
+  };
   return (
     <div className={s.editor}>
       <div className={s.toolbar} role="group" aria-label={label + ' 서식'}>
@@ -122,6 +162,20 @@ export function CommonRichTextEditor({
             { value: '3', label: '제목 3' },
           ]}
         />
+        <CommonSelectBox
+          className={s.blockStyle}
+          aria-label="글꼴"
+          value={textStyle.fontFamily ?? ''}
+          onValueChange={(value) => updateTextStyle('fontFamily', value)}
+          options={textStyleFontOptions}
+        />
+        <CommonSelectBox
+          className={s.blockStyle}
+          aria-label="글자 크기"
+          value={textStyle.fontSize ?? ''}
+          onValueChange={(value) => updateTextStyle('fontSize', value)}
+          options={textStyleSizeOptions}
+        />
         {tools.map((tool) => (
           <CommonButton
             key={tool.label}
@@ -134,34 +188,119 @@ export function CommonRichTextEditor({
             onMouseDown={(event) => event.preventDefault()}
             onClick={tool.run}
           >
-            {
+            <span className={s.glyph}>
               {
-                굵게: <b>B</b>,
-                기울임: <i>I</i>,
-                밑줄: <u>U</u>,
-                제목: <b>H₂</b>,
-                '글머리 목록': '• ≡',
-                '번호 목록': '1. ≡',
-                인용: '❝',
-                '코드 블록': '</>',
-              }[tool.label]
-            }
+                {
+                  굵게: <b>B</b>,
+                  기울임: <i>I</i>,
+                  밑줄: <u>U</u>,
+                  제목: <b>H₂</b>,
+                  '글머리 목록': '• ≡',
+                  '번호 목록': '1. ≡',
+                  인용: '❝',
+                  '코드 블록': '</>',
+                }[tool.label]
+              }
+            </span>
           </CommonButton>
         ))}
         <CommonButton
           size="sm"
+          variant="ghost"
+          className={s.tool}
+          title="되돌리기"
+          aria-label="되돌리기"
           disabled={!editor.can().undo()}
           onClick={() => editor.chain().focus().undo().run()}
         >
-          되돌리기
+          <span className={s.glyph}>↶</span>
         </CommonButton>
         <CommonButton
           size="sm"
+          variant="ghost"
+          className={s.tool}
+          title="다시 실행"
+          aria-label="다시 실행"
           disabled={!editor.can().redo()}
           onClick={() => editor.chain().focus().redo().run()}
         >
-          다시 실행
+          <span className={s.glyph}>↷</span>
         </CommonButton>
+        <div className={s.tablePickerWrap}>
+          <CommonButton
+            size="sm"
+            variant="ghost"
+            className={s.tool}
+            aria-label="표 삽입"
+            aria-expanded={tablePickerOpen}
+            title="표 삽입"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setTablePickerOpen(!tablePickerOpen)}
+          >
+            <svg
+              viewBox="0 0 20 20"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <rect x="2" y="3" width="16" height="14" rx="1" />
+              <path d="M2 8h16M7 3v14m6-14v14" />
+            </svg>
+          </CommonButton>
+          {tablePickerOpen && (
+            <div
+              className={s.tablePicker}
+              role="group"
+              aria-label="표 크기 선택"
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setTablePickerOpen(false);
+                }
+              }}
+            >
+              <span aria-live="polite">
+                {tableSize.columns}열 × {tableSize.rows}행
+              </span>
+              <div className={s.tableGrid}>
+                {Array.from({ length: 20 }, (_, row) =>
+                  Array.from({ length: 10 }, (_, column) => {
+                    const rows = row + 1;
+                    const columns = column + 1;
+                    const active =
+                      rows <= tableSize.rows && columns <= tableSize.columns;
+                    return (
+                      <button
+                        key={`${rows}-${columns}`}
+                        type="button"
+                        aria-label={`${columns}열 ${rows}행 표 삽입`}
+                        className={active ? s.tableCellActive : undefined}
+                        onMouseEnter={() => setTableSize({ rows, columns })}
+                        onFocus={() => setTableSize({ rows, columns })}
+                        onClick={() => {
+                          editor
+                            .chain()
+                            .focus()
+                            .insertTable({
+                              rows,
+                              cols: columns,
+                              withHeaderRow: true,
+                            })
+                            .run();
+                          setTablePickerOpen(false);
+                        }}
+                      />
+                    );
+                  }),
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <div className={s.imageTools}>
         <CommonFileUpload
@@ -169,6 +308,22 @@ export function CommonRichTextEditor({
           onBusyChange={onUploadBusyChange}
           imagesOnly
           compact
+          icon={
+            <svg
+              viewBox="0 0 20 20"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            >
+              <rect x="2" y="3" width="16" height="14" rx="2" />
+              <circle cx="7" cy="8" r="1.5" />
+              <path d="m3 15 5-4 3 2 3-4 3 6" />
+            </svg>
+          }
           onUploaded={(asset) => {
             if (!editor.isDestroyed)
               editor
@@ -178,14 +333,7 @@ export function CommonRichTextEditor({
                 .run();
           }}
         />
-        <CommonButton
-          size="sm"
-          disabled={!editor.isActive('image')}
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().deleteSelection().run()}
-        >
-          선택한 이미지 삭제
-        </CommonButton>
+        <small>PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입</small>
         {editor.isActive('image') && (
           <label>
             이미지 너비(px)
@@ -194,130 +342,74 @@ export function CommonRichTextEditor({
               type="number"
               min={50}
               max={20000}
-              value={editor.getAttributes('image').width ?? ''}
+              value={imageWidth ?? String(editor.getAttributes('image').width ?? '')}
+              onFocus={() =>
+                setImageWidth(String(editor.getAttributes('image').width ?? ''))
+              }
               onChange={(event) => {
-                const width = Number(event.target.value);
-                if (!Number.isFinite(width) || width < 50 || width > 20000)
-                  return;
-                const attrs = editor.getAttributes('image');
-                const image = Array.from(
-                  editor.view.dom.querySelectorAll('img'),
-                ).find((image) => image.getAttribute('src') === attrs.src);
-                const ratio =
-                  attrs.width && attrs.height
-                    ? attrs.height / attrs.width
-                    : image?.naturalWidth
-                      ? image.naturalHeight / image.naturalWidth
-                      : null;
-                if (!ratio) return;
-                editor
-                  .chain()
-                  .updateAttributes('image', {
-                    width,
-                    height: Math.round(width * ratio),
-                  })
-                  .run();
+                const value = event.target.value;
+                setImageWidth(value);
+                commitImageWidth(value);
+              }}
+              onBlur={() => setImageWidth(null)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }
               }}
             />
           </label>
         )}
-        <small>
-          네 모서리 드래그로 크기 조절 · PNG·JPEG·WebP · 최대 10MB · 커서 위치에
-          삽입
-        </small>
       </div>
-      <div className={s.tableTools}>
-        <label>
-          행{' '}
-          <CommonInput
-            aria-label="표 행 수"
-            type="number"
-            min={1}
-            max={20}
-            value={rows}
-            onChange={(event) => setRows(Number(event.target.value))}
-          />
-        </label>
-        <label>
-          열{' '}
-          <CommonInput
-            aria-label="표 열 수"
-            type="number"
-            min={1}
-            max={10}
-            value={columns}
-            onChange={(event) => setColumns(Number(event.target.value))}
-          />
-        </label>
-        <CommonButton
-          size="sm"
-          disabled={
-            !Number.isInteger(rows) ||
-            rows < 1 ||
-            rows > 20 ||
-            !Number.isInteger(columns) ||
-            columns < 1 ||
-            columns > 10
-          }
-          onClick={() =>
-            editor
-              .chain()
-              .focus()
-              .insertTable({ rows, cols: columns, withHeaderRow: true })
-              .run()
-          }
-        >
-          표 삽입
-        </CommonButton>
-        {editor.isActive('table') && (
-          <>
-            <CommonButton
-              size="sm"
-              onClick={() => editor.chain().focus().addRowAfter().run()}
-            >
-              행 추가
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              onClick={() => editor.chain().focus().addColumnAfter().run()}
-            >
-              열 추가
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              onClick={() => editor.chain().focus().deleteRow().run()}
-            >
-              행 삭제
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              onClick={() => editor.chain().focus().deleteColumn().run()}
-            >
-              열 삭제
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              disabled={!editor.can().mergeCells()}
-              onClick={() => editor.chain().focus().mergeCells().run()}
-            >
-              셀 병합
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              disabled={!editor.can().splitCell()}
-              onClick={() => editor.chain().focus().splitCell().run()}
-            >
-              셀 나누기
-            </CommonButton>
-            <CommonButton
-              size="sm"
-              onClick={() => editor.chain().focus().deleteTable().run()}
-            >
-              표 삭제
-            </CommonButton>
-          </>
-        )}
-      </div>
+      {editor.isActive('table') && (
+        <div className={s.tableTools}>
+          <CommonButton
+            size="sm"
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+          >
+            행 추가
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+          >
+            열 추가
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            onClick={() => editor.chain().focus().deleteRow().run()}
+          >
+            행 삭제
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            onClick={() => editor.chain().focus().deleteColumn().run()}
+          >
+            열 삭제
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            disabled={!editor.can().mergeCells()}
+            onClick={() => editor.chain().focus().mergeCells().run()}
+          >
+            셀 병합
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            disabled={!editor.can().splitCell()}
+            onClick={() => editor.chain().focus().splitCell().run()}
+          >
+            셀 나누기
+          </CommonButton>
+          <CommonButton
+            size="sm"
+            onClick={() => editor.chain().focus().deleteTable().run()}
+          >
+            표 삭제
+          </CommonButton>
+        </div>
+      )}
       <EditorContent editor={editor} />
     </div>
   );

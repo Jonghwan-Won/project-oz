@@ -40,7 +40,7 @@ test('a DB-free production image renders an empty project list without querying 
 });
 test('configured project reads require public, undeleted projects and hide driver errors', async () => {
   const api = service({ DATABASE_URL: 'configured' }, async (sql, params) => {
-    assert.match(sql, /p.visibility='PUBLIC' AND p\."deletedAt" IS NULL/);
+    assert.match(sql, /p\."isVisible"=true AND p\."deletedAt" IS NULL/);
     assert.deepEqual(params, ['en']);
     throw Error('private driver detail');
   });

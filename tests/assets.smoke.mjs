@@ -66,23 +66,23 @@ try {
     assert.equal((await fetch(publicBase + asset.url)).status, 404);
     projectId = randomUUID();
     await client.query(
-      'INSERT INTO "Project" (id,slug,"originCode",visibility,"updatedAt") VALUES ($1,$2,$3,$4,now())',
-      [projectId, 'asset-test-' + projectId, 'personal', 'PRIVATE'],
+      'INSERT INTO "Project" (id,slug,"originCode","isVisible","updatedAt") VALUES ($1,$2,$3,$4,now())',
+      [projectId, 'asset-test-' + projectId, 'personal', false],
     );
     await client.query(
       'INSERT INTO "ProjectAsset" (id,"projectId","assetId",usage) VALUES ($1,$2,$3,$4)',
       [randomUUID(), projectId, asset.id, 'ATTACHMENT'],
     );
     assert.equal((await fetch(publicBase + asset.url)).status, 404);
-    await client.query('UPDATE "Project" SET visibility=$1 WHERE id=$2', [
-      'PUBLIC',
+    await client.query('UPDATE "Project" SET "isVisible"=$1 WHERE id=$2', [
+      true,
       projectId,
     ]);
     const publicImage = await fetch(publicBase + asset.url);
     assert.equal(publicImage.status, 200);
     assert.deepEqual(Buffer.from(await publicImage.arrayBuffer()), png);
-    await client.query('UPDATE "Project" SET visibility=$1 WHERE id=$2', [
-      'PRIVATE',
+    await client.query('UPDATE "Project" SET "isVisible"=$1 WHERE id=$2', [
+      false,
       projectId,
     ]);
     assert.equal((await fetch(publicBase + asset.url)).status, 404);
