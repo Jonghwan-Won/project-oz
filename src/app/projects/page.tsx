@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { getPublicProjects } from '@/server/services/projects';
 import { getMessages } from '@/i18n/server';
+import { MainPageLink } from '@/components/MainPageLink';
 
 export async function generateMetadata() {
   const { messages } = await getMessages();
@@ -26,6 +27,7 @@ export default async function Projects({
   const copy = messages.projects;
   return (
     <div className="page">
+      <MainPageLink href="/#projects" label={messages.navigation.main} />
       <h1 className="accentDot">{copy.title}</h1>
       <p className="lead">{copy.description}</p>
       {types.length > 1 && (
@@ -46,11 +48,7 @@ export default async function Projects({
       )}
       <div className="projectGrid">
         {projects.map((project) => (
-          <ProjectCard
-            key={project.slug}
-            project={project}
-            locale={locale}
-          />
+          <ProjectCard key={project.slug} project={project} locale={locale} />
         ))}
       </div>
       {!projects.length && (

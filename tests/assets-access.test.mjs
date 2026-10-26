@@ -70,6 +70,8 @@ test('production asset reads do not use the development private-file exception',
   let params;
   const api = service('production', async (_sql, values) => {
     assert.match(_sql, /p\."deletedAt" IS NULL/);
+    assert.match(_sql, /FROM "PostAsset" pa JOIN "Post" p/);
+    assert.equal((_sql.match(/p\."isVisible"=true AND p\."deletedAt" IS NULL/g) ?? []).length, 2);
     params = values;
     return { rows: [] };
   });

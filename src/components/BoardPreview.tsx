@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import s from './BoardPreview.module.css';
 
 type Post = {
+  id: string;
   slug: string;
   category: string;
   title: string;
@@ -64,8 +65,8 @@ export function BoardPreview({
         >
           {posts.map((post) => (
             <Link
-              href={'/board/' + post.slug}
-              key={post.slug}
+              href={'/board/' + post.id}
+              key={post.id}
               className={`interactiveCard ${s.card}`}
             >
               <span className={s.tag}>{post.category}</span>

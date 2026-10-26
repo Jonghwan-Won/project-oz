@@ -87,6 +87,22 @@ export async function seedDatabase(client) {
             ['PRISMA', 'Prisma', 'Prisma'],
             ['MANTINE', 'Mantine', 'Mantine'],
             ['TIPTAP', 'Tiptap', 'Tiptap'],
+            ['AWS_S3', 'AWS S3', 'AWS S3'],
+            ['JPA', 'JPA', 'JPA'],
+            ['JSP', 'JSP', 'JSP'],
+            ['KAKAO_MAP_API', 'Kakao Map API', 'Kakao Map API'],
+            ['MSSQL', 'MSSQL', 'MSSQL'],
+            ['MUI', 'MUI', 'MUI'],
+            ['MATERIAL_UI', 'Material UI', 'Material UI'],
+            ['MYBATIS', 'MyBatis', 'MyBatis'],
+            ['NEXACRO', 'Nexacro', 'Nexacro'],
+            ['NUXT_JS', 'Nuxt.js', 'Nuxt.js'],
+            ['ORACLE', 'Oracle', 'Oracle'],
+            ['QUERYDSL', 'QueryDSL', 'QueryDSL'],
+            ['REDUX', 'Redux', 'Redux'],
+            ['SPRING', 'Spring', 'Spring'],
+            ['SPRING_FRAMEWORK', 'Spring Framework', 'Spring Framework'],
+            ['SPRING_SECURITY', 'Spring Security', 'Spring Security'],
           ];
       for (const [position, [code, label, labelEn]] of values.entries()) {
         await client.query(

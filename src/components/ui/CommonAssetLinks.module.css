@@ -22,9 +22,12 @@
 }
 .assets a {
   min-width: 0;
-  color: var(--accent-ink);
+  color: var(--ink);
   text-decoration: none;
   overflow-wrap: anywhere;
+}
+.assets a:visited {
+  color: var(--ink);
 }
 .assets a:hover {
   text-decoration: underline;

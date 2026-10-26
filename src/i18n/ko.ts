@@ -53,6 +53,7 @@ export const ko = {
     board: '게시판',
     help: '연락',
     home: 'ddoza 홈',
+    main: '돌아가기',
     menu: '주 메뉴',
     open: '메뉴 열기',
     close: '메뉴 닫기',
@@ -195,7 +196,7 @@ export const ko = {
   },
   site: {
     backToTop: '맨 위로 이동',
-    title: 'ddoza — 작은 아이디어를 현실로',
+    title: 'ddoza - 작은 아이디어를 현실로',
     description: '만들고, 기록하고, 연결하는 ddoza의 작업실.',
     skip: '본문 바로가기',
     footer: '작은 호기심에서, 다음 가능성으로.',

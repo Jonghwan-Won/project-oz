@@ -1,11 +1,14 @@
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
 import {
+  Extension,
   getSchema,
   Mark,
   mergeAttributes,
   type JSONContent,
 } from '@tiptap/core';
+import { Plugin } from '@tiptap/pm/state';
+import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import StarterKit from '@tiptap/starter-kit';
 
 const fontFamilies = {
@@ -74,6 +77,164 @@ const TextStyle = Mark.create({
     0,
   ],
 });
+const textAlignments = ['left', 'center', 'right'] as const;
+const TextAlign = Extension.create({
+  name: 'textAlign',
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['paragraph', 'heading', 'image'],
+        attributes: {
+          textAlign: {
+            default: null,
+            parseHTML: (element: HTMLElement) => {
+              const value =
+                element.tagName === 'IMG'
+                  ? element.getAttribute('data-text-align')
+                  : element.style.textAlign;
+              return value === 'left' || value === 'center' || value === 'right'
+                ? value
+                : null;
+            },
+            renderHTML: (attributes: { textAlign?: unknown; src?: unknown }) => {
+              const alignment = attributes.textAlign;
+              if (
+                alignment !== 'left' &&
+                alignment !== 'center' &&
+                alignment !== 'right'
+              )
+                return {};
+              if ('src' in attributes)
+                return { 'data-text-align': alignment };
+              return { style: `text-align:${alignment}` };
+            },
+          },
+        },
+      },
+    ];
+  },
+});
+const TableRowHeight = Extension.create({
+  name: 'tableRowHeight',
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['tableRow'],
+        attributes: {
+          rowHeight: {
+            default: null,
+            parseHTML: (element: HTMLElement) => {
+              const height = Number.parseFloat(element.style.height);
+              return Number.isFinite(height) && height >= 24 && height <= 2000
+                ? height
+                : null;
+            },
+            renderHTML: (attributes: { rowHeight?: unknown }) =>
+              typeof attributes.rowHeight === 'number' &&
+              Number.isFinite(attributes.rowHeight) &&
+              attributes.rowHeight >= 24 &&
+              attributes.rowHeight <= 2000
+                ? { style: `height:${attributes.rowHeight}px` }
+                : {},
+          },
+        },
+      },
+    ];
+  },
+  addProseMirrorPlugins() {
+    let stopResize: () => void = () => {};
+    return [
+      new Plugin({
+        props: {
+          decorations(state) {
+            const handles: Decoration[] = [];
+            state.doc.descendants((row, rowPos) => {
+              if (row.type.name !== 'tableRow') return true;
+              row.descendants((cell, offset) => {
+                if (
+                  cell.type.name !== 'tableCell' &&
+                  cell.type.name !== 'tableHeader'
+                )
+                  return true;
+                const cellPos = rowPos + 1 + offset;
+                const handlePos = cellPos + cell.nodeSize - 1;
+                handles.push(
+                  Decoration.widget(
+                    handlePos,
+                    () => {
+                      const handle = document.createElement('span');
+                      handle.className = 'row-resize-handle';
+                      handle.dataset.rowPos = String(rowPos);
+                      handle.contentEditable = 'false';
+                      handle.setAttribute('aria-hidden', 'true');
+                      return handle;
+                    },
+                    { side: 1, key: `row-resize-${rowPos}-${cellPos}` },
+                  ),
+                );
+                return false;
+              });
+              return false;
+            });
+            return DecorationSet.create(state.doc, handles);
+          },
+          handleDOMEvents: {
+            mousedown(view, event) {
+              const mouseEvent = event as MouseEvent;
+              if (mouseEvent.button !== 0) return false;
+              const target =
+                event.target instanceof HTMLElement
+                  ? event.target.closest<HTMLElement>('.row-resize-handle')
+                  : null;
+              if (!target) return false;
+              const rowPos = Number(target.dataset.rowPos);
+              const row = view.state.doc.nodeAt(rowPos);
+              const rowElement = view.nodeDOM(rowPos);
+              if (!row || row.type.name !== 'tableRow') return false;
+              mouseEvent.preventDefault();
+              stopResize();
+              const startY = mouseEvent.clientY;
+              const initialHeight =
+                row.attrs.rowHeight ??
+                (rowElement instanceof HTMLElement
+                  ? rowElement.getBoundingClientRect().height
+                  : 40);
+              const onMove = (moveEvent: MouseEvent) => {
+                const currentRow = view.state.doc.nodeAt(rowPos);
+                if (!currentRow || currentRow.type.name !== 'tableRow') return;
+                const rowHeight = Math.max(
+                  24,
+                  Math.min(
+                    2000,
+                    Math.round(initialHeight + moveEvent.clientY - startY),
+                  ),
+                );
+                view.dispatch(
+                  view.state.tr.setNodeMarkup(rowPos, currentRow.type, {
+                    ...currentRow.attrs,
+                    rowHeight,
+                  }),
+                );
+              };
+              const onUp = () => stopResize();
+              stopResize = () => {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+                stopResize = () => {};
+              };
+              window.addEventListener('mousemove', onMove);
+              window.addEventListener('mouseup', onUp, { once: true });
+              return true;
+            },
+          },
+        },
+        view() {
+          return { destroy: () => stopResize() };
+        },
+      }),
+    ];
+  },
+});
 
 export const richTextExtensions = [
   TableKit.configure({
@@ -81,6 +242,8 @@ export const richTextExtensions = [
   }),
   StarterKit.configure({ link: false, heading: { levels: [2, 3] } }),
   TextStyle,
+  TextAlign,
+  TableRowHeight,
   Image.extend({
     parseHTML() {
       return [
@@ -152,6 +315,23 @@ export function parseRichText(value: unknown): JSONContent | null {
           ))
       )
         throw new Error('Only uploaded images are supported');
+      if (
+        ['paragraph', 'heading', 'image'].includes(child.type.name) &&
+        child.attrs.textAlign !== null &&
+        !textAlignments.includes(
+          child.attrs.textAlign as (typeof textAlignments)[number],
+        )
+      )
+        throw new Error('Invalid text alignment');
+      if (
+        child.type.name === 'tableRow' &&
+        child.attrs.rowHeight !== null &&
+        (typeof child.attrs.rowHeight !== 'number' ||
+          !Number.isFinite(child.attrs.rowHeight) ||
+          child.attrs.rowHeight < 24 ||
+          child.attrs.rowHeight > 2000)
+      )
+        throw new Error('Invalid table row height');
     });
     return node.toJSON();
   } catch {

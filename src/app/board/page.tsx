@@ -1,8 +1,10 @@
 import { CommonInput } from '@/components/ui/CommonInput';
 import { CommonButton } from '@/components/ui/CommonButton';
 import Link from 'next/link';
-import { categories, filterPosts, getCategoryLabel } from '@/content/site';
+import { categories, getCategoryLabel } from '@/content/site';
+import { getPublicPosts } from '@/server/services/posts';
 import { getMessages } from '@/i18n/server';
+import { MainPageLink } from '@/components/MainPageLink';
 export async function generateMetadata() {
   const { messages } = await getMessages();
   return { title: messages.navigation.board };
@@ -12,7 +14,7 @@ export default async function Board({
 }: {
   searchParams: Promise<{ category?: string; q?: string }>;
 }) {
-  const { messages } = await getMessages();
+  const { messages, locale } = await getMessages();
   const copy = messages.board;
   const params = await searchParams;
   const category =
@@ -20,9 +22,17 @@ export default async function Board({
       ? params.category
       : '전체';
   const q = typeof params.q === 'string' ? params.q.slice(0, 100) : '';
-  const selected = filterPosts(category, q);
+  const posts = await getPublicPosts(locale);
+  const selected = posts.filter(
+    (post) =>
+      (category === '전체' || post.category === category) &&
+      (post.title + ' ' + post.summary)
+        .toLowerCase()
+        .includes(q.trim().toLowerCase()),
+  );
   return (
     <div className="page">
+      <MainPageLink href="/#board" label={messages.navigation.main} />
       <h1>{copy.title}</h1>
       <p className="lead">{copy.intro}</p>
       <div className="filter" aria-label={copy.filterLabel}>
@@ -74,7 +84,7 @@ export default async function Board({
         {getCategoryLabel(category, messages)} · {copy.count}: {selected.length}
       </p>
       {selected.map((post) => (
-        <Link className="listRow" key={post.slug} href={'/board/' + post.slug}>
+        <Link className="listRow" key={post.id} href={'/board/' + post.id}>
           <div>
             <span className="tag">
               {getCategoryLabel(post.category, messages)}

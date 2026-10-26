@@ -17,10 +17,10 @@ export function ProjectDetailContent({
   const en = locale === 'en';
   const Heading = heading;
   const rows = [
-    { label: en ? 'Period' : '작업 기간', value: project.period || '—' },
-    { label: en ? 'Client' : '고객사', value: project.customerName || '—' },
-    { label: en ? 'Origin' : '작업 구분', value: project.originLabel || '—' },
-    { label: en ? 'Type' : '프로젝트 유형', value: project.typeLabel || '—' },
+    { label: en ? 'Period' : '작업 기간', value: project.period || '-' },
+    { label: en ? 'Client' : '고객사', value: project.customerName || '-' },
+    { label: en ? 'Origin' : '작업 구분', value: project.originLabel || '-' },
+    { label: en ? 'Type' : '프로젝트 유형', value: project.typeLabel || '-' },
   ];
   return (
     <article className={s.detail}>
@@ -46,6 +46,11 @@ export function ProjectDetailContent({
             </div>
           ))}
         </dl>
+        {project.summary && (
+          <p className={s.summary} lang={project.contentLocale}>
+            {project.summary}
+          </p>
+        )}
         {project.thumbnail && (
           <div className={s.cover}>
             <Image
@@ -61,11 +66,6 @@ export function ProjectDetailContent({
         {locale !== project.contentLocale && (
           <p role="status">
             English translation is being prepared. Showing the Korean original.
-          </p>
-        )}
-        {project.summary && (
-          <p className={s.summary} lang={project.contentLocale}>
-            {project.summary}
           </p>
         )}
         <div className={s.content} lang={project.contentLocale}>

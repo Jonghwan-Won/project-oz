@@ -18,7 +18,9 @@ export default async function About() {
           <h1>{copy.title}</h1>
           <p className={s.intro}>{copy.intro}</p>
           <p className={s.lead}>{copy.welcome}</p>
-          <CommonButtonLink href="/projects">{copy.projectsLink}</CommonButtonLink>
+          <CommonButtonLink href="/projects">
+            {copy.projectsLink}
+          </CommonButtonLink>
         </div>
         <div className={s.signature}>
           <svg viewBox="0 0 440 280" role="img" aria-label={copy.imageAlt}>
@@ -32,7 +34,7 @@ export default async function About() {
               />
             ))}
           </svg>
-          <span className={s.signatureLabel}>SMALL IDEAS. NEW REALITIES.</span>
+          {/* <span className={s.signatureLabel}>SMALL IDEAS. NEW REALITIES.</span> */}
         </div>
       </section>
       <div className={s.stories}>

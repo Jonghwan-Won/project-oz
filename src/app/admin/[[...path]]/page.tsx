@@ -1,8 +1,10 @@
 import { ProjectManager } from '../ProjectManager';
 import { getAdminProjects } from '@/server/services/admin-projects';
 import { redirect, notFound } from 'next/navigation';
-import { posts } from '@/content/site';
-import { AdminEditor } from '../AdminEditor';
+import { getAdminPosts } from '@/server/services/posts';
+import { BoardManager } from '../BoardManager';
+import { PostEditor } from '../PostEditor';
+
 import { CommonButtonLink } from '@/components/ui/CommonButton';
 import s from '../admin.module.css';
 
@@ -30,24 +32,19 @@ export default async function Admin({
 }) {
   if (process.env.NODE_ENV !== 'development') redirect('/login');
   const { path = [] } = await params;
-  if (path.length > 1) notFound();
+  if (path.length > 2 || (path.length > 1 && path[0] !== 'board')) notFound();
   const section = path[0];
   if (section === 'projects')
     return <ProjectManager {...await getAdminProjects()} />;
   if (section === 'board') {
-    const entries = posts.map((post) => ({
-      id: post.slug,
-      slug: post.slug,
-      title: post.title,
-      summary: post.excerpt,
-      body: post.paragraphs.join('\n\n'),
-      category: post.category,
-      status: '공개',
-      thumbnail: '',
-    }));
-    return (
-      <AdminEditor key={section} section={section} initialEntries={entries} />
-    );
+    if (path[1] === 'new') return <PostEditor />;
+    const posts = await getAdminPosts();
+    if (path[1]) {
+      const post = posts.find((post) => post.id === path[1]);
+      if (!post) notFound();
+      return <PostEditor key={post.id} initialPost={post} />;
+    }
+    return <BoardManager posts={posts} />;
   }
   if (section) {
     const item = Object.entries(planned).find(([key]) => key === section)?.[1];
@@ -59,6 +56,7 @@ export default async function Admin({
       </section>
     );
   }
+  const posts = await getAdminPosts();
   const projectCount = (await getAdminProjects()).projects.length;
   return (
     <section>
@@ -67,7 +65,9 @@ export default async function Admin({
         <div className={s.panel}>
           <span>프로젝트</span>
           <strong>{projectCount}</strong>
-          <CommonButtonLink href="/admin/projects">프로젝트 관리</CommonButtonLink>
+          <CommonButtonLink href="/admin/projects">
+            프로젝트 관리
+          </CommonButtonLink>
         </div>
         <div className={s.panel}>
           <span>게시글</span>
@@ -78,8 +78,8 @@ export default async function Admin({
       <div className={s.panel}>
         <h3>다음 연결 항목</h3>
         <p>
-          프로젝트 조회·저장은 개발 DB에 연결했습니다. 운영 관리자 인증·권한과
-          게시판 DB 저장은 다음 단계입니다.
+          프로젝트와 게시판 조회·저장은 개발 DB에 연결했습니다. 운영 관리자
+          인증·권한은 다음 단계입니다.
         </p>
       </div>
     </section>
