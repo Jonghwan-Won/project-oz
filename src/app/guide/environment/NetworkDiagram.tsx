@@ -38,7 +38,7 @@ export function NetworkDiagram() {
         className={s.mapScroll}
         tabIndex={0}
         role="region"
-        aria-label="네트워크 구조도 — 작은 화면에서는 좌우로 스크롤"
+        aria-label="네트워크 구조도 - 작은 화면에서는 좌우로 스크롤"
       >
         <svg
           viewBox="0 0 1160 650"
@@ -163,7 +163,7 @@ export function NetworkDiagram() {
             x={724}
             y={190}
             title="DSM 프록시"
-          lines={['인증서 · HTTPS 처리', 'HTTP 127.0.0.1:13000']}
+            lines={['인증서 · HTTPS 처리', 'HTTP 127.0.0.1:13000']}
           />
           <Node
             x={934}
@@ -195,13 +195,13 @@ export function NetworkDiagram() {
             x={934}
             y={460}
             title="개발 DB"
-          lines={['PostgreSQL :5432', '계정 oz_dev_app']}
+            lines={['PostgreSQL :5432', '계정 oz_dev_app']}
           />
           <text x="36" y="598" className={s.mapText}>
             집 PC는 내부망 SSH 사용
           </text>
           <text x="490" y="582" className={s.mapText}>
-          DB 포트 외부 공개 불필요
+            DB 포트 외부 공개 불필요
           </text>
         </svg>
       </div>

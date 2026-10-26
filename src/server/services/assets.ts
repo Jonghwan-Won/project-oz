@@ -145,7 +145,7 @@ export async function readAsset(request: Request, id: string) {
       originalName: string;
       mimeType: string;
     }>(
-      `SELECT a."storageKey",a."originalName",a."mimeType" FROM "Asset" a WHERE a.id=$1 AND ($2 OR EXISTS(SELECT 1 FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL))`,
+      `SELECT a."storageKey",a."originalName",a."mimeType" FROM "Asset" a WHERE a.id=$1 AND ($2 OR EXISTS(SELECT 1 FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL) OR EXISTS(SELECT 1 FROM "PostAsset" pa JOIN "Post" p ON p.id=pa."postId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL))`,
       [id, local(request)],
     );
     const asset = result.rows[0];

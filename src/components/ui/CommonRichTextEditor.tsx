@@ -1,6 +1,4 @@
 'use client';
-import { CommonInput } from '@/components/ui/CommonInput';
-
 import { useEffect, useState } from 'react';
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react';
 import {
@@ -18,6 +16,7 @@ export function CommonRichTextEditor({
   label,
   value,
   onChange,
+  contentClassName,
   disabled = false,
   onUploadBusyChange,
 }: {
@@ -25,12 +24,12 @@ export function CommonRichTextEditor({
   label: string;
   value: JSONContent;
   onChange: (value: JSONContent, text: string) => void;
+  contentClassName?: string;
   disabled?: boolean;
   onUploadBusyChange?: (busy: boolean) => void;
 }) {
   const [tablePickerOpen, setTablePickerOpen] = useState(false);
   const [tableSize, setTableSize] = useState({ rows: 2, columns: 3 });
-  const [imageWidth, setImageWidth] = useState<string | null>(null);
   const editor = useEditor({
     extensions: richTextExtensions,
     content: parseRichText(value) ?? undefined,
@@ -45,10 +44,12 @@ export function CommonRichTextEditor({
         spellcheck: 'false',
         autocorrect: 'off',
         autocapitalize: 'off',
-        class: s.editable,
+        class: [s.editable, contentClassName].filter(Boolean).join(' '),
       },
     },
-    onUpdate: ({ editor }) => onChange(editor.getJSON(), editor.getText()),
+    onUpdate: ({ editor }) => {
+      if (editor.isFocused) onChange(editor.getJSON(), editor.getText());
+    },
   });
   useEffect(() => {
     editor?.setEditable(!disabled);
@@ -63,29 +64,6 @@ export function CommonRichTextEditor({
       editor.commands.setContent(content, { emitUpdate: false });
   }, [editor, value]);
   if (!editor) return <p role="status">에디터를 준비하고 있어요.</p>;
-  const commitImageWidth = (value: string) => {
-    const width = Number(value);
-    if (!Number.isFinite(width) || width < 50 || width > 20000) return;
-    const attrs = editor.getAttributes('image');
-    const image = Array.from(editor.view.dom.querySelectorAll('img')).find(
-      (candidate) => candidate.getAttribute('src') === attrs.src,
-    );
-    const ratio =
-      attrs.width && attrs.height
-        ? attrs.height / attrs.width
-        : image?.naturalWidth
-          ? image.naturalHeight / image.naturalWidth
-          : null;
-    if (!ratio) return;
-    editor
-      .chain()
-      .focus()
-      .updateAttributes('image', {
-        width,
-        height: Math.round(width * ratio),
-      })
-      .run();
-  };
   const tools = [
     {
       label: '굵게',
@@ -122,8 +100,24 @@ export function CommonRichTextEditor({
       active: editor.isActive('codeBlock'),
       run: () => editor.chain().focus().toggleCodeBlock().run(),
     },
+    {
+      label: '구분선',
+      active: false,
+      run: () => editor.chain().focus().setHorizontalRule().run(),
+    },
   ];
   const textStyle = editor.getAttributes('textStyle');
+  const blockType = editor.isActive('image')
+    ? 'image'
+    : editor.isActive('heading')
+      ? 'heading'
+      : 'paragraph';
+  const currentAlignment = editor.getAttributes(blockType).textAlign ?? 'left';
+  const alignments = [
+    { value: 'left', label: '왼쪽 정렬' },
+    { value: 'center', label: '가운데 정렬' },
+    { value: 'right', label: '오른쪽 정렬' },
+  ] as const;
   const updateTextStyle = (
     attribute: 'fontFamily' | 'fontSize',
     value: string,
@@ -176,6 +170,44 @@ export function CommonRichTextEditor({
           onValueChange={(value) => updateTextStyle('fontSize', value)}
           options={textStyleSizeOptions}
         />
+        {alignments.map(({ value: alignment, label: alignmentLabel }) => (
+          <CommonButton
+            key={alignment}
+            size="sm"
+            variant="ghost"
+            className={s.tool}
+            title={alignmentLabel}
+            aria-label={alignmentLabel}
+            aria-pressed={currentAlignment === alignment}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() =>
+              editor
+                .chain()
+                .focus()
+                .updateAttributes(blockType, { textAlign: alignment })
+                .run()
+            }
+          >
+            <svg
+              viewBox="0 0 20 20"
+              width="18"
+              height="18"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.5"
+            >
+              {alignment === 'left' ? (
+                <path d="M3 4h14M3 8h10M3 12h14M3 16h10" />
+              ) : alignment === 'center' ? (
+                <path d="M3 4h14M5 8h10M3 12h14M5 16h10" />
+              ) : (
+                <path d="M3 4h14M7 8h10M3 12h14M7 16h10" />
+              )}
+            </svg>
+          </CommonButton>
+        ))}
         {tools.map((tool) => (
           <CommonButton
             key={tool.label}
@@ -199,6 +231,7 @@ export function CommonRichTextEditor({
                   '번호 목록': '1. ≡',
                   인용: '❝',
                   '코드 블록': '</>',
+                  구분선: '―',
                 }[tool.label]
               }
             </span>
@@ -288,7 +321,7 @@ export function CommonRichTextEditor({
                             .insertTable({
                               rows,
                               cols: columns,
-                              withHeaderRow: true,
+                              withHeaderRow: false,
                             })
                             .run();
                           setTablePickerOpen(false);
@@ -308,6 +341,7 @@ export function CommonRichTextEditor({
           onBusyChange={onUploadBusyChange}
           imagesOnly
           compact
+          bare
           icon={
             <svg
               viewBox="0 0 20 20"
@@ -334,33 +368,6 @@ export function CommonRichTextEditor({
           }}
         />
         <small>PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입</small>
-        {editor.isActive('image') && (
-          <label>
-            이미지 너비(px)
-            <CommonInput
-              aria-label="이미지 너비"
-              type="number"
-              min={50}
-              max={20000}
-              value={imageWidth ?? String(editor.getAttributes('image').width ?? '')}
-              onFocus={() =>
-                setImageWidth(String(editor.getAttributes('image').width ?? ''))
-              }
-              onChange={(event) => {
-                const value = event.target.value;
-                setImageWidth(value);
-                commitImageWidth(value);
-              }}
-              onBlur={() => setImageWidth(null)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  event.currentTarget.blur();
-                }
-              }}
-            />
-          </label>
-        )}
       </div>
       {editor.isActive('table') && (
         <div className={s.tableTools}>

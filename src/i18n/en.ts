@@ -62,6 +62,7 @@ export const en = {
     board: 'Board',
     help: 'Contact',
     home: 'ddoza home',
+    main: 'Go back',
     menu: 'Main navigation',
     open: 'Open menu',
     close: 'Close menu',
@@ -205,7 +206,7 @@ export const en = {
   },
   site: {
     backToTop: 'Back to top',
-    title: 'ddoza — Small ideas, new realities',
+    title: 'ddoza - Small ideas, new realities',
     description: 'A studio for building, documenting, and connecting.',
     skip: 'Skip to content',
     footer: 'From small curiosities to new possibilities.',

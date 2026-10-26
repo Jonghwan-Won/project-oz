@@ -67,6 +67,7 @@ export function ProjectCard({
           <h3>{project.title}</h3>
         </div>
         <div className={s.meta}>
+          {context && <div className={s.metaLine}>{context}</div>}
           <div className={s.metaLine}>
             {project.startedOn && (
               <span className={s.period}>
@@ -78,7 +79,6 @@ export function ProjectCard({
               </span>
             )}
           </div>
-          {context && <div className={s.metaLine}>{context}</div>}
           {technologies.length > 0 && (
             <div
               className={s.technologies}

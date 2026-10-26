@@ -1,0 +1,40 @@
+.link {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  white-space: nowrap;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 16px 6px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--surface) 94%, var(--accent)),
+    var(--surface)
+  );
+  box-shadow:
+    0 2px 8px color-mix(in srgb, var(--ink) 7%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.link .icon {
+  display: block;
+  flex: 0 0 18px;
+  color: #555;
+  align-self: center;
+  transform: translateY(-1px);
+}
+
+.link:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  outline-offset: 3px;
+}

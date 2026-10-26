@@ -13,13 +13,19 @@
   border-bottom: 1px solid var(--line);
 }
 .toolbar button[aria-pressed='true'] {
-  background: var(--surface-hover);
-  color: var(--ink);
+  background: var(
+    --admin-accent,
+    color-mix(in srgb, var(--accent) 30%, var(--surface))
+  );
+  border-color: var(--admin-accent, var(--accent-ink));
+  color: var(--admin-on-accent, var(--ink));
 }
 .editable {
   min-height: 220px;
+  max-height: 560px;
   padding: 16px;
   outline: none;
+  overflow-y: auto;
   overflow-wrap: anywhere;
 }
 .editable:focus-visible {
@@ -79,18 +85,6 @@
   min-height: 36px;
   padding: 0;
 }
-.imageTools label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  font-size: 12px;
-}
-.imageTools label input {
-  width: 76px;
-  min-height: 36px;
-  padding: 6px 8px;
-}
 .editable img,
 .content img {
   display: block;
@@ -98,6 +92,16 @@
   height: auto;
   margin: 20px 0;
   border-radius: 8px;
+}
+.editable img[data-text-align='center'],
+.content img[data-text-align='center'] {
+  margin-left: auto;
+  margin-right: auto;
+}
+.editable img[data-text-align='right'],
+.content img[data-text-align='right'] {
+  margin-left: auto;
+  margin-right: 0;
 }
 .editable img:global(.ProseMirror-selectednode) {
   outline: 3px solid color-mix(in srgb, var(--ink) 32%, transparent);
@@ -149,6 +153,12 @@
 .content {
   overflow-x: auto;
 }
+.editable hr,
+.content hr {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
 .editable table,
 .content table {
   border-collapse: collapse;
@@ -171,10 +181,30 @@
   outline: 2px solid color-mix(in srgb, var(--ink) 32%, transparent);
 }
 .editable :global(.column-resize-handle) {
-  background: color-mix(in srgb, var(--ink) 35%, transparent);
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: -3px;
+  bottom: -2px;
+  width: 6px;
+  background: color-mix(in srgb, var(--accent-ink) 45%, transparent);
+  pointer-events: none;
 }
-.editable :global(.resize-cursor) {
+.editable:global(.resize-cursor) {
   cursor: col-resize;
+}
+.editable :global(.row-resize-handle) {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: -4px;
+  left: 0;
+  height: 8px;
+  background: transparent;
+  cursor: row-resize;
+}
+.editable :global(.row-resize-handle:hover) {
+  background: color-mix(in srgb, var(--accent-ink) 55%, transparent);
 }
 .toolbar .blockStyle {
   min-height: 36px;
@@ -245,8 +275,7 @@
     width: 44px;
     min-width: 44px;
   }
-  .toolbar .blockStyle,
-  .imageTools label input {
+  .toolbar .blockStyle {
     min-height: 44px;
   }
 }
@@ -254,6 +283,12 @@
 .editable :global([data-resize-container]) {
   max-width: 100%;
   margin: 20px 0;
+}
+.editable :global([data-resize-container]:has(img[data-text-align='center'])) {
+  justify-content: center;
+}
+.editable :global([data-resize-container]:has(img[data-text-align='right'])) {
+  justify-content: flex-end;
 }
 .editable :global([data-resize-wrapper]) {
   max-width: 100%;

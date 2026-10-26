@@ -1,5 +1,6 @@
 import { CommonButtonLink } from '@/components/ui/CommonButton';
 import { getMessages } from '@/i18n/server';
+import { MainPageLink } from '@/components/MainPageLink';
 
 export async function generateMetadata() {
   const { messages } = await getMessages();
@@ -11,6 +12,7 @@ export default async function Help() {
   const copy = messages.contact;
   return (
     <div className="page">
+      <MainPageLink href="/#help" label={messages.navigation.main} />
       <h1>{copy.title}</h1>
       <p className="lead">{copy.intro}</p>
       <div className="filter">

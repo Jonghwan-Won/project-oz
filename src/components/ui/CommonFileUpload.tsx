@@ -14,6 +14,7 @@ export function CommonFileUpload({
   imagesOnly = false,
   duplicateNames = [],
   compact = false,
+  bare = false,
   native = false,
   hideHint = false,
   icon,
@@ -25,6 +26,7 @@ export function CommonFileUpload({
   imagesOnly?: boolean;
   duplicateNames?: string[];
   compact?: boolean;
+  bare?: boolean;
   native?: boolean;
   hideHint?: boolean;
   icon?: ReactNode;
@@ -38,7 +40,7 @@ export function CommonFileUpload({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   return (
-    <div className={compact ? s.withFiles : undefined}>
+    <div className={compact && !bare ? s.withFiles : bare ? s.bare : undefined}>
       <CommonFilePicker
         label={busy ? '업로드 중…' : label}
         compact={compact}

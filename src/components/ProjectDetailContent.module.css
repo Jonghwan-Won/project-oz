@@ -39,6 +39,8 @@
   align-content: start;
   gap: 7px;
   min-width: 0;
+  text-align: center;
+  justify-items: center;
 }
 .technologies {
   display: flex;
@@ -55,18 +57,47 @@
   margin: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   flex-wrap: wrap;
   font-size: 14px;
   line-height: 1.6;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 .summary {
-  margin: 0;
-  font-size: clamp(17px, 2vw, 20px);
-  line-height: 1.8;
+  position: relative;
+  margin: 0 0 20px;
+  padding: 20px 42px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 3%, var(--surface));
+  font-size: clamp(16px, 1.7vw, 18px);
+  line-height: 1.65;
+  letter-spacing: -0.015em;
+  font-style: italic;
+  text-align: center;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+.summary::before,
+.summary::after {
+  position: absolute;
+  color: var(--accent-ink);
+  font-size: 52px;
+  font-style: normal;
+  line-height: 1;
+  opacity: 0.8;
+  pointer-events: none;
+}
+.summary::before {
+  content: '“';
+  top: 2px;
+  left: 12px;
+}
+.summary::after {
+  content: '”';
+  right: 12px;
+  bottom: -18px;
 }
 .content {
   padding-top: 28px;
@@ -98,6 +129,21 @@
   }
   .document .title {
     margin-bottom: 22px;
+  }
+  .summary {
+    margin-bottom: 16px;
+    padding: 18px 30px;
+  }
+  .summary::before,
+  .summary::after {
+    font-size: 42px;
+  }
+  .summary::before {
+    left: 8px;
+  }
+  .summary::after {
+    right: 8px;
+    bottom: -14px;
   }
   .properties {
     grid-template-columns: repeat(2, minmax(0, 1fr));

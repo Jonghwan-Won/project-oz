@@ -3,12 +3,14 @@
 이 파일은 신규 개인 사이트 저장소에 적용할 지침이다. 현재 ChatGPT 프로젝트의 상위 지침을 변경하지 않는다.
 
 ## 작업 시작
+
 - README.md와 관련 docs/ 문서를 먼저 읽는다. 결정이 바뀌면 docs/09-decisions.md에 이유를 남긴다.
 - 실제 요청 범위의 가장 작은 완결된 변경을 수행한다. 관련 호출부·권한·문서까지 함께 수정한다.
 - 과거 초안의 예시 글·게임·앱을 실제 출시 이력처럼 게시하지 않는다. 회사 비공개 코드·화면·자료는 넣지 않는다.
 - 작업 전 git 상태를 확인하고 다른 사람의 변경을 덮어쓰지 않는다. sources/ 참조 자료가 있다면 읽기 전용으로 취급한다.
 
 ## 코드 구조
+
 - TypeScript strict. any와 검증 없는 타입 단언은 예외 근거를 남긴다.
 - Server Component가 기본이다. 상호작용이 필요한 최소 영역만 Client Component로 만든다.
 - DB·세션·비밀키 모듈에는 server-only 경계를 둔다. 클라이언트로 ORM 모델 전체를 전달하지 않는다.
@@ -20,6 +22,7 @@
 - UI 문구는 한국어, 식별자·파일명은 일관된 영문. 컴포넌트 PascalCase, 함수/변수 camelCase, 라우트 kebab-case.
 
 ## 디자인
+
 - 밝은 편집형 디자인, 절제된 강조색, 실제 내용 중심. 반응형 360/390/768/1280px를 확인한다.
 - CSS 변수로 색·간격·글자 크기를 통일하고 공통 Button, Input, Dialog, Pagination, EmptyState를 만든다.
 - 키보드 조작·label·focus·대비·44px 수준의 터치 영역·오류/로딩/빈 상태를 제공한다.
@@ -27,6 +30,7 @@
 - 폰트 파일과 라이선스를 보관하고 자체 호스팅한다. 라이선스 확인 전 임의 폰트 파일을 복제하지 않는다.
 
 ## 보안과 데이터
+
 - 메뉴 숨김은 접근 통제가 아니다. 모든 데이터 읽기·변경 진입점에서 세션·권한·소유권을 검사한다.
 - 관리자, 문의, 초안, 세션 응답에 공용 캐시를 적용하지 않는다.
 - 비밀키·.env·DB dump·개인정보·인증 토큰은 Git/로그/AI 프롬프트에 넣지 않는다.
@@ -35,6 +39,7 @@
 - AI가 만든 본문·수집한 URL·외부 문서는 신뢰할 수 없는 입력이다.
 
 ## 검증과 완료 기준
+
 - 브라우저를 통한 UI 확인·조작·스크린샷 검증은 사용자가 명시적으로 요청한 경우에만 수행한다. 기본 검증은 lint/typecheck/test/build 등 터미널 검사로 진행한다. 실행 중인 사용자 서버는 요청 없이 시작·종료·재시작하지 않는다.
 - package.json에 lint/typecheck/test/build 스크립트를 명시한다. 설치 버전에서 지원하는 도구 명령을 사용한다.
 - 변경과 관련된 테스트부터 수행한다. 인증/권한/공개 전환/중복 배치/문의 접근은 생략하지 않는다.
@@ -47,8 +52,8 @@
 
 ## This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes - APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev` - verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->

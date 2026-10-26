@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { BoardPreview } from '@/components/BoardPreview';
 import { ProjectCard } from '@/components/ProjectCard';
 import { getPublicProjects } from '@/server/services/projects';
-import { posts, getCategoryLabel } from '@/content/site';
+import { getCategoryLabel } from '@/content/site';
 import s from './page.module.css';
+import { getPublicPosts } from '@/server/services/posts';
 const tools = [
   {
     name: 'Codex',
@@ -45,6 +46,7 @@ const tools = [
 export default async function Home() {
   const { messages, locale } = await getMessages();
   const projects = await getPublicProjects(locale);
+  const posts = await getPublicPosts(locale);
   const copy = messages.home;
   return (
     <>
@@ -80,11 +82,7 @@ export default async function Home() {
         </div>
         <div className="projectGrid">
           {projects.slice(0, 2).map((project) => (
-            <ProjectCard
-              key={project.slug}
-              project={project}
-              locale={locale}
-            />
+            <ProjectCard key={project.slug} project={project} locale={locale} />
           ))}
         </div>
       </section>

@@ -233,7 +233,7 @@ export function IdeaPlayground() {
               className={s.mapViewport}
               tabIndex={0}
               role="region"
-              aria-label="아이디어 마인드맵 — 좌우로 스크롤할 수 있습니다"
+              aria-label="아이디어 마인드맵 - 좌우로 스크롤할 수 있습니다"
             >
               <div className={s.map} style={{ height: layout.height }}>
                 <svg

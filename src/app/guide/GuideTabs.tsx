@@ -123,7 +123,7 @@ export function GuideTabs() {
                 <div className={s.tableWrap}>
                   <table>
                     <caption>
-                      계획된 사이트 역할 — PostgreSQL 계정과 별개
+                      계획된 사이트 역할 - PostgreSQL 계정과 별개
                     </caption>
                     <thead>
                       <tr>

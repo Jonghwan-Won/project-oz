@@ -30,6 +30,7 @@ export function CommonButton({
       unstyled
       type={type}
       className={styles({ size, variant }, className)}
+      data-variant={variant ?? 'neutral'}
     />
   );
 }
@@ -45,6 +46,7 @@ export function CommonButtonLink({
       unstyled
       {...props}
       className={styles({ size, variant }, className)}
+      data-variant={variant ?? 'neutral'}
     />
   );
 }

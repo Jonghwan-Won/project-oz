@@ -1,6 +1,6 @@
 'use client';
 import { CommonInput } from '@/components/ui/CommonInput';
-import { Autocomplete, Group, Radio, SegmentedControl } from '@mantine/core';
+import { Autocomplete, SegmentedControl, Switch } from '@mantine/core';
 import { CommonTextArea } from '@/components/ui/CommonTextArea';
 import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
 import { CommonModal } from '@/components/ui/CommonModal';
@@ -9,6 +9,7 @@ import { CommonAlert } from '@/components/ui/CommonAlert';
 import { CommonLoading } from '@/components/ui/CommonLoading';
 import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
 import { CommonPagination } from '@/components/ui/CommonPagination';
+import { CommonGrid, type CommonGridColumn } from '@/components/ui/CommonGrid';
 import { emptyProjectSearch, matchesProject, paginate } from '@/lib/admin-list';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -60,6 +61,9 @@ export function ProjectManager({
     setUploads((count) => Math.max(0, count + (busy ? 1 : -1)));
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [draft, setDraft] = useState<ProjectForm | null>(null);
+  const originalDraft = useRef<string | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [locale, setLocale] = useState<'ko' | 'en'>('ko');
   const [technologyQuery, setTechnologyQuery] = useState('');
   const technologySelected = useRef(false);
@@ -78,18 +82,121 @@ export function ProjectManager({
   const selectedProjects = projects.filter((project) =>
     selected.includes(project.id),
   );
-  const dateFormat = new Intl.DateTimeFormat('ko-KR', {
+  const requestClose = () => {
+    if (saving || uploads) return;
+    if (dirty) setConfirmLeave(true);
+    else {
+      setDraft(null);
+      originalDraft.current = null;
+    }
+  };
+  const dateFormat = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Asia/Seoul',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
   });
-  const change = (patch: Partial<ProjectForm>) =>
-    setDraft((current) => (current ? { ...current, ...patch } : current));
+  const gridColumns: CommonGridColumn<ProjectForm>[] = [
+    {
+      key: 'select',
+      header: (
+        <CommonInput
+          type="checkbox"
+          aria-label="현재 페이지 전체 선택"
+          checked={
+            result.items.length > 0 &&
+            result.items.every((project) => selected.includes(project.id))
+          }
+          ref={(input) => {
+            if (input)
+              input.indeterminate =
+                result.items.some((project) => selected.includes(project.id)) &&
+                !result.items.every((project) => selected.includes(project.id));
+          }}
+          onChange={(event) =>
+            setSelected(
+              event.target.checked
+                ? [...new Set([...selected, ...result.items.map((p) => p.id)])]
+                : selected.filter(
+                    (id) => !result.items.some((project) => project.id === id),
+                  ),
+            )
+          }
+        />
+      ),
+      render: (project) => (
+        <CommonInput
+          type="checkbox"
+          aria-label={project.translations.ko.title + ' 선택'}
+          checked={selected.includes(project.id)}
+          onChange={(event) =>
+            setSelected(
+              event.target.checked
+                ? [...selected, project.id]
+                : selected.filter((id) => id !== project.id),
+            )
+          }
+        />
+      ),
+      align: 'center',
+      width: 60,
+    },
+    {
+      key: 'title',
+      header: '프로젝트명',
+      width: 280,
+      render: (project) => (
+        <button className={s.gridTitle} onClick={() => openProject(project)}>
+          {project.translations.ko.title}
+        </button>
+      ),
+    },
+    {
+      key: 'customer',
+      header: '고객사',
+      render: (project) => project.customerName || '미입력',
+      align: 'center',
+    },
+    {
+      key: 'period',
+      header: '기간',
+      render: (project) =>
+        formatProjectPeriod(project.startedOn, project.endedOn) || '미입력',
+      align: 'center',
+    },
+    {
+      key: 'origin',
+      header: '작업 구분',
+      render: (project) =>
+        options('PROJECT_ORIGIN').find(
+          (code) => code.value === project.originCode,
+        )?.label,
+      align: 'center',
+    },
+    {
+      key: 'type',
+      header: '유형',
+      render: (project) =>
+        options('PROJECT_TYPE').find((code) => code.value === project.typeCode)
+          ?.label || '미지정',
+      align: 'center',
+    },
+    {
+      key: 'updatedAt',
+      header: '수정일자',
+      align: 'center',
+      render: (project) =>
+        project.updatedAt
+          ? dateFormat.format(new Date(project.updatedAt))
+          : '-',
+    },
+  ];
+  const change = (patch: Partial<ProjectForm>) => {
+    if (!draft) return;
+    const next = { ...draft, ...patch };
+    setDraft(next);
+    setDirty(JSON.stringify(next) !== originalDraft.current);
+  };
   async function saveProject() {
     if (!draft) return;
     setSaving(true);
@@ -126,18 +233,18 @@ export function ProjectManager({
       setSaving(false);
     }
   }
-  const copy = (patch: Partial<ProjectCopy>) =>
-    setDraft((current) =>
-      current
-        ? {
-            ...current,
-            translations: {
-              ...current.translations,
-              [locale]: { ...current.translations[locale], ...patch },
-            },
-          }
-        : current,
-    );
+  const copy = (patch: Partial<ProjectCopy>) => {
+    if (!draft) return;
+    const next = {
+      ...draft,
+      translations: {
+        ...draft.translations,
+        [locale]: { ...draft.translations[locale], ...patch },
+      },
+    };
+    setDraft(next);
+    setDirty(JSON.stringify(next) !== originalDraft.current);
+  };
   const options = (group: string) =>
     codes
       .filter((c) => c.groupKey === group)
@@ -147,7 +254,10 @@ export function ProjectManager({
         disabled: !c.isActive,
       }));
   const openProject = (project: ProjectForm) => {
-    setDraft(structuredClone(project));
+    const next = structuredClone(project);
+    setDraft(next);
+    originalDraft.current = JSON.stringify(next);
+    setDirty(false);
     setMode('edit');
     setLocale('ko');
     setTechnologyQuery('');
@@ -256,11 +366,22 @@ export function ProjectManager({
           </p>
           <div className={s.actions}>
             <CommonButton
+              disabled={selectedProjects.length === 0 || saving || uploads > 0}
+              onClick={() => {
+                setMessage('');
+                setConfirmDelete(true);
+              }}
+            >
+              삭제
+            </CommonButton>
+            <CommonButton
               variant="primary"
               disabled={saving || uploads > 0}
-              size="sm"
               onClick={() => {
-                setDraft(blankProject());
+                const next = blankProject();
+                setDraft(next);
+                originalDraft.current = JSON.stringify(next);
+                setDirty(false);
                 setMode('create');
                 setLocale('ko');
                 setTechnologyQuery('');
@@ -269,19 +390,6 @@ export function ProjectManager({
               }}
             >
               등록
-            </CommonButton>
-            <CommonButton
-              disabled={selectedProjects.length === 0 || saving || uploads > 0}
-              size="sm"
-              onClick={() => {
-                setMessage('');
-                setConfirmDelete(true);
-              }}
-            >
-              삭제
-              {selectedProjects.length > 0
-                ? ' (' + selectedProjects.length + ')'
-                : ''}
             </CommonButton>
           </div>
         </div>
@@ -296,7 +404,7 @@ export function ProjectManager({
             title={mode === 'create' ? '프로젝트 등록' : '프로젝트 수정'}
             closeOnEscape={false}
             onClose={() => {
-              if (!saving && !uploads) setDraft(null);
+              requestClose();
             }}
             actions={
               <>
@@ -321,7 +429,7 @@ export function ProjectManager({
                 </CommonButton>
                 <CommonButton
                   disabled={saving || uploads > 0}
-                  onClick={() => setDraft(null)}
+                  onClick={requestClose}
                   size="sm"
                 >
                   취소
@@ -346,7 +454,20 @@ export function ProjectManager({
                 disabled={saving || uploads > 0}
                 className={s.editorFields}
               >
-                <h3 className={s.formSectionTitle}>프로젝트 정보</h3>
+                <div className={s.formSectionTitleRow}>
+                  <h3 className={s.formSectionTitle}>프로젝트 정보</h3>
+                  <div className={s.visibilityToggle}>
+                    <span>노출 여부</span>
+                    <Switch
+                      aria-label="노출 여부"
+                      className={s.visibilitySwitch}
+                      checked={draft.isVisible}
+                      onChange={(event) =>
+                        change({ isVisible: event.currentTarget.checked })
+                      }
+                    />
+                  </div>
+                </div>
                 <div className={s.fields}>
                   <label>
                     고객사
@@ -415,37 +536,41 @@ export function ProjectManager({
                   </label>
                   <div className={s.tagField}>
                     <label htmlFor="project-technologies">사용 기술</label>
-                    <Autocomplete
-                      id="project-technologies"
-                      aria-label="사용 기술"
-                      classNames={{
-                        input: s.technologyInput,
-                        option: s.technologyOption,
-                      }}
-                      placeholder="기술 검색"
-                      data={technologyOptions.filter(
-                        (name) => !draft.technologies.includes(name),
-                      )}
-                      value={technologyQuery}
-                      onChange={(value) => {
-                        if (technologySelected.current) {
-                          technologySelected.current = false;
-                          setTechnologyQuery('');
-                        } else {
-                          setTechnologyQuery(value);
-                        }
-                      }}
-                      onOptionSubmit={(name) => {
-                        technologySelected.current = true;
-                        if (
-                          technologyOptions.includes(name) &&
-                          !draft.technologies.includes(name)
-                        )
-                          change({
-                            technologies: [...draft.technologies, name],
-                          });
-                      }}
-                    />
+                    <div className={s.tagEntry}>
+                      <Autocomplete
+                        id="project-technologies"
+                        aria-label="사용 기술"
+                        classNames={{
+                          input: s.technologyInput,
+                          dropdown: s.technologyDropdown,
+                          option: s.technologyOption,
+                        }}
+                        placeholder="기술 검색"
+                        selectFirstOptionOnChange
+                        data={technologyOptions.filter(
+                          (name) => !draft.technologies.includes(name),
+                        )}
+                        value={technologyQuery}
+                        onChange={(value) => {
+                          if (technologySelected.current) {
+                            technologySelected.current = false;
+                            setTechnologyQuery('');
+                          } else {
+                            setTechnologyQuery(value);
+                          }
+                        }}
+                        onOptionSubmit={(name) => {
+                          technologySelected.current = true;
+                          if (
+                            technologyOptions.includes(name) &&
+                            !draft.technologies.includes(name)
+                          )
+                            change({
+                              technologies: [...draft.technologies, name],
+                            });
+                        }}
+                      />
+                    </div>
                     <div
                       className={s.selectedTags}
                       aria-label="선택한 사용 기술"
@@ -467,27 +592,29 @@ export function ProjectManager({
                   </div>
                   <div className={s.tagField}>
                     <label htmlFor="project-tags">태그</label>
-                    <CommonInput
-                      id="project-tags"
-                      value={tagInput}
-                      onChange={(event) => setTagInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key !== 'Enter') return;
-                        event.preventDefault();
-                        const tag = tagInput.trim();
-                        if (
-                          tag &&
-                          !draft.tags.some(
-                            (value) =>
-                              value.toLocaleLowerCase() ===
-                              tag.toLocaleLowerCase(),
+                    <div className={s.tagEntry}>
+                      <CommonInput
+                        id="project-tags"
+                        value={tagInput}
+                        onChange={(event) => setTagInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key !== 'Enter') return;
+                          event.preventDefault();
+                          const tag = tagInput.trim();
+                          if (
+                            tag &&
+                            !draft.tags.some(
+                              (value) =>
+                                value.toLocaleLowerCase() ===
+                                tag.toLocaleLowerCase(),
+                            )
                           )
-                        )
-                          change({ tags: [...draft.tags, tag] });
-                        setTagInput('');
-                      }}
-                      placeholder="태그 입력 후 Enter"
-                    />
+                            change({ tags: [...draft.tags, tag] });
+                          setTagInput('');
+                        }}
+                        placeholder="태그 입력 후 Enter"
+                      />
+                    </div>
                     <div className={s.selectedTags} aria-label="선택한 태그">
                       {draft.tags.map((tag) => (
                         <ProjectTag
@@ -502,27 +629,13 @@ export function ProjectManager({
                       ))}
                     </div>
                   </div>
-                  <div className={s.visibilityField}>
-                    <span>노출 여부</span>
-                    <Radio.Group
-                      aria-label="노출 여부"
-                      name="project-visibility"
-                      value={draft.isVisible ? 'Y' : 'N'}
-                      onChange={(value) => change({ isVisible: value === 'Y' })}
-                    >
-                      <Group gap="md">
-                        <Radio value="Y" label="Y" color="blue" />
-                        <Radio value="N" label="N" color="blue" />
-                      </Group>
-                    </Radio.Group>
-                  </div>
                 </div>
                 <div className={s.formSectionHeader}>
                   <h3 className={s.formSectionTitle}>프로젝트 소개</h3>
                   <div className={s.languageActions}>
                     <SegmentedControl
                       aria-label="편집 언어"
-                      color="blue"
+                      className={s.adminSegmentedControl}
                       size="xs"
                       radius="md"
                       value={locale}
@@ -536,28 +649,31 @@ export function ProjectManager({
                     />
                   </div>
                 </div>
-                <label className={s.editorFieldHeading}>
-                  {locale === 'ko' ? '한국어 제목' : '영어 제목'}
-                  <CommonInput
-                    required={locale === 'ko'}
-                    maxLength={200}
-                    value={draft.translations[locale].title}
-                    onChange={(e) => copy({ title: e.target.value })}
-                  />
-                </label>
-                <label className={s.editorFieldHeading}>
-                  한 줄 소개
-                  <CommonTextArea
-                    rows={3}
-                    maxLength={4000}
-                    value={draft.translations[locale].summary}
-                    onChange={(e) => copy({ summary: e.target.value })}
-                  />
-                </label>
+                <div className={`${s.fields} ${s.translationFields}`}>
+                  <label className={s.editorFieldHeading}>
+                    {locale === 'ko' ? '한국어 제목' : '영어 제목'}
+                    <CommonInput
+                      required={locale === 'ko'}
+                      maxLength={200}
+                      value={draft.translations[locale].title}
+                      onChange={(e) => copy({ title: e.target.value })}
+                    />
+                  </label>
+                  <label className={s.editorFieldHeading}>
+                    한 줄 소개
+                    <CommonTextArea
+                      rows={3}
+                      maxLength={4000}
+                      value={draft.translations[locale].summary}
+                      onChange={(e) => copy({ summary: e.target.value })}
+                    />
+                  </label>
+                </div>
                 <CommonRichTextEditor
                   key={draft.id + locale}
                   id="project-introduction"
                   label="프로젝트 소개"
+                  contentClassName={s.projectEditorContent}
                   disabled={saving || uploads > 0}
                   onUploadBusyChange={uploadBusy}
                   value={draft.translations[locale].body}
@@ -757,128 +873,24 @@ export function ProjectManager({
             {message && <p role="alert">{message}</p>}
           </CommonModal>
         )}
-        <div className={s.gridWrap}>
-          <table className={s.grid + ' ' + s.projectGrid}>
-            <caption className="srOnly">
-              프로젝트 목록 · 행을 더블클릭하거나 프로젝트명을 눌러 수정합니다.
-            </caption>
-            <thead>
-              <tr>
-                <th>
-                  <CommonInput
-                    type="checkbox"
-                    aria-label="현재 페이지 전체 선택"
-                    checked={
-                      result.items.length > 0 &&
-                      result.items.every((project) =>
-                        selected.includes(project.id),
-                      )
-                    }
-                    ref={(input) => {
-                      if (input)
-                        input.indeterminate =
-                          result.items.some((project) =>
-                            selected.includes(project.id),
-                          ) &&
-                          !result.items.every((project) =>
-                            selected.includes(project.id),
-                          );
-                    }}
-                    onChange={(event) =>
-                      setSelected(
-                        event.target.checked
-                          ? [
-                              ...new Set([
-                                ...selected,
-                                ...result.items.map((project) => project.id),
-                              ]),
-                            ]
-                          : selected.filter(
-                              (id) =>
-                                !result.items.some(
-                                  (project) => project.id === id,
-                                ),
-                            ),
-                      )
-                    }
-                  />
-                </th>
-                <th>프로젝트명</th>
-                <th>고객사</th>
-                <th>기간</th>
-                <th>작업 구분</th>
-                <th>유형</th>
-                <th>수정일시</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={7} className={s.empty}>
-                    검색 결과가 없습니다.
-                  </td>
-                </tr>
-              )}
-              {result.items.map((project) => (
-                <tr
-                  key={project.id}
-                  onDoubleClick={(event) => {
-                    if (
-                      !(event.target instanceof Element) ||
-                      !event.target.closest('button,input,a')
-                    )
-                      openProject(project);
-                  }}
-                >
-                  <td>
-                    <CommonInput
-                      type="checkbox"
-                      aria-label={project.translations.ko.title + ' 선택'}
-                      checked={selected.includes(project.id)}
-                      onChange={(event) =>
-                        setSelected(
-                          event.target.checked
-                            ? [...selected, project.id]
-                            : selected.filter((id) => id !== project.id),
-                        )
-                      }
-                    />
-                  </td>
-                  <td>
-                    <button
-                      className={s.projectName}
-                      onClick={() => openProject(project)}
-                    >
-                      <strong>{project.translations.ko.title}</strong>
-                    </button>
-                  </td>
-                  <td>{project.customerName || '미입력'}</td>
-                  <td>
-                    {formatProjectPeriod(project.startedOn, project.endedOn) ||
-                      '미입력'}
-                  </td>
-                  <td>
-                    {
-                      options('PROJECT_ORIGIN').find(
-                        (code) => code.value === project.originCode,
-                      )?.label
-                    }
-                  </td>
-                  <td>
-                    {options('PROJECT_TYPE').find(
-                      (code) => code.value === project.typeCode,
-                    )?.label || '미지정'}
-                  </td>
-                  <td>
-                    {project.updatedAt
-                      ? dateFormat.format(new Date(project.updatedAt))
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <CommonGrid
+          rows={result.items}
+          columns={gridColumns}
+          getRowKey={(project) => project.id}
+          caption="프로젝트 목록 · 행을 더블클릭하거나 프로젝트명을 눌러 수정합니다."
+          emptyMessage="검색 결과가 없습니다."
+          minWidth={900}
+          wrapClassName={s.gridWrap}
+          tableClassName={`${s.grid} ${s.projectGrid}`}
+          emptyCellClassName={s.empty}
+          onRowDoubleClick={(project, event) => {
+            if (
+              !(event.target instanceof Element) ||
+              !event.target.closest('button,input,a')
+            )
+              openProject(project);
+          }}
+        />
         <CommonPagination
           page={result.page}
           totalPages={result.totalPages}
@@ -902,11 +914,26 @@ export function ProjectManager({
         }}
         onCancel={() => setConfirmSave(false)}
       />
+      <CommonConfirm
+        open={confirmLeave}
+        title="페이지 이동"
+        content="저장하지 않은 변경사항이 있습니다. 이동하시겠습니까?"
+        confirmLabel="확인"
+        onConfirm={() => {
+          setConfirmLeave(false);
+          setDraft(null);
+          originalDraft.current = null;
+          setDirty(false);
+        }}
+        onCancel={() => setConfirmLeave(false)}
+      />
       <CommonAlert
         open={saveAlert !== null}
         onClose={() => {
           if (saveAlert?.closeDraftOnClose) {
             setDraft(null);
+            originalDraft.current = null;
+            setDirty(false);
             router.refresh();
           }
           setSaveAlert(null);
