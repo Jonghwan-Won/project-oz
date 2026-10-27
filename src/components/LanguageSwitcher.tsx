@@ -54,7 +54,7 @@ export function LanguageSwitcher({
               height="21"
               viewBox="0 0 25 24"
               fill="none"
-              stroke="var(--ink)"
+              stroke="currentColor"
               strokeWidth="1.5"
               aria-hidden="true"
             >

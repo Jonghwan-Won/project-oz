@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/core';
 import { parseRichText, textDocument } from './rich-text';
-import type { UploadedAsset } from './files';
+import { isUploadedAsset, type UploadedAsset } from './files';
 import { thumbnailUrl } from './files';
 export type ProjectCopy = { title: string; summary: string; body: JSONContent };
 export type ProjectForm = {
@@ -23,6 +23,29 @@ export type ProjectForm = {
   attachmentIds: string[];
   files?: UploadedAsset[];
   translations: { ko: ProjectCopy; en: ProjectCopy };
+};
+export type ProjectListItem = Pick<
+  ProjectForm,
+  | 'id'
+  | 'version'
+  | 'slug'
+  | 'customerName'
+  | 'startedOn'
+  | 'endedOn'
+  | 'updatedAt'
+  | 'originCode'
+  | 'typeCode'
+  | 'lifecycle'
+  | 'isVisible'
+  | 'placeholder'
+  | 'translations'
+> & {
+  technologies: string[];
+  tags: string[];
+  translations: {
+    ko: Pick<ProjectCopy, 'title' | 'summary'>;
+    en: Pick<ProjectCopy, 'title' | 'summary'>;
+  };
 };
 export type ProjectCode = {
   groupKey: string;
@@ -138,6 +161,19 @@ export function parseProjectForm(value: unknown): ProjectForm {
   if (!ko.title) throw Error('한국어 제목을 입력해 주세요.');
   const attachmentIds = list('attachmentIds');
   if (!attachmentIds.every(uuid)) throw Error('첨부파일을 확인해 주세요.');
+  const files = value.files;
+  if (
+    files !== undefined &&
+    (!Array.isArray(files) || !files.every(isUploadedAsset))
+  )
+    throw Error('첨부파일 정보를 확인해 주세요.');
+  const thumbnailFile = value.thumbnailFile;
+  if (
+    thumbnailFile !== undefined &&
+    thumbnailFile !== null &&
+    !isUploadedAsset(thumbnailFile)
+  )
+    throw Error('첨부파일 정보를 확인해 주세요.');
   return {
     id,
     customerName:
@@ -152,9 +188,11 @@ export function parseProjectForm(value: unknown): ProjectForm {
     isVisible,
     placeholder: value.placeholder,
     thumbnail,
+    ...(thumbnailFile === undefined ? {} : { thumbnailFile }),
     technologies: list('technologies'),
     tags: list('tags'),
     attachmentIds,
+    ...(files === undefined ? {} : { files }),
     translations: { ko, en },
   };
 }

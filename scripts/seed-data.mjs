@@ -105,10 +105,16 @@ export async function seedDatabase(client) {
             ['SPRING_SECURITY', 'Spring Security', 'Spring Security'],
           ];
       for (const [position, [code, label, labelEn]] of values.entries()) {
-        await client.query(
-          'INSERT INTO "CommonCode" ("groupKey","code","nameKo","nameEn","position","updatedAt") VALUES ($1,$2,$3,$4,$5,now()) ON CONFLICT DO NOTHING',
-          [key, code, label, labelEn, position],
-        );
+        if (key === 'PROJECT_TYPE' && code === 'website')
+          await client.query(
+            'INSERT INTO "CommonCode" ("groupKey","code","nameKo","nameEn","position","updatedAt") VALUES ($1,$2,$3,$4,$5,now()) ON CONFLICT ("groupKey","code") DO UPDATE SET "nameKo"=EXCLUDED."nameKo","nameEn"=EXCLUDED."nameEn","updatedAt"=now()',
+            [key, code, label, labelEn, position],
+          );
+        else
+          await client.query(
+            'INSERT INTO "CommonCode" ("groupKey","code","nameKo","nameEn","position","updatedAt") VALUES ($1,$2,$3,$4,$5,now()) ON CONFLICT DO NOTHING',
+            [key, code, label, labelEn, position],
+          );
       }
     }
     let inserted = 0;

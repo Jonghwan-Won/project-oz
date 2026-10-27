@@ -115,49 +115,45 @@ export function GuideTabs() {
           {id === 'environment' && (
             <>
               <section className={s.section}>
-                <h2>개발 환경과 역할</h2>
+                <h2>개발 환경에서 확인할 수 있는 것</h2>
                 <p>
-                  DB 계정은 앱 실행용 oz_dev_app과 구조 변경용 oz_dev_admin으로
-                  분리합니다. 브라우저가 DB에 직접 접속하지 않습니다.
+                  이 화면과 가이드 API는 개발 환경에서만 열립니다. 브라우저는
+                  DB에 직접 연결하지 않고, 서버가 필요한 검사만 수행합니다.
                 </p>
                 <div className={s.tableWrap}>
                   <table>
                     <caption>
-                      계획된 사이트 역할 - PostgreSQL 계정과 별개
+                      개발 가이드에서 제공하는 검사 범위
                     </caption>
                     <thead>
                       <tr>
-                        <th>역할</th>
-                        <th>공개 콘텐츠</th>
-                        <th>문의</th>
-                        <th>운영 관리</th>
+                        <th>검사</th>
+                        <th>실제 동작</th>
+                        <th>검사하지 않는 것</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th>비로그인</th>
-                        <td>조회</td>
-                        <td>불가</td>
-                        <td>불가</td>
+                        <th>API 응답</th>
+                        <td>/api/guide에서 서버 시각과 성공 응답을 반환합니다.</td>
+                        <td>DB 연결 여부</td>
                       </tr>
                       <tr>
-                        <th>MEMBER</th>
-                        <td>조회</td>
-                        <td>작성 · 본인 것만 조회</td>
-                        <td>불가</td>
+                        <th>DB 연결</th>
+                        <td>서버의 DATABASE_URL로 SELECT 1을 실행합니다.</td>
+                        <td>테이블 생성·migration·데이터 변경</td>
                       </tr>
                       <tr>
-                        <th>ADMIN</th>
-                        <td>조회</td>
-                        <td>inquiry.manage 권한</td>
-                        <td>기능별 permission 검사</td>
+                        <th>운영 환경</th>
+                        <td>/guide와 가이드 API는 404를 반환합니다.</td>
+                        <td>개발 검사 API 사용</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <p>
-                  로그인·세션·역할 검사는 아직 구현되지 않았습니다. UI 버튼을
-                  숨기는 것만으로 권한을 보장하지 않습니다.
+                  로그인·세션·역할 기반 권한은 아직 구현되지 않았습니다. 이 표는
+                  접근 권한표가 아니라 현재 가이드 기능의 동작 범위입니다.
                 </p>
                 <Link className="textLink" href="/guide/environment">
                   개발·운영 환경 구조도 열기 →

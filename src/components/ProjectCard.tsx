@@ -1,6 +1,6 @@
 import { ProjectPreviewLink } from './ProjectPreviewLink';
 import { ProjectTag } from './ProjectTag';
-import { formatProjectPeriod, publicProjectDetail } from '@/lib/project-detail';
+import { formatProjectPeriod } from '@/lib/project-detail';
 import Image from 'next/image';
 import type { PublicProject } from '@/server/services/projects';
 import s from './ProjectCard.module.css';
@@ -22,10 +22,10 @@ export function ProjectCard({
     .join(' · ');
   return (
     <ProjectPreviewLink
-      project={publicProjectDetail(project, locale)}
+      projectId={project.id}
       locale={locale}
       className={`interactiveCard ${s.card}`}
-      href={`/work/${project.slug}`}
+      href={`/work/${project.id}`}
     >
       <div className={s.cover} aria-hidden="true">
         {project.thumbnail ? (

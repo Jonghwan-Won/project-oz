@@ -8,7 +8,7 @@ import type { Messages } from '@/i18n/ko';
 import { BrandLogo } from '@/components/BrandLogo';
 import { usePathname } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-const links = ['about', 'projects', 'board', 'help'] as const;
+const links = ['home', 'about', 'projects', 'board', 'help'] as const;
 
 export function Header({
   labels,
@@ -26,7 +26,6 @@ export function Header({
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState('');
   const toggle = useRef<HTMLButtonElement>(null);
   const nav = useRef<HTMLElement>(null);
   const [indicator, setIndicator] = useState<{
@@ -61,26 +60,10 @@ export function Header({
       observer.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [active, path]);
+  }, [path]);
   useEffect(() => {
     const update = () => {
       setScrolled(window.scrollY > 24);
-      if (path !== '/') return;
-      let current = '';
-      for (const id of links) {
-        if (
-          (document.getElementById(id)?.getBoundingClientRect().top ??
-            Infinity) <= 160
-        )
-          current = id;
-      }
-      if (
-        window.scrollY > 0 &&
-        window.scrollY + window.innerHeight >=
-          document.documentElement.scrollHeight - 4
-      )
-        current = 'help';
-      setActive(current);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
@@ -143,16 +126,12 @@ export function Header({
         {links.map((id) => (
           <Link
             key={id}
-            href={`/#${id}`}
+            href={id === 'home' ? '/' : `/${id}`}
             aria-current={
-              (
-                path === '/'
-                  ? active === id
-                  : path === `/${id}` ||
-                    (id === 'projects' && path.startsWith('/work/')) ||
-                    (id === 'board' && path.startsWith('/board/'))
-              )
-                ? 'location'
+              (id === 'home' ? path === '/' : path === `/${id}`) ||
+              (id === 'projects' && path.startsWith('/work/')) ||
+              (id === 'board' && path.startsWith('/board/'))
+                ? 'page'
                 : undefined
             }
             onClick={(event) => {
@@ -164,23 +143,13 @@ export function Header({
               )
                 return;
               setOpen(false);
-              if (path !== '/') return;
-              const section = document.getElementById(id);
-              section?.focus({ preventScroll: true });
-              if (window.location.hash === '#' + id) {
-                event.preventDefault();
-                section?.scrollIntoView({
-                  behavior: window.matchMedia(
-                    '(prefers-reduced-motion: reduce)',
-                  ).matches
-                    ? 'instant'
-                    : 'smooth',
-                  block: 'start',
-                });
-              }
             }}
           >
-            {labels[id]}
+            {id === 'home'
+              ? locale === 'en'
+                ? 'Home'
+                : '홈'
+              : labels[id]}
           </Link>
         ))}
         <Link

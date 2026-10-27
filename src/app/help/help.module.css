@@ -1,0 +1,164 @@
+.help {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+.intro {
+  max-width: 720px;
+  margin-bottom: 64px;
+}
+.eyebrow,
+.cardLabel {
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.intro h1 {
+  margin: 12px 0;
+}
+.intro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+.faqSection h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+.faqList {
+  display: grid;
+  gap: 10px;
+}
+.faq {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+.faq:hover,
+.faq[open] {
+  border-color: color-mix(in srgb, var(--accent-ink) 42%, var(--line));
+}
+.faq summary {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 14px 20px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary:focus-visible {
+  outline-offset: -4px;
+  border-radius: 14px;
+}
+.faqNumber {
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.faqIcon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+}
+.faqIcon::before {
+  content: '+';
+  font-size: 17px;
+  font-weight: 400;
+  transition: transform 180ms ease;
+}
+.faq[open] .faqIcon::before {
+  transform: rotate(45deg);
+}
+.faq > p {
+  margin: 0;
+  padding: 0 56px 22px 68px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+.contactSection {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 72px;
+}
+.contactCard {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      ellipse at top right,
+      color-mix(in srgb, var(--accent-ink) 8%, transparent),
+      transparent 62%
+    ),
+    var(--surface);
+}
+.contactCard h2 {
+  margin: 18px 0 8px;
+  font-size: 21px;
+  letter-spacing: -0.035em;
+}
+.contactCard p {
+  flex: 1;
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.messageField {
+  display: grid;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.messageField textarea {
+  min-height: 180px;
+  line-height: 1.7;
+}
+@media (max-width: 680px) {
+  .intro {
+    margin-bottom: 44px;
+  }
+  .intro p {
+    font-size: 15px;
+  }
+  .faq summary {
+    grid-template-columns: 28px minmax(0, 1fr) 24px;
+    gap: 8px;
+    padding: 12px;
+    font-size: 15px;
+  }
+  .faq > p {
+    padding: 0 16px 18px 48px;
+    font-size: 14px;
+  }
+  .contactSection {
+    grid-template-columns: 1fr;
+    margin-top: 52px;
+  }
+  .contactCard {
+    padding: 22px;
+  }
+}

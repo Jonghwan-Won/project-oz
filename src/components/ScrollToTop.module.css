@@ -1,0 +1,78 @@
+button.button {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  border: 1px solid #ffffff26;
+  border-radius: 50%;
+  color: #c2c2d0;
+  background: #20202bd9;
+  box-shadow:
+    0 8px 28px #00000024,
+    inset 0 1px 0 #ffffff24,
+    inset 0 -1px 0 #baacff10;
+}
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, #ffffff12, transparent 42%, #baacff08);
+}
+.button svg {
+  display: block;
+  position: relative;
+}
+button.button:hover {
+  color: #c5b8ff;
+  background: #343042d9;
+}
+:global([data-theme='light']) button.button {
+  color: #555361;
+  background: #f1f2f5df;
+  border-color: #ffffff66;
+  box-shadow:
+    0 8px 28px #24203d14,
+    inset 0 1px 0 #ffffff99,
+    inset 0 -1px 0 #62508a12;
+}
+:global([data-theme='light']) .button::before {
+  background: linear-gradient(135deg, #ffffff38, transparent 42%, #baacff10);
+}
+:global([data-theme='light']) button.button:hover {
+  color: #5940ad;
+  background: #e2dcf2df;
+}
+@supports (backdrop-filter: blur(20px)) {
+  button.button {
+    background: #24243280;
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
+  :global([data-theme='light']) button.button {
+    background: #e8e9f080;
+  }
+  button.button:hover {
+    background: #34304299;
+  }
+  :global([data-theme='light']) button.button:hover {
+    background: #e2dcf299;
+  }
+}
+@media (max-width: 1100px) {
+  button.button {
+    width: 56px;
+    height: 56px;
+  }
+}
+@media (max-width: 380px) {
+  button.button {
+    right: max(12px, env(safe-area-inset-right));
+  }
+}

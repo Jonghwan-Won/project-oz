@@ -37,14 +37,18 @@ for (const section of ['about', 'projects', 'board', 'help']) {
 }
 assert.ok(!home.includes('id="lab"'));
 assert.ok(!home.includes('href="/#lab"'));
-assert.match(home, /href="\/work\/project-oz"/);
-assert.match(home, /href="\/work\/ak-is"/);
+assert.match(home, /href="\/work\/[0-9a-f-]{36}"/);
 assert.ok(
   !home.includes('href="/work/jeju-air"'),
   'home shows only the latest two projects',
 );
 const projectsPage = await (await fetch(base + '/projects')).text();
-assert.match(projectsPage, /href="\/work\/project-oz"/);
+const projectId = projectsPage.match(/href="\/work\/([0-9a-f-]{36})"/)?.[1];
+assert.ok(projectId, 'project card links by database id');
+assert.equal((await fetch(base + '/work/' + projectId)).status, 200);
+const projectDetail = await fetch(base + '/api/projects/' + projectId);
+assert.equal(projectDetail.status, 200);
+assert.ok((await projectDetail.json()).body);
 assert.match(projectsPage, /개발 중/);
 assert.ok(
   !projectsPage.includes('aria-label="프로젝트 유형"'),
@@ -152,7 +156,6 @@ for (const slug of [
   'moim',
   'jogong',
 ]) {
-  assert.ok(projectsPage.includes('href="/work/' + slug + '"'));
   const detail = await fetch(base + '/work/' + slug);
   assert.equal(detail.status, 200);
   assert.match(await detail.text(), /제목과 배치 확인을 위한 임시 데이터/);

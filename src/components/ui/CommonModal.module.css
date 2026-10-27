@@ -1,7 +1,7 @@
 .modal {
-  --modal-size: min(1180px, calc(100vw - 32px));
-  width: min(1180px, calc(100vw - 32px));
-  max-width: none;
+  flex: 0 0 min(var(--modal-size, 1180px), calc(100vw - 32px));
+  width: min(var(--modal-size, 1180px), calc(100vw - 32px));
+  max-width: 100%;
   max-height: calc(100dvh - 32px);
   padding: 0;
   border: 1px solid var(--line);
@@ -10,6 +10,9 @@
   color: var(--ink);
   overflow: hidden;
   box-shadow: 0 24px 100px #0006;
+}
+.fillHeight {
+  height: calc(100dvh - 32px);
 }
 .mantineBody {
   padding: 0;
@@ -22,6 +25,13 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100dvh - 34px);
+}
+.fillHeightFrame {
+  height: 100%;
+  max-height: calc(100dvh - 32px);
+}
+.fillHeightFrame .body {
+  flex: 1;
 }
 .header {
   position: sticky;
@@ -54,12 +64,7 @@
 }
 @media (max-width: 600px) {
   .modal {
-    width: calc(100vw - 16px);
-    max-height: calc(100dvh - 16px);
     border-radius: 12px;
-  }
-  .frame {
-    max-height: calc(100dvh - 18px);
   }
   .header {
     padding: 12px;

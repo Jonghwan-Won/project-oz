@@ -1,7 +1,14 @@
 import { ProjectManager } from '../ProjectManager';
-import { getAdminProjects } from '@/server/services/admin-projects';
+import {
+  getAdminProjectCount,
+  getAdminProjects,
+} from '@/server/services/admin-projects';
 import { redirect, notFound } from 'next/navigation';
-import { getAdminPosts } from '@/server/services/posts';
+import {
+  getAdminPost,
+  getAdminPostCount,
+  getAdminPosts,
+} from '@/server/services/posts';
 import { BoardManager } from '../BoardManager';
 import { PostEditor } from '../PostEditor';
 
@@ -38,12 +45,12 @@ export default async function Admin({
     return <ProjectManager {...await getAdminProjects()} />;
   if (section === 'board') {
     if (path[1] === 'new') return <PostEditor />;
-    const posts = await getAdminPosts();
     if (path[1]) {
-      const post = posts.find((post) => post.id === path[1]);
+      const post = await getAdminPost(path[1]);
       if (!post) notFound();
       return <PostEditor key={post.id} initialPost={post} />;
     }
+    const posts = await getAdminPosts();
     return <BoardManager posts={posts} />;
   }
   if (section) {
@@ -56,8 +63,8 @@ export default async function Admin({
       </section>
     );
   }
-  const posts = await getAdminPosts();
-  const projectCount = (await getAdminProjects()).projects.length;
+  const postCount = await getAdminPostCount();
+  const projectCount = await getAdminProjectCount();
   return (
     <section>
       {/* <p>프로젝트는 개발 DB, 게시글은 저장소 콘텐츠를 기준으로 표시합니다.</p> */}
@@ -71,7 +78,7 @@ export default async function Admin({
         </div>
         <div className={s.panel}>
           <span>게시글</span>
-          <strong>{posts.length}</strong>
+          <strong>{postCount}</strong>
           <CommonButtonLink href="/admin/board">게시판 관리</CommonButtonLink>
         </div>
       </div>

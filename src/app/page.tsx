@@ -9,6 +9,7 @@ import { getPublicProjects } from '@/server/services/projects';
 import { getCategoryLabel } from '@/content/site';
 import s from './page.module.css';
 import { getPublicPosts } from '@/server/services/posts';
+import { HomeSectionNav } from '@/components/HomeSectionNav';
 const tools = [
   {
     name: 'Codex',
@@ -50,6 +51,7 @@ export default async function Home() {
   const copy = messages.home;
   return (
     <>
+      <HomeSectionNav labels={messages.navigation} />
       <section id="about" tabIndex={-1} className={s.hero}>
         <OzParticles label={messages.brandMotion.description} />
         <div className={s.copy}>
@@ -82,7 +84,7 @@ export default async function Home() {
         </div>
         <div className="projectGrid">
           {projects.slice(0, 2).map((project) => (
-            <ProjectCard key={project.slug} project={project} locale={locale} />
+            <ProjectCard key={project.id} project={project} locale={locale} />
           ))}
         </div>
       </section>

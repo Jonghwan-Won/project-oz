@@ -71,7 +71,8 @@ export const en = {
     lab: 'Lab',
   },
   projectTypes: {
-    website: 'Website',
+    website: 'Web',
+    hybrid_app: 'Hybrid App',
   },
   projectOrigins: {
     personal: 'Personal',
@@ -213,7 +214,7 @@ export const en = {
     admin: 'Admin',
   },
   about: {
-    title: 'Small ideas.\nMade real.',
+    title: 'Small ideas.\nMade real',
     intro: 'Hello, I’m ddoza, a developer.',
     welcome:
       'I like noticing small everyday frustrations and building something to solve them.',
@@ -243,8 +244,6 @@ export const en = {
     title: 'Have a question?',
     intro: 'Frequently asked questions and ways to get in touch.',
     faqLabel: 'Frequently asked questions',
-    bugLabel: 'Report a bug',
-    contactLabel: 'Contact information',
     faq: [
       {
         question: 'What is ddoza?',
@@ -264,19 +263,25 @@ export const en = {
       {
         question: 'Can I send an inquiry now?',
         answer:
-          'Inquiries and bug reports will open after sign-in is connected. This page does not collect personal information or save messages yet.',
+          'The inquiry and bug report forms are visible, but messages are not sent or saved yet. Submission will be connected after sign-in and permissions are implemented.',
       },
     ],
     bugTitle: 'Found a bug?',
     bugDescription:
-      'The page URL, your device, and steps to reproduce will help. A reporting channel is being prepared.',
+      'The page URL, your device, and steps to reproduce will help. This form is only a visual draft; sending is not connected yet.',
+    bugModalTitle: 'Report a bug',
     contactTitle: 'Let’s talk',
     contactDescription:
-      'Contact options are coming soon. After sign-in is connected, private inquiries will be visible only to you and the administrator.',
-    accountLink: 'About accounts',
+      'Write a question or a topic you would like to discuss. This form is only a visual draft; messages are not sent or saved yet.',
+    contactModalTitle: 'Contact us',
+    messageLabel: 'Message',
+    messagePlaceholder: 'Write your message.',
+    sendLabel: 'Send',
+    closeLabel: 'Close',
+    actionsLabel: 'Contact and feedback',
   },
   board: {
-    title: 'Taking notes, sharing ideas.',
+    title: 'Taking notes, sharing ideas',
     intro: 'Lessons from building things and stories discovered along the way.',
     filterLabel: 'Post categories',
     searchLabel: 'Search post titles',

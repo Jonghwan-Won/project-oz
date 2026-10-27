@@ -17,7 +17,7 @@
 
 ## 에디터·파일
 
-CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 처리한다. CommonFileUpload는 NAS 업로드, CommonAssetLinks는 원본 이름 다운로드 링크에 사용한다. 저장·권한·현재 제한은 [에디터·파일 문서](../../../docs/15-editor-files.md)를 따른다.
+CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 처리한다. CommonRichTextEditor는 기본적으로 이미지 업로드 버튼을 제공하며, `uploadsEnabled={false}`이면 버튼을 숨겨 로컬 화면 예제처럼 업로드 없이 편집 UI를 보여 줄 수 있다. CommonFileUpload는 NAS 업로드, CommonAssetLinks는 원본 이름 다운로드 링크에 사용한다. 저장·권한·현재 제한은 [에디터·파일 문서](../../../docs/15-editor-files.md)를 따른다.
 
 ## 버튼 스타일·컬러·크기
 
@@ -35,12 +35,12 @@ CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 
 
 프로젝트 검색: 검색어(한·영 제목/소개·주소·기술·태그), 작업 구분, 유형, 공개 범위. 미지정·비활성 분류도 검색 가능하다. 게시판 검색: 검색어(제목·주소·요약·본문), 카테고리, 공개 범위. 현재 전달받은 개발 목록을 검색하며 운영·대량 데이터 연결 시 서버 검색/페이징으로 전환한다. 대시보드는 집계 화면, 분류/미디어/사이트 관리는 준비 화면이다.
 
-CommonInput/CommonTextArea는 Mantine TextInput/Textarea, 체크·라디오는 Mantine Checkbox/Radio, CommonSelectBox는 Mantine Select 기반이다. 프로젝트 사용 기술은 Mantine Autocomplete 추천 목록에서, 주제 태그는 CommonInput에서 입력한다. 선택한 기술과 태그는 `ProjectTag`로 폼·카드·상세 화면에서 같은 모양으로 표시한다. 사용 기술 추천 목록은 활성 TECHNOLOGY 공통 코드에서 가져온다. CommonFilePicker는 기본 파일 선택 input을 OZ 스타일로 표시하고 CommonFileUpload는 NAS 업로드를 처리한다. CommonModal은 Mantine Modal의 포커스 제한·복귀 동작을 사용하면서 제목·actions·스크롤 영역은 사이트 스타일로 구성한다. /guide의 공통 UI 탭에서 에디터와 첨부 예제도 확인한다. 프로젝트 관리에는 이 공통 컴포넌트를 적용했다.
+CommonInput/CommonTextArea는 Mantine TextInput/Textarea, 체크·라디오는 Mantine Checkbox/Radio, CommonSelectBox는 Mantine Select 기반이다. 프로젝트 사용 기술은 Mantine Autocomplete 추천 목록에서, 주제 태그는 CommonInput에서 입력한다. 선택한 기술과 태그는 `ProjectTag`로 폼·카드·상세 화면에서 같은 모양으로 표시한다. 사용 기술 추천 목록은 활성 TECHNOLOGY 공통 코드에서 가져온다. CommonFilePicker는 기본 파일 선택 input을 OZ 스타일로 표시하고 CommonFileUpload는 NAS 업로드를 처리한다. CommonModal은 Mantine Modal의 포커스 제한·복귀 동작을 사용하면서 제목·actions·스크롤 영역은 사이트 스타일로 구성한다. `size`는 `sm`(480px)·`md`(720px)·`lg`(960px)·`xl`(1180px) 또는 숫자 너비(px)를 받으며 기본값은 `xl`이다. `fillHeight`를 켜면 화면의 최대 높이로 프레임을 고정하고 본문 영역을 스크롤한다. 화면이 좁으면 너비를 뷰포트 안으로 제한한다. /guide의 공통 UI 탭에서 에디터와 첨부 예제도 확인한다. 프로젝트 관리에는 이 공통 컴포넌트를 적용했다.
 
 Tiptap Image의 네 모서리 핸들로 이미지 크기를 비율 유지하며 변경한다. width/height는 JSON에 저장하고 출력에도 반영한다. Tiptap 사용 확장은 MIT 라이선스로 수정·상업 이용 가능하나 저작권 및 라이선스 고지를 유지해야 한다.
 
 ## 프로젝트 공통 상세
 
-ProjectDetailContent는 공개 카드 팝업·관리자 미리보기·직접 상세 URL에서 같은 제목/기술/프로젝트 정보/커버/본문/태그/첨부를 렌더링한다. ProjectPreviewLink는 일반 클릭을 CommonModal로 열고 수정키를 누른 링크 클릭과 직접 URL은 원래 상세 경로를 유지한다. 관리자 미리보기는 현재 편집값을 사용하며 저장하지 않는다.
+ProjectDetailContent는 공개 카드 팝업·관리자 미리보기·직접 상세 URL에서 같은 제목/기술/프로젝트 정보/커버/본문/태그/첨부를 렌더링한다. 공개 목록에는 상세 본문과 첨부를 포함하지 않으며 ProjectPreviewLink는 클릭 시 프로젝트 ID로 상세를 요청해 CommonModal을 연다. 수정키를 누른 링크 클릭과 직접 URL은 상세 경로를 유지한다. 관리자 미리보기는 현재 편집값을 사용하며 저장하지 않는다.
 
 검색 버튼은 sm(최소44px)로 표시한다. 프로젝트 체크박스는 현재 페이지 전체 선택과 개별 선택을 제공하고 선택이 없으면 삭제 버튼을 비활성화한다. 삭제 확인은 공통 CommonModal을 사용한다.

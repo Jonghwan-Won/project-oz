@@ -25,7 +25,9 @@ import { CommonFileUpload } from '@/components/ui/CommonFileUpload';
 import { thumbnailUrl } from '@/lib/files';
 import {
   blankProject,
+  parseProjectForm,
   type ProjectForm,
+  type ProjectListItem,
   type ProjectCode,
   type ProjectCopy,
 } from '@/lib/project-form';
@@ -40,7 +42,7 @@ export function ProjectManager({
   projects,
   codes,
 }: {
-  projects: ProjectForm[];
+  projects: ProjectListItem[];
   codes: ProjectCode[];
 }) {
   const router = useRouter();
@@ -70,6 +72,7 @@ export function ProjectManager({
   const [tagInput, setTagInput] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadingProject, setLoadingProject] = useState(false);
   const [confirmSave, setConfirmSave] = useState(false);
   const [saveAlert, setSaveAlert] = useState<{
     content: string;
@@ -96,7 +99,7 @@ export function ProjectManager({
     month: '2-digit',
     day: '2-digit',
   });
-  const gridColumns: CommonGridColumn<ProjectForm>[] = [
+  const gridColumns: CommonGridColumn<ProjectListItem>[] = [
     {
       key: 'select',
       header: (
@@ -146,8 +149,14 @@ export function ProjectManager({
       header: '프로젝트명',
       width: 280,
       render: (project) => (
-        <button className={s.gridTitle} onClick={() => openProject(project)}>
-          {project.translations.ko.title}
+        <button
+          className={s.gridTitle}
+          disabled={loadingProject}
+          onClick={() => openProject(project)}
+        >
+          <span className={s.gridTitleText}>
+            {project.translations.ko.title}
+          </span>
         </button>
       ),
     },
@@ -253,16 +262,28 @@ export function ProjectManager({
         label: c.nameKo + (!c.isActive ? ' (비활성)' : ''),
         disabled: !c.isActive,
       }));
-  const openProject = (project: ProjectForm) => {
-    const next = structuredClone(project);
-    setDraft(next);
-    originalDraft.current = JSON.stringify(next);
-    setDirty(false);
-    setMode('edit');
-    setLocale('ko');
-    setTechnologyQuery('');
-    setTagInput('');
+  const openProject = async (project: ProjectListItem) => {
+    setLoadingProject(true);
     setMessage('');
+    try {
+      const response = await fetch(`/api/admin/projects/${project.id}`, {
+        cache: 'no-store',
+      });
+      if (!response.ok) return;
+      const result = await response.json();
+      const next = parseProjectForm(result);
+      setDraft(next);
+      originalDraft.current = JSON.stringify(next);
+      setDirty(false);
+      setMode('edit');
+      setLocale('ko');
+      setTechnologyQuery('');
+      setTagInput('');
+    } catch {
+      // Leave the list free of incidental detail-load messages.
+    } finally {
+      setLoadingProject(false);
+    }
   };
   const contentLocale =
     locale === 'en' && !draft?.translations.en.title ? 'ko' : locale;
@@ -402,7 +423,6 @@ export function ProjectManager({
           <CommonModal
             open
             title={mode === 'create' ? '프로젝트 등록' : '프로젝트 수정'}
-            closeOnEscape={false}
             onClose={() => {
               requestClose();
             }}
@@ -481,6 +501,16 @@ export function ProjectManager({
                     />
                   </label>
                   <label>
+                    주소(slug)
+                    <CommonInput
+                      required
+                      maxLength={80}
+                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                      value={draft.slug}
+                      onChange={(e) => change({ slug: e.target.value })}
+                    />
+                  </label>
+                  <label>
                     시작일
                     <CommonInput
                       type="date"
@@ -498,16 +528,6 @@ export function ProjectManager({
                       onChange={(event) =>
                         change({ endedOn: event.target.value })
                       }
-                    />
-                  </label>
-                  <label>
-                    주소(slug)
-                    <CommonInput
-                      required
-                      maxLength={80}
-                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                      value={draft.slug}
-                      onChange={(e) => change({ slug: e.target.value })}
                     />
                   </label>
                   <label>
@@ -796,83 +816,53 @@ export function ProjectManager({
             <ProjectDetailContent project={previewData} locale={locale} />
           </CommonModal>
         )}
-        {confirmDelete && (
-          <CommonModal
-            open
-            title="프로젝트 삭제"
-            onClose={() => {
-              if (!saving) setConfirmDelete(false);
-            }}
-            actions={
-              <>
-                <CommonButton
-                  variant="primary"
-                  disabled={saving}
-                  onClick={async () => {
-                    setSaving(true);
-                    setMessage('');
-                    try {
-                      const response = await fetch('/api/admin/projects', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(
-                          selectedProjects.map((project) => ({
-                            id: project.id,
-                            version: project.version,
-                          })),
-                        ),
-                      });
-                      const result: unknown = await response.json();
-                      if (!response.ok)
-                        throw Error(
-                          result &&
-                            typeof result === 'object' &&
-                            'message' in result &&
-                            typeof result.message === 'string'
-                            ? result.message
-                            : '삭제하지 못했습니다.',
-                        );
-                      setSelected([]);
-                      setConfirmDelete(false);
-                      setMessage('선택한 프로젝트를 삭제했습니다.');
-                      router.refresh();
-                    } catch (error) {
-                      setMessage(
-                        error instanceof Error
-                          ? error.message
-                          : '삭제하지 못했습니다.',
-                      );
-                    } finally {
-                      setSaving(false);
-                    }
-                  }}
-                >
-                  삭제
-                </CommonButton>
-                <CommonButton
-                  disabled={saving}
-                  onClick={() => setConfirmDelete(false)}
-                >
-                  취소
-                </CommonButton>
-              </>
+        <CommonConfirm
+          open={confirmDelete}
+          title="프로젝트 삭제"
+          content={`선택한 ${selectedProjects.length}개 프로젝트를 삭제하시겠습니까? 목록과 사용자 화면에서 제외되며 원본 데이터와 NAS 파일은 보존됩니다.`}
+          confirmLabel="삭제"
+          onConfirm={async () => {
+            setConfirmDelete(false);
+            setSaving(true);
+            setMessage('');
+            try {
+              const response = await fetch('/api/admin/projects', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(
+                  selectedProjects.map((project) => ({
+                    id: project.id,
+                    version: project.version,
+                  })),
+                ),
+              });
+              const result: unknown = await response.json();
+              if (!response.ok)
+                throw Error(
+                  result &&
+                    typeof result === 'object' &&
+                    'message' in result &&
+                    typeof result.message === 'string'
+                    ? result.message
+                    : '삭제하지 못했습니다.',
+                );
+              setSelected([]);
+              setSaveAlert({
+                content: '삭제되었습니다.',
+                variant: 'default',
+                closeDraftOnClose: false,
+              });
+              router.refresh();
+            } catch (error) {
+              setMessage(
+                error instanceof Error ? error.message : '삭제하지 못했습니다.',
+              );
+            } finally {
+              setSaving(false);
             }
-          >
-            <p>
-              선택한 {selectedProjects.length}개 프로젝트를 삭제하시겠습니까?
-            </p>
-            <p>
-              목록과 사용자 화면에서 제외되며 원본 데이터와 NAS 파일은
-              보존됩니다.
-            </p>
-            <ul>
-              {selectedProjects.map((project) => (
-                <li key={project.id}>{project.translations.ko.title}</li>
-              ))}
-            </ul>
-            {message && <p role="alert">{message}</p>}
-          </CommonModal>
-        )}
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
         <CommonGrid
           rows={result.items}
           columns={gridColumns}
@@ -883,6 +873,7 @@ export function ProjectManager({
           wrapClassName={s.gridWrap}
           tableClassName={`${s.grid} ${s.projectGrid}`}
           emptyCellClassName={s.empty}
+          fixedLayout
           onRowDoubleClick={(project, event) => {
             if (
               !(event.target instanceof Element) ||
@@ -941,7 +932,7 @@ export function ProjectManager({
         variant={saveAlert?.variant}
         content={saveAlert?.content ?? ''}
       />
-      <CommonLoading open={saving} />
+      <CommonLoading open={saving || loadingProject} />
     </section>
   );
 }

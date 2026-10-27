@@ -28,6 +28,7 @@
 .shell .intro h1 {
   margin: 0;
   font-size: clamp(24px, 2vw, 30px);
+  line-height: 1.2;
   letter-spacing: -0.5px;
 }
 .intro p,
@@ -46,7 +47,7 @@
   gap: 8px;
   position: sticky;
   top: 100px;
-  margin-top: 62px;
+  margin-top: clamp(45px, calc(2.4vw + 16px), 52px);
   padding: 12px;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   border-radius: 16px;
@@ -57,7 +58,7 @@
 .nav a {
   position: relative;
   padding: 14px 12px;
-  min-height: 44px;
+  min-height: 36px;
   border-radius: 16px;
   border: 1px solid transparent;
   font-size: 14px;
@@ -96,7 +97,8 @@
   min-width: 900px;
 }
 .gridTitle {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   min-width: 0;
   max-width: 280px;
@@ -112,7 +114,14 @@
   cursor: pointer;
   font: inherit;
   padding: 4px 0;
-  min-height: 44px;
+  min-height: 36px;
+}
+.gridTitleText {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .gridTitle:focus-visible {
   outline: 2px solid var(--accent-ink);
@@ -574,9 +583,14 @@
 }
 .grid th,
 .grid td {
-  padding: 14px 16px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
+}
+.grid th {
+  padding: 14px 16px;
+}
+.grid td {
+  padding: 8px 16px;
 }
 .grid th {
   color: var(--muted);
@@ -638,4 +652,12 @@
 .postForm {
   display: grid;
   gap: 20px;
+}
+.deleteButton {
+  margin-left: auto;
+  border-color: color-mix(in srgb, #ef4444 40%, var(--line));
+  color: #ef4444;
+}
+.deleteButton:hover {
+  background: color-mix(in srgb, #ef4444 10%, var(--surface));
 }

@@ -1,6 +1,6 @@
-import { CommonButtonLink } from '@/components/ui/CommonButton';
 import { getMessages } from '@/i18n/server';
-import { MainPageLink } from '@/components/MainPageLink';
+import { HelpActions } from './HelpActions';
+import s from './help.module.css';
 
 export async function generateMetadata() {
   const { messages } = await getMessages();
@@ -11,35 +11,34 @@ export default async function Help() {
   const { messages } = await getMessages();
   const copy = messages.contact;
   return (
-    <div className="page">
-      <MainPageLink href="/#help" label={messages.navigation.main} />
-      <h1>{copy.title}</h1>
-      <p className="lead">{copy.intro}</p>
-      <div className="filter">
-        <a href="#faq">FAQ</a>
-        <a href="#bug">{copy.bugLabel}</a>
-        <a href="#contact">{copy.contactLabel}</a>
-      </div>
-      <section id="faq">
-        <h2>{copy.faqLabel}</h2>
-        {copy.faq.map((item) => (
-          <details className="faq" key={item.question}>
-            <summary>{item.question}</summary>
-            <p>{item.answer}</p>
-          </details>
-        ))}
+    <div className={`page ${s.help}`}>
+      <header className={s.intro}>
+        {/* <span className={s.eyebrow}>{copy.faqLabel}</span> */}
+        <h1 className="accentDot">{copy.title}</h1>
+        <p>{copy.intro}</p>
+      </header>
+      <section
+        id="faq"
+        className={s.faqSection}
+        aria-labelledby="help-faq-title"
+      >
+        <h2 id="help-faq-title">{copy.faqLabel}</h2>
+        <div className={s.faqList}>
+          {copy.faq.map((item, index) => (
+            <details className={s.faq} key={item.question}>
+              <summary>
+                <span className={s.faqNumber}>
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span>{item.question}</span>
+                <span className={s.faqIcon} aria-hidden="true" />
+              </summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
+        </div>
       </section>
-      <section id="bug" className="prose">
-        <h2>{copy.bugTitle}</h2>
-        <p>{copy.bugDescription}</p>
-      </section>
-      <section id="contact" className="prose">
-        <h2>{copy.contactTitle}</h2>
-        <p>{copy.contactDescription}</p>
-        <CommonButtonLink variant="primary" href="/login">
-          {copy.accountLink}
-        </CommonButtonLink>
-      </section>
+      <HelpActions copy={copy} />
     </div>
   );
 }

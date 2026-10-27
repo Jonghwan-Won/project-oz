@@ -9,6 +9,8 @@ import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
 import { CommonRichTextEditor } from '@/components/ui/CommonRichTextEditor';
 import { CommonRichTextView } from '@/components/ui/CommonRichTextView';
 import { CommonConfirm } from '@/components/ui/CommonConfirm';
+import { CommonLoading } from '@/components/ui/CommonLoading';
+import { CommonAlert } from '@/components/ui/CommonAlert';
 import { blankPost, parsePostForm, type PostForm } from '@/lib/post-form';
 import { categories } from '@/content/site';
 import s from './admin.module.css';
@@ -20,9 +22,12 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
   const [uploads, setUploads] = useState(0);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [confirm, setConfirm] = useState<'save' | 'leave' | null>(null);
+  const [confirm, setConfirm] = useState<'save' | 'leave' | 'delete' | null>(
+    null,
+  );
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [saved, setSaved] = useState('');
   const busy = saving || uploads > 0;
   const change = (patch: Partial<PostForm>) => {
     setDirty(true);
@@ -92,11 +97,35 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
       const result = await response.json();
       if (!response.ok) throw Error(result.message || '저장하지 못했습니다.');
       setDirty(false);
-      router.push('/admin/board');
-      router.refresh();
+      setSaved('저장되었습니다.');
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : '저장하지 못했습니다.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+  async function remove() {
+    if (!initialPost) return;
+    setConfirm(null);
+    setSaving(true);
+    setMessage('');
+    try {
+      const response = await fetch('/api/admin/posts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([
+          { id: initialPost.id, version: initialPost.version },
+        ]),
+      });
+      const result = await response.json();
+      if (!response.ok) throw Error(result.message || '삭제하지 못했습니다.');
+      setDirty(false);
+      setSaved('삭제되었습니다.');
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : '삭제하지 못했습니다.',
       );
     } finally {
       setSaving(false);
@@ -125,21 +154,33 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
           <div className={s.actions}>
             <CommonButton
               disabled={busy}
-              aria-pressed={preview}
-              onClick={() => setPreview(!preview)}
-            >
-              {preview ? '편집' : '미리보기'}
-            </CommonButton>
-            <CommonButton type="submit" variant="primary" disabled={busy}>
-              {saving ? '저장 중…' : uploads ? '이미지 업로드 중…' : '저장'}
-            </CommonButton>
-            <CommonButton
-              disabled={busy}
               onClick={() =>
                 dirty ? setConfirm('leave') : router.push('/admin/board')
               }
             >
-              목록으로
+              목록
+            </CommonButton>
+
+            {initialPost && (
+              <CommonButton
+                className={s.deleteButton}
+                disabled={busy}
+                onClick={() => setConfirm('delete')}
+              >
+                삭제
+              </CommonButton>
+            )}
+
+            <CommonButton
+              disabled={busy}
+              aria-pressed={preview}
+              onClick={() => setPreview(!preview)}
+            >
+              {preview ? '돌아가기' : '미리보기'}
+            </CommonButton>
+
+            <CommonButton type="submit" variant="primary" disabled={busy}>
+              저장
             </CommonButton>
           </div>
         </div>
@@ -159,19 +200,8 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
           </article>
         ) : (
           <>
-            <div className={s.fields}>
-              <label>
-                카테고리
-                <CommonSelectBox
-                  aria-label="게시글 카테고리"
-                  value={draft.category}
-                  disabled={busy}
-                  onValueChange={(category) => change({ category })}
-                  options={categories
-                    .slice(1)
-                    .map((value) => ({ value, label: value }))}
-                />
-              </label>
+            <div className={s.formSectionTitleRow}>
+              <h3 className={s.formSectionTitle}>게시글 정보</h3>
               <div className={s.visibilityToggle}>
                 <span>노출 여부</span>
                 <Switch
@@ -185,57 +215,94 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                 />
               </div>
             </div>
-            <label>
-              제목
-              <CommonInput
-                required
-                maxLength={200}
-                value={content.title}
-                disabled={busy}
-                onChange={(e) => copy({ title: e.target.value })}
-              />
-            </label>
-            <label>
-              요약
-              <CommonTextArea
-                rows={3}
-                maxLength={4000}
-                value={content.summary}
-                disabled={busy}
-                onChange={(e) => copy({ summary: e.target.value })}
-              />
-            </label>
-            <div>
-              <label htmlFor="post-body">본문</label>
-              <CommonRichTextEditor
-                id="post-body"
-                label="게시글 본문"
-                value={content.body}
-                disabled={saving}
-                onChange={(body) => copy({ body })}
-                onUploadBusyChange={(value) =>
-                  setUploads((count) => Math.max(0, count + (value ? 1 : -1)))
-                }
-              />
+            <div className={s.fields}>
+              <label>
+                카테고리
+                <CommonSelectBox
+                  aria-label="게시글 카테고리"
+                  value={draft.category}
+                  disabled={busy}
+                  onValueChange={(category) => change({ category })}
+                  options={categories
+                    .slice(1)
+                    .map((value) => ({ value, label: value }))}
+                />
+              </label>
+            </div>
+            <div className={s.formSectionHeader}>
+              <h3 className={s.formSectionTitle}>게시글 내용</h3>
+            </div>
+            <div className={`${s.fields} ${s.translationFields}`}>
+              <label>
+                제목
+                <CommonInput
+                  required
+                  maxLength={200}
+                  value={content.title}
+                  disabled={busy}
+                  onChange={(e) => copy({ title: e.target.value })}
+                />
+              </label>
+              <label>
+                한 줄 소개
+                <CommonTextArea
+                  rows={3}
+                  maxLength={4000}
+                  value={content.summary}
+                  disabled={busy}
+                  onChange={(e) => copy({ summary: e.target.value })}
+                />
+              </label>
+              <div>
+                <label htmlFor="post-body">본문</label>
+                <CommonRichTextEditor
+                  id="post-body"
+                  label="게시글 본문"
+                  value={content.body}
+                  disabled={saving}
+                  onChange={(body) => copy({ body })}
+                  onUploadBusyChange={(value) =>
+                    setUploads((count) => Math.max(0, count + (value ? 1 : -1)))
+                  }
+                />
+              </div>
             </div>
           </>
         )}
       </form>
       <CommonConfirm
         open={confirm !== null}
-        title={confirm === 'save' ? '게시글 저장' : '페이지 이동'}
+        title={
+          confirm === 'save'
+            ? '게시글 저장'
+            : confirm === 'delete'
+              ? '게시글 삭제'
+              : '페이지 이동'
+        }
         content={
           confirm === 'save'
             ? '게시글을 저장할까요?'
-            : '저장하지 않은 변경사항이 있습니다. 이동하시겠습니까?'
+            : confirm === 'delete'
+              ? '게시글을 삭제할까요?'
+              : '저장하지 않은 변경사항이 있습니다. 이동하시겠습니까?'
         }
         onCancel={() => setConfirm(null)}
-        onConfirm={() =>
-          confirm === 'save'
-            ? save()
-            : router.push(pendingHref || '/admin/board')
-        }
+        onConfirm={() => {
+          if (confirm === 'save') save();
+          else if (confirm === 'delete') remove();
+          else router.push(pendingHref || '/admin/board');
+        }}
       />
+      <CommonAlert
+        open={!!saved}
+        content={saved}
+        onClose={() => {
+          setSaved('');
+          router.push('/admin/board');
+          router.refresh();
+        }}
+      />
+      <CommonLoading open={saving} />
     </section>
   );
 }

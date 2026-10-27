@@ -74,10 +74,14 @@ test('board search requires all conditions and an empty result remains empty', (
   };
   assert.ok(
     matchesBoard(entry, {
-      keyword: ' NEXT.JS ',
+      keyword: ' 개발 기록 ',
       category: '소식',
       status: '공개',
     }),
+  );
+  assert.equal(
+    matchesBoard(entry, { ...emptyBoardSearch, keyword: 'Next.js' }),
+    false,
   );
   assert.ok(matchesBoard(entry, emptyBoardSearch));
   assert.equal(

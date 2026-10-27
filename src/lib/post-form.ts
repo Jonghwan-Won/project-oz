@@ -12,6 +12,12 @@ export type PostForm = {
   updatedAt?: string;
   translations: { ko: ProjectCopy; en: ProjectCopy };
 };
+export type PostListItem = Omit<PostForm, 'translations'> & {
+  translations: {
+    ko: { title: string; summary: string };
+    en: { title: string; summary: string };
+  };
+};
 export const blankPost = (): PostForm => ({
   id: '',
   version: 0,

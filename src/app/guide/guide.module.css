@@ -170,6 +170,38 @@
 .tableScroll {
   overflow-x: auto;
 }
+.guideGridWrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.guideGrid {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.guideGrid th,
+.guideGrid td {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.guideGrid th {
+  color: var(--muted);
+  font-size: 12px;
+}
+.localFileDemo {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin: 16px 0;
+}
+.localFileDemo p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
 .buttonTable {
   width: 100%;
   border-collapse: collapse;
