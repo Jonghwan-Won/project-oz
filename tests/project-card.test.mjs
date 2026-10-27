@@ -52,14 +52,13 @@ new Function('require', 'exports', outputText)((id) => {
 
 test('project cards group title, period and technologies with an orbit placeholder', () => {
   const render = (project) =>
-    renderToStaticMarkup(
-      createElement(exports.ProjectCard, { project }),
-    );
+    renderToStaticMarkup(createElement(exports.ProjectCard, { project }));
   const project = {
     ...projects[0],
+    id: '00000000-0000-0000-0000-000000000001',
     ...ko.projectItems[projects[0].slug],
     originLabel: '개인',
-    typeLabel: '웹사이트',
+    typeLabel: '웹',
     contentLocale: 'ko',
     tags: [],
     attachments: [],
@@ -68,6 +67,7 @@ test('project cards group title, period and technologies with an orbit placehold
   assert.match(fallback, /class="details"/);
   assert.match(fallback, /<svg/);
   assert.match(fallback, /<h3>ddoza<\/h3>/);
+  assert.match(fallback, /href="\/work\/00000000-0000-0000-0000-000000000001"/);
   const image = render({ ...project, thumbnail: '/images/project.webp' });
   assert.match(image, /src="\/images\/project.webp"/);
   assert.doesNotMatch(image, /<svg/);
@@ -82,7 +82,7 @@ test('shared public detail keeps client, content language, attachments and separ
     thumbnail: '/image.webp',
     customerName: '고객사',
     originLabel: '회사',
-    typeLabel: '웹사이트',
+    typeLabel: '웹',
     lifecycle: 'BUILDING',
     contentLocale: 'ko',
     placeholder: false,

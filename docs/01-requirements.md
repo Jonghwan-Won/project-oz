@@ -26,7 +26,7 @@
 - 한 프로젝트의 lifecycle: IDEA → BUILDING → TESTING → RELEASED → ARCHIVED.
 - lifecycle과 프로젝트 노출 여부(`isVisible` boolean)는 별도 필드다. 개발 중이라도 사이트에 표시할 수 있다.
 - 공개 프로젝트는 RELEASED + PUBLIC, 실험실은 IDEA/BUILDING/TESTING + PUBLIC.
-- RELEASED로 바꿔도 ID·slug·기록·링크를 유지한다. 상세 URL은 /work/[slug]로 통일한다.
+- RELEASED로 바꿔도 ID·slug·기록·링크를 유지한다. 상세 URL은 DB ID 기반 /work/[id]로 사용한다.
 - 프로젝트 유형은 카테고리로 분류한다. 웹사이트, 앱스토어 등 외부 링크는 여러 개 등록 가능하다.
 - 보관된 프로젝트는 검색·직접 URL의 공개 정책을 명시하고 보관 표시한다. 비공개 프로젝트는 권한 없으면 404.
 

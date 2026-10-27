@@ -1,4 +1,4 @@
-import type { PublicProject } from '@/server/services/projects';
+import type { PublicProjectDetail } from '@/server/services/projects';
 import type { UploadedAsset } from './files';
 export type ProjectDetailData = {
   title: string;
@@ -29,7 +29,7 @@ export function formatProjectPeriod(
   return `${format(startedOn)} ~ ${endedOn ? format(endedOn) : locale === 'en' ? 'Present' : '현재'}`;
 }
 export function publicProjectDetail(
-  project: PublicProject,
+  project: PublicProjectDetail,
   locale: string = 'ko',
 ): ProjectDetailData {
   return {

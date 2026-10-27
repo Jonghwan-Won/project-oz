@@ -62,7 +62,8 @@ export const ko = {
     lab: '실험실',
   },
   projectTypes: {
-    website: '웹사이트',
+    website: '웹',
+    hybrid_app: '하이브리드 앱',
   },
   projectOrigins: {
     personal: '개인',
@@ -203,7 +204,7 @@ export const ko = {
     admin: '관리자',
   },
   about: {
-    title: '작은 생각을\n현실로 만드는 사람.',
+    title: '작은 생각을\n현실로 만드는 사람',
     intro: '안녕하세요, 개발자 또자입니다.',
     welcome:
       '작은 불편을 그냥 지나치지 않고, 직접 만들어 풀어보는 걸 좋아합니다.',
@@ -233,8 +234,6 @@ export const ko = {
     title: '궁금한 점이 있나요?',
     intro: '자주 묻는 질문과 문의 안내를 모았습니다.',
     faqLabel: '자주 묻는 질문',
-    bugLabel: '버그 제보',
-    contactLabel: '문의·연락 안내',
     faq: [
       {
         question: 'ddoza는 어떤 공간인가요?',
@@ -254,19 +253,25 @@ export const ko = {
       {
         question: '지금 문의를 보낼 수 있나요?',
         answer:
-          '문의와 버그 제보는 로그인 기능을 연결한 뒤 열릴 예정입니다. 현재 이 화면에서는 개인정보를 수집하거나 문의를 저장하지 않습니다.',
+          '문의와 버그 제보 입력창은 열리지만, 현재 메시지를 전송하거나 저장하지 않습니다. 로그인과 권한을 연결한 뒤 실제 제출 기능을 추가할 예정입니다.',
       },
     ],
     bugTitle: '버그를 발견하셨나요?',
     bugDescription:
-      '발생 화면의 주소, 사용한 기기, 재현 순서를 알려주시면 도움이 됩니다. 제보 창구는 준비 중입니다.',
+      '발생 화면의 주소와 사용한 기기, 재현 순서를 적어 두면 제보에 도움이 됩니다. 현재는 입력 화면만 제공하며 전송은 아직 연결되지 않았습니다.',
+    bugModalTitle: '버그 제보',
     contactTitle: '함께 이야기하고 싶다면',
     contactDescription:
-      '문의 기능과 공개 연락처를 준비하고 있습니다. 로그인 연결 후 본인과 관리자만 볼 수 있는 비공개 문의를 제공할 예정입니다.',
-    accountLink: '계정 기능 안내',
+      '궁금한 점이나 나누고 싶은 내용을 적어 주세요. 현재는 입력 화면만 제공하며 전송이나 저장은 아직 연결되지 않았습니다.',
+    contactModalTitle: '문의 하기',
+    messageLabel: '내용',
+    messagePlaceholder: '내용을 입력해 주세요.',
+    sendLabel: '보내기',
+    closeLabel: '닫기',
+    actionsLabel: '문의 및 제보',
   },
   board: {
-    title: '기록하고, 나누고.',
+    title: '기록하고, 나누고',
     intro: '개발하면서 배운 것과 일상에서 발견한 이야기들.',
     filterLabel: '게시글 분류',
     searchLabel: '글 제목 검색',

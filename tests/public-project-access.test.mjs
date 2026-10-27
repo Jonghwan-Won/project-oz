@@ -48,3 +48,21 @@ test('configured project reads require public, undeleted projects and hide drive
     message: 'Could not load public projects',
   });
 });
+test('project list excludes detail body and attachments; detail reads one visible project by key', async () => {
+  const queries = [];
+  const api = service({ DATABASE_URL: 'configured' }, async (sql, params) => {
+    queries.push({ sql, params });
+    return { rows: [] };
+  });
+  await api.getPublicProjects('ko');
+  assert.doesNotMatch(queries[0].sql, /t\.body|AS attachments/);
+  assert.deepEqual(queries[0].params, ['ko']);
+  await api.getPublicProject('00000000-0000-0000-0000-000000000001', 'ko');
+  assert.match(queries[1].sql, /p\.id=\$1::uuid/);
+  assert.match(queries[1].sql, /t\.body/);
+  assert.match(queries[1].sql, /AS attachments/);
+  assert.deepEqual(queries[1].params, [
+    '00000000-0000-0000-0000-000000000001',
+    'ko',
+  ]);
+});

@@ -7,6 +7,7 @@ import {
   parseProjectForm,
   uuid,
   type ProjectForm,
+  type ProjectListItem,
   type ProjectCode,
 } from '@/lib/project-form';
 class ProjectError extends Error {
@@ -24,15 +25,11 @@ export async function getAdminProjects() {
   if (identity.rows[0].name !== 'oz_dev')
     throw Error('Development database required');
   const [projects, codes] = await Promise.all([
-    pool.query<ProjectForm>(
+    pool.query<ProjectListItem>(
       `SELECT p.id,p.version,p.slug,p."customerName",COALESCE(to_char(p."startedOn",'YYYY-MM-DD'),'') AS "startedOn",COALESCE(to_char(p."endedOn",'YYYY-MM-DD'),'') AS "endedOn",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p."isVisible",p.placeholder,
- COALESCE(p."thumbnailUrl",(SELECT '/api/assets/'||"assetId" FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='COVER'),'') AS thumbnail,
- (SELECT jsonb_build_object('id',a.id,'name',a."originalName",'size',a."byteSize",'mimeType',a."mimeType",'url','/api/assets/'||a.id,'downloadUrl','/api/assets/'||a.id||'?download=1') FROM "ProjectAsset" pa JOIN "Asset" a ON a.id=pa."assetId" WHERE pa."projectId"=p.id AND pa.usage='COVER' LIMIT 1) AS "thumbnailFile",
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TECHNOLOGY'),'{}') AS technologies,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TOPIC'),'{}') AS tags,
- COALESCE((SELECT array_agg("assetId"::text ORDER BY position,id) FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='ATTACHMENT'),'{}') AS "attachmentIds",
- COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a."originalName",'size',a."byteSize",'mimeType',a."mimeType",'url','/api/assets/'||a.id,'downloadUrl','/api/assets/'||a.id||'?download=1')) FROM "ProjectAsset" pa JOIN "Asset" a ON a.id=pa."assetId" WHERE pa."projectId"=p.id AND pa.usage='ATTACHMENT'),'[]'::jsonb) AS files,
- (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary,'body',body)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
+ (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
  FROM "Project" p WHERE p."deletedAt" IS NULL ORDER BY p."startedOn" DESC NULLS LAST,p.id`,
     ),
     pool.query<ProjectCode>(
@@ -43,12 +40,59 @@ export async function getAdminProjects() {
     projects: projects.rows.map((p) => ({
       ...p,
       translations: {
-        ko: p.translations?.ko ?? blankCopy(),
-        en: p.translations?.en ?? blankCopy(),
+        ko: p.translations?.ko ?? { title: '', summary: '' },
+        en: p.translations?.en ?? { title: '', summary: '' },
       },
     })),
     codes: codes.rows,
   };
+}
+
+export async function getAdminProject(id: string): Promise<ProjectForm | null> {
+  if (process.env.NODE_ENV !== 'development')
+    throw Error('Development admin only');
+  const identity = await pool.query('SELECT current_database() AS name');
+  if (identity.rows[0].name !== 'oz_dev')
+    throw Error('Development database required');
+  const result = await pool.query<ProjectForm>(
+    `SELECT p.id,p.version,p.slug,p."customerName",COALESCE(to_char(p."startedOn",'YYYY-MM-DD'),'') AS "startedOn",COALESCE(to_char(p."endedOn",'YYYY-MM-DD'),'') AS "endedOn",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p."isVisible",p.placeholder,
+    COALESCE(p."thumbnailUrl",(SELECT '/api/assets/'||"assetId" FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='COVER'),'') AS thumbnail,
+    (SELECT jsonb_build_object('id',a.id,'name',a."originalName",'size',a."byteSize",'mimeType',a."mimeType",'url','/api/assets/'||a.id,'downloadUrl','/api/assets/'||a.id||'?download=1') FROM "ProjectAsset" pa JOIN "Asset" a ON a.id=pa."assetId" WHERE pa."projectId"=p.id AND pa.usage='COVER' LIMIT 1) AS "thumbnailFile",
+    COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TECHNOLOGY'),'{}') AS technologies,
+    COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TOPIC'),'{}') AS tags,
+    COALESCE((SELECT array_agg("assetId"::text ORDER BY position,id) FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='ATTACHMENT'),'{}') AS "attachmentIds",
+    COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a."originalName",'size',a."byteSize",'mimeType',a."mimeType",'url','/api/assets/'||a.id,'downloadUrl','/api/assets/'||a.id||'?download=1')) FROM "ProjectAsset" pa JOIN "Asset" a ON a.id=pa."assetId" WHERE pa."projectId"=p.id AND pa.usage='ATTACHMENT'),'[]'::jsonb) AS files,
+    (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary,'body',body)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
+    FROM "Project" p WHERE p.id=$1 AND p."deletedAt" IS NULL`,
+    [id],
+  );
+  const project = result.rows[0];
+  return project
+    ? {
+        ...project,
+        translations: {
+          ko: project.translations?.ko ?? blankCopy(),
+          en: project.translations?.en ?? blankCopy(),
+        },
+      }
+    : null;
+}
+
+export async function getAdminProjectCount(): Promise<number> {
+  if (process.env.NODE_ENV !== 'development')
+    throw Error('Development admin only');
+  if (
+    (await pool.query('SELECT current_database() AS name')).rows[0].name !==
+    'oz_dev'
+  )
+    throw Error('Development database required');
+  return Number(
+    (
+      await pool.query<{ count: string }>(
+        'SELECT count(*)::text AS count FROM "Project" WHERE "deletedAt" IS NULL',
+      )
+    ).rows[0].count,
+  );
 }
 export async function saveProject(input: unknown) {
   if (process.env.NODE_ENV !== 'development')

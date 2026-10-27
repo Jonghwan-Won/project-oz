@@ -39,6 +39,29 @@ export function loadPostModule(
   return exports;
 }
 const form = loadPostModule('src/lib/post-form.ts');
+test('admin post list omits body while editor detail reads one ID', async () => {
+  const queries = [];
+  const api = loadPostModule('src/server/services/posts.ts', {
+    query: async (sql, values) => {
+      queries.push({ sql, values });
+      return sql.includes('current_database')
+        ? { rows: [{ name: 'oz_dev' }] }
+        : { rows: [] };
+    },
+  });
+  await api.getAdminPosts();
+  const listQuery = queries.find(({ sql }) => sql.includes('FROM "Post" p'));
+  assert.doesNotMatch(listQuery.sql, /'body',body/);
+  await api.getAdminPost('00000000-0000-0000-0000-000000000001');
+  const detailQuery = queries
+    .filter(({ sql }) => sql.includes('FROM "Post" p'))
+    .at(-1);
+  assert.match(detailQuery.sql, /'body',body/);
+  assert.match(detailQuery.sql, /WHERE p\.id=\$1/);
+  assert.deepEqual(detailQuery.values, [
+    '00000000-0000-0000-0000-000000000001',
+  ]);
+});
 test('post form validates bilingual rich text, categories, visibility and identity without thumbnails', () => {
   const input = form.blankPost();
   input.slug = 'a-post';
@@ -115,17 +138,28 @@ test('post deletion rejects invalid and duplicate selection, request size is bou
     413,
   );
 });
-test('public post queries only visible undeleted rows and filters direct URLs', async () => {
+test('public post list excludes body and detail query selects one visible post', async () => {
+  const queries = [];
   const api = loadPostModule('src/server/services/posts.ts', {
     query: async (sql, values) => {
+      queries.push({ sql, values });
       assert.match(sql, /p\."isVisible"=true AND p\."deletedAt" IS NULL/);
-      assert.match(sql, /p.id::text=\$2/);
-      assert.match(sql, /COALESCE\(t.body,k.body\)/);
-      assert.deepEqual(values, ['en', 'private-post']);
       return { rows: [] };
     },
   });
-  assert.deepEqual(await api.getPublicPosts('en', 'private-post'), []);
+  assert.deepEqual(await api.getPublicPosts('en'), []);
+  assert.doesNotMatch(queries[0].sql, /COALESCE\(t\.body,k\.body\)/);
+  assert.deepEqual(queries[0].values, ['en']);
+  assert.equal(
+    await api.getPublicPost('00000000-0000-0000-0000-000000000001', 'en'),
+    null,
+  );
+  assert.match(queries[1].sql, /p\.id=\$1::uuid/);
+  assert.match(queries[1].sql, /COALESCE\(t\.body,k\.body\)/);
+  assert.deepEqual(queries[1].values, [
+    '00000000-0000-0000-0000-000000000001',
+    'en',
+  ]);
   assert.deepEqual(
     await loadPostModule('src/server/services/posts.ts', {}, {}).getPublicPosts(
       'ko',

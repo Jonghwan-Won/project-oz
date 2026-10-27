@@ -1,4 +1,4 @@
-import type { ProjectForm } from './project-form';
+import type { ProjectListItem } from './project-form';
 
 export const emptyProjectSearch = {
   keyword: '',
@@ -9,7 +9,7 @@ export const emptyProjectSearch = {
 export const emptyBoardSearch = { keyword: '', category: '', status: '' };
 
 export function matchesProject(
-  project: ProjectForm,
+  project: ProjectListItem,
   search: typeof emptyProjectSearch,
 ) {
   const text = [
@@ -41,14 +41,13 @@ export function matchesBoard(
     title: string;
     slug: string;
     summary: string;
-    body: string;
     category: string;
     status: string;
   },
   search: typeof emptyBoardSearch,
 ) {
   return (
-    [entry.title, entry.slug, entry.summary, entry.body]
+    [entry.title, entry.slug, entry.summary]
       .join(' ')
       .toLowerCase()
       .includes(search.keyword.trim().toLowerCase()) &&

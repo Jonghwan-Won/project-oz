@@ -9,12 +9,13 @@ import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
 import { CommonPagination } from '@/components/ui/CommonPagination';
 import { CommonGrid, type CommonGridColumn } from '@/components/ui/CommonGrid';
 import { CommonConfirm } from '@/components/ui/CommonConfirm';
+import { CommonAlert } from '@/components/ui/CommonAlert';
 import { emptyBoardSearch, matchesBoard, paginate } from '@/lib/admin-list';
-import type { PostForm } from '@/lib/post-form';
+import type { PostListItem } from '@/lib/post-form';
 import { categories } from '@/content/site';
 import s from './admin.module.css';
 
-export function BoardManager({ posts }: { posts: PostForm[] }) {
+export function BoardManager({ posts }: { posts: PostListItem[] }) {
   const router = useRouter();
   const [search, setSearch] = useState(emptyBoardSearch);
   const [applied, setApplied] = useState(emptyBoardSearch);
@@ -24,6 +25,7 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [deleted, setDeleted] = useState(false);
   // shortcut: 소량 개발 목록은 프론트 검색/페이징, 운영 데이터 증가 시 서버 조회로 전환.
   const filtered = posts.filter((post) =>
     matchesBoard(
@@ -33,9 +35,6 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
           .join(' '),
         summary: Object.values(post.translations)
           .map((c) => c.summary)
-          .join(' '),
-        body: Object.values(post.translations)
-          .map((c) => JSON.stringify(c.body))
           .join(' '),
         slug: post.slug,
         category: post.category,
@@ -51,7 +50,7 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
     month: '2-digit',
     day: '2-digit',
   });
-  const columns: CommonGridColumn<PostForm>[] = [
+  const columns: CommonGridColumn<PostListItem>[] = [
     {
       key: 'select',
       header: (
@@ -101,10 +100,10 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
     {
       key: 'title',
       header: '게시글 제목',
-      width: 280,
+      width: 400,
       render: (post) => (
         <Link href={`/admin/board/${post.id}`} className={s.gridTitle}>
-          {post.translations.ko.title}
+          <span className={s.gridTitleText}>{post.translations.ko.title}</span>
         </Link>
       ),
     },
@@ -121,11 +120,20 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
       align: 'center',
     },
     {
+      key: 'createdAt',
+      header: '작성일자',
+      render: (post) =>
+        post.createdAt ? dateFormat.format(new Date(post.createdAt)) : '-',
+      align: 'center',
+      width: 110,
+    },
+    {
       key: 'updatedAt',
       header: '수정일자',
       render: (post) =>
         post.updatedAt ? dateFormat.format(new Date(post.updatedAt)) : '-',
       align: 'center',
+      width: 110,
     },
   ];
   async function remove() {
@@ -145,7 +153,7 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
       const data = await response.json();
       if (!response.ok) throw Error(data.message || '삭제하지 못했습니다.');
       setSelected([]);
-      setMessage('삭제되었습니다.');
+      setDeleted(true);
       router.refresh();
     } catch (error) {
       setMessage(
@@ -200,7 +208,7 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
           <CommonInput
             type="search"
             value={search.keyword}
-            placeholder="제목·주소·요약·본문"
+            placeholder="제목·주소·요약"
             onChange={(e) => setSearch({ ...search, keyword: e.target.value })}
           />
         </label>
@@ -253,9 +261,15 @@ export function BoardManager({ posts }: { posts: PostForm[] }) {
       <CommonConfirm
         open={confirm}
         title="게시글 삭제"
-        content={`선택한 ${selected.length}개 게시글을 삭제할까요? 본문과 원본 파일은 보존됩니다.`}
+        content={`선택한 ${selected.length}개 게시글을 삭제할까요?`}
+        confirmLabel="삭제"
         onConfirm={remove}
         onCancel={() => setConfirm(false)}
+      />
+      <CommonAlert
+        open={deleted}
+        content="삭제되었습니다."
+        onClose={() => setDeleted(false)}
       />
     </section>
   );

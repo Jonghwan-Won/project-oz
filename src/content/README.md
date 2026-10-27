@@ -2,7 +2,7 @@
 
 현재 프로젝트는 `projects.ts`에서 관리합니다. UI와 상세 본문은 `../i18n/ko.ts`, `../i18n/en.ts`의 `projectItems`에 같은 slug로 추가합니다.
 
-- `type`: 결과물 유형. 실제 필요한 코드를 두 언어의 `projectTypes`에 추가합니다. 현재는 `website`만 등록되어 있습니다.
+- `type`: 결과물 유형. 실제 필요한 코드를 두 언어의 `projectTypes`와 `PROJECT_TYPE` 공통 코드에 추가합니다. 현재 `website`(웹), `hybrid_app`(하이브리드 앱)이 있습니다.
 - `origin`: 작업 배경. `personal`(개인), `education`(교육), `company`(회사).
 - `isVisible`: true인 프로젝트만 홈·목록·상세에 노출합니다. false인 프로젝트는 상세 주소로도 조회되지 않습니다.
 - `thumbnail`: 선택적인 public 이미지 경로(예: `/images/project.webp`). 값이 있으면 이미지만, 없으면 궤도 그래픽과 한 줄 말줄임 제목을 썸네일에 표시합니다.

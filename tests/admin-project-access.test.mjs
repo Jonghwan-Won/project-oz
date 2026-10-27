@@ -16,7 +16,7 @@ const output = ts.transpileModule(
     },
   },
 ).outputText;
-function service(mode) {
+function service(mode, query = async () => ({ rows: [] })) {
   const exports = {};
   new Function('require', 'exports', 'process', output)(
     (id) => {
@@ -24,6 +24,7 @@ function service(mode) {
       if (id === '@/server/db')
         return {
           pool: {
+            query,
             connect: () => {
               throw Error('Unexpected DB access');
             },
@@ -38,6 +39,28 @@ function service(mode) {
   );
   return exports;
 }
+test('admin project list omits edit body and selected project detail queries one ID', async () => {
+  const queries = [];
+  const query = async (sql, params) => {
+    queries.push({ sql, params });
+    return sql.includes('current_database')
+      ? { rows: [{ name: 'oz_dev' }] }
+      : { rows: [] };
+  };
+  const api = service('development', query);
+  await api.getAdminProjects();
+  const listQuery = queries.find(({ sql }) => sql.includes('FROM "Project" p'));
+  assert.doesNotMatch(listQuery.sql, /'body',body|AS files|attachmentIds/);
+  await api.getAdminProject('00000000-0000-0000-0000-000000000001');
+  const detailQuery = queries
+    .filter(({ sql }) => sql.includes('FROM "Project" p'))
+    .at(-1);
+  assert.match(detailQuery.sql, /'body',body/);
+  assert.match(detailQuery.sql, /WHERE p\.id=\$1/);
+  assert.deepEqual(detailQuery.params, [
+    '00000000-0000-0000-0000-000000000001',
+  ]);
+});
 test('project changes deny production, remote hosts and cross-origin requests before DB access', async () => {
   for (const method of ['POST', 'DELETE'])
     for (const [mode, url, origin] of [

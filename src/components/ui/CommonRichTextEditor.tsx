@@ -18,6 +18,7 @@ export function CommonRichTextEditor({
   onChange,
   contentClassName,
   disabled = false,
+  uploadsEnabled = true,
   onUploadBusyChange,
 }: {
   id: string;
@@ -26,6 +27,7 @@ export function CommonRichTextEditor({
   onChange: (value: JSONContent, text: string) => void;
   contentClassName?: string;
   disabled?: boolean;
+  uploadsEnabled?: boolean;
   onUploadBusyChange?: (busy: boolean) => void;
 }) {
   const [tablePickerOpen, setTablePickerOpen] = useState(false);
@@ -335,40 +337,42 @@ export function CommonRichTextEditor({
           )}
         </div>
       </div>
-      <div className={s.imageTools}>
-        <CommonFileUpload
-          label="이미지 삽입"
-          onBusyChange={onUploadBusyChange}
-          imagesOnly
-          compact
-          bare
-          icon={
-            <svg
-              viewBox="0 0 20 20"
-              width="18"
-              height="18"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            >
-              <rect x="2" y="3" width="16" height="14" rx="2" />
-              <circle cx="7" cy="8" r="1.5" />
-              <path d="m3 15 5-4 3 2 3-4 3 6" />
-            </svg>
-          }
-          onUploaded={(asset) => {
-            if (!editor.isDestroyed)
-              editor
-                .chain()
-                .focus()
-                .setImage({ src: asset.url, alt: asset.name })
-                .run();
-          }}
-        />
-        <small>PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입</small>
-      </div>
+      {uploadsEnabled && (
+        <div className={s.imageTools}>
+          <CommonFileUpload
+            label="이미지 삽입"
+            onBusyChange={onUploadBusyChange}
+            imagesOnly
+            compact
+            bare
+            icon={
+              <svg
+                viewBox="0 0 20 20"
+                width="18"
+                height="18"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              >
+                <rect x="2" y="3" width="16" height="14" rx="2" />
+                <circle cx="7" cy="8" r="1.5" />
+                <path d="m3 15 5-4 3 2 3-4 3 6" />
+              </svg>
+            }
+            onUploaded={(asset) => {
+              if (!editor.isDestroyed)
+                editor
+                  .chain()
+                  .focus()
+                  .setImage({ src: asset.url, alt: asset.name })
+                  .run();
+            }}
+          />
+          <small>PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입</small>
+        </div>
+      )}
       {editor.isActive('table') && (
         <div className={s.tableTools}>
           <CommonButton

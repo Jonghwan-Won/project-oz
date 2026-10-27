@@ -60,6 +60,7 @@ export const projects: Project[] = [
   {
     slug: 'nh-farming',
     origin: 'company',
+    type: 'hybrid_app',
     customerName: '농협',
     startedOn: '2024-01-01',
     endedOn: '2024-10-01',

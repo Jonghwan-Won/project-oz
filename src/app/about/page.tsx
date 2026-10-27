@@ -15,7 +15,7 @@ export default async function About() {
     <div className={s.page}>
       <section className={s.hero}>
         <div>
-          <h1>{copy.title}</h1>
+          <h1 className="accentDot">{copy.title}</h1>
           <p className={s.intro}>{copy.intro}</p>
           <p className={s.lead}>{copy.welcome}</p>
           <CommonButtonLink href="/projects">

@@ -28,23 +28,20 @@ try {
     ],
   };
   id = (await api.savePost(draft)).id;
-  assert.deepEqual(await reads.getPublicPosts('ko', slug), []);
-  let current = (await reads.getAdminPosts()).find((p) => p.id === id);
+  assert.equal(await reads.getPublicPost(id, 'ko'), null);
+  let current = await reads.getAdminPost(id);
   assert.equal(current.translations.ko.title, draft.translations.ko.title);
   await api.savePost({ ...current, isVisible: true });
-  assert.equal((await reads.getPublicPosts('en', slug))[0].contentLocale, 'ko');
+  assert.equal((await reads.getPublicPost(id, 'en')).contentLocale, 'ko');
   await assert.rejects(api.savePost(current), (e) => e.status === 409);
-  current = (await reads.getAdminPosts()).find((p) => p.id === id);
+  current = await reads.getAdminPost(id);
   const invalid = structuredClone(current);
   invalid.translations.ko.body.content.push({
     type: 'image',
     attrs: { src: '/api/assets/' + randomUUID(), alt: 'missing' },
   });
   await assert.rejects(api.savePost(invalid), (e) => e.status === 400);
-  assert.equal(
-    (await reads.getAdminPosts()).find((p) => p.id === id).version,
-    current.version,
-  );
+  assert.equal((await reads.getAdminPost(id)).version, current.version);
   const translated = structuredClone(current);
   translated.translations.en = {
     ...translated.translations.ko,
@@ -52,19 +49,19 @@ try {
   };
   await api.savePost(translated);
   assert.equal(
-    (await reads.getPublicPosts('en', slug))[0].title,
+    (await reads.getPublicPost(id, 'en')).title,
     translated.translations.en.title,
   );
-  current = (await reads.getAdminPosts()).find((p) => p.id === id);
+  current = await reads.getAdminPost(id);
   await api.savePost({ ...current, isVisible: false });
-  assert.deepEqual(await reads.getPublicPosts('ko', slug), []);
-  current = (await reads.getAdminPosts()).find((p) => p.id === id);
+  assert.equal(await reads.getPublicPost(id, 'ko'), null);
+  current = await reads.getAdminPost(id);
   await api.deletePosts([{ id, version: current.version }]);
   assert.equal(
     (await reads.getAdminPosts()).some((p) => p.id === id),
     false,
   );
-  assert.deepEqual(await reads.getPublicPosts('en', slug), []);
+  assert.equal(await reads.getPublicPost(id, 'en'), null);
   assert.equal(
     (
       await pool.query(
