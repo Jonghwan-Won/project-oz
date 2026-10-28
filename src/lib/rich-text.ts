@@ -2,6 +2,7 @@ import { TableKit, TableView } from '@tiptap/extension-table';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import {
   TableMap,
+  columnResizingPluginKey,
   CellSelection,
   addColumnBefore,
   addColumnAfter,
@@ -19,7 +20,12 @@ import {
   mergeAttributes,
   type JSONContent,
 } from '@tiptap/core';
-import { Plugin, NodeSelection } from '@tiptap/pm/state';
+import {
+  Plugin,
+  PluginKey,
+  TextSelection,
+  NodeSelection,
+} from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import StarterKit from '@tiptap/starter-kit';
@@ -282,7 +288,9 @@ const CellStyle = Extension.create({
             },
             renderHTML: (attrs: { borderWidth?: unknown }) =>
               typeof attrs.borderWidth === 'number' &&
-              [1, 2, 3].includes(attrs.borderWidth)
+              Number.isInteger(attrs.borderWidth) &&
+              attrs.borderWidth >= 1 &&
+              attrs.borderWidth <= 10
                 ? {
                     'data-cell-border-width': String(attrs.borderWidth),
                     style: `border-width:${attrs.borderWidth}px`,
@@ -295,7 +303,9 @@ const CellStyle = Extension.create({
               element.getAttribute('data-cell-border-style'),
             renderHTML: (attrs: { borderStyle?: unknown }) =>
               typeof attrs.borderStyle === 'string' &&
-              ['solid', 'dashed', 'dotted', 'none'].includes(attrs.borderStyle)
+              ['solid', 'dashed', 'dotted', 'double', 'none'].includes(
+                attrs.borderStyle,
+              )
                 ? {
                     'data-cell-border-style': attrs.borderStyle,
                     style: `border-style:${attrs.borderStyle}`,
@@ -322,6 +332,22 @@ const CellStyle = Extension.create({
 });
 
 const tableProperties = {
+  cellBorderTop: {
+    css: 'border-top-style',
+    values: ['solid', 'dashed', 'dotted', 'double', 'none'],
+  },
+  cellBorderRight: {
+    css: 'border-right-style',
+    values: ['solid', 'dashed', 'dotted', 'double', 'none'],
+  },
+  cellBorderBottom: {
+    css: 'border-bottom-style',
+    values: ['solid', 'dashed', 'dotted', 'double', 'none'],
+  },
+  cellBorderLeft: {
+    css: 'border-left-style',
+    values: ['solid', 'dashed', 'dotted', 'double', 'none'],
+  },
   cellAlign: {
     css: 'text-align',
     values: ['left', 'center', 'right', 'justify'],
@@ -362,6 +388,53 @@ const TableProperties = Extension.create({
         },
       },
     }));
+  },
+});
+
+const tableInsertionKey = new PluginKey<number | null>(
+  'table-insertion-cursor',
+);
+const TableInsertionCursor = Extension.create({
+  name: 'tableInsertionCursor',
+  addProseMirrorPlugins() {
+    return [
+      new Plugin<number | null>({
+        key: tableInsertionKey,
+        state: {
+          init: () => null,
+          apply: (tr, position) => {
+            const inserted = tr.getMeta('table-insertion-cursor');
+            if (typeof inserted === 'number') return inserted;
+            return tr.docChanged || tr.selectionSet ? null : position;
+          },
+        },
+        props: {
+          decorations(state) {
+            const position = tableInsertionKey.getState(state);
+            if (position == null) return null;
+            const table = state.doc.nodeAt(position);
+            const after = position + (table?.nodeSize ?? 0);
+            const paragraph = state.doc.nodeAt(after);
+            if (
+              table?.type.name !== 'table' ||
+              paragraph?.type.name !== 'paragraph' ||
+              paragraph.content.size ||
+              state.selection.from !== after + 1
+            )
+              return null;
+            // The insertion point is outside the block; draw its caret on the table's right edge.
+            return DecorationSet.create(state.doc, [
+              Decoration.node(position, after, {
+                'data-table-insertion-cursor': 'true',
+              }),
+              Decoration.node(after, after + paragraph.nodeSize, {
+                class: 'table-insertion-paragraph',
+              }),
+            ]);
+          },
+        },
+      }),
+    ];
   },
 });
 
@@ -577,11 +650,230 @@ export function applyTableSize(
 }
 
 const tableViews = new WeakMap<Node, StyledTableView>();
+export function moveCursorOutsideTable(
+  view: EditorView,
+  position: number,
+  after: boolean,
+) {
+  const table = view.state.doc.nodeAt(position);
+  if (table?.type.name !== 'table') return;
+  const edge = after ? position + table.nodeSize : position;
+  const tr = view.state.tr;
+  const adjacent = after
+    ? tr.doc.resolve(edge).nodeAfter
+    : tr.doc.resolve(edge).nodeBefore;
+  let cursor: number;
+  if (adjacent?.isTextblock) cursor = after ? edge + 1 : edge - 1;
+  else {
+    tr.insert(edge, view.state.schema.nodes.paragraph.create());
+    cursor = edge + 1;
+  }
+  tr.setSelection(TextSelection.create(tr.doc, cursor));
+  tr.setMeta('table-tools', 'hide');
+  view.dispatch(tr);
+  view.focus();
+}
+
+export function clearUnsetColumnWidths(
+  node: ProseMirrorNode,
+  columns: Iterable<HTMLTableColElement>,
+) {
+  const cols = Array.from(columns);
+  let index = 0;
+  node.firstChild?.forEach((cell) => {
+    for (let span = 0; span < cell.attrs.colspan; span++, index++) {
+      if (!cell.attrs.colwidth?.[span])
+        cols[index]?.style.removeProperty('width');
+    }
+  });
+}
+
+export function resizeAdjacentColumns(
+  widths: number[],
+  index: number,
+  delta: number,
+) {
+  if (index < 0 || index + 1 >= widths.length) return widths;
+  const change = Math.max(
+    60 - widths[index],
+    Math.min(delta, widths[index + 1] - 60),
+  );
+  return widths.map(
+    (width, col) =>
+      width + (col === index ? change : col === index + 1 ? -change : 0),
+  );
+}
+
 const TableControls = Extension.create({
   name: 'tableControls',
+  priority: 1000,
+  addKeyboardShortcuts() {
+    return {
+      'Mod-a': () => {
+        const { $from } = this.editor.state.selection;
+        for (let depth = $from.depth; depth > 0; depth--) {
+          if ($from.node(depth).type.name !== 'table') continue;
+          const map = TableMap.get($from.node(depth));
+          const start = $from.start(depth);
+          this.editor.view.dispatch(
+            this.editor.state.tr.setSelection(
+              CellSelection.create(
+                this.editor.state.doc,
+                start + map.map[0],
+                start + map.map[map.map.length - 1],
+              ),
+            ),
+          );
+          return true;
+        }
+        return false;
+      },
+    };
+  },
   addProseMirrorPlugins() {
     return [
       new Plugin({
+        props: {
+          handleDOMEvents: {
+            mousedown(view, event) {
+              const activeHandle =
+                columnResizingPluginKey.getState(view.state)?.activeHandle ??
+                -1;
+              if (
+                view.editable &&
+                event.button === 0 &&
+                event.target instanceof Element &&
+                activeHandle >= 0
+              ) {
+                const cell = view.nodeDOM(activeHandle);
+                if (!(cell instanceof Element)) return false;
+                const tableDOM = cell?.closest('table');
+                if (!cell || !tableDOM) return false;
+                const $cell = view.state.doc.resolve(activeHandle + 1);
+                let depth = $cell.depth;
+                while (depth > 0 && $cell.node(depth).type.name !== 'table')
+                  depth--;
+                if (!depth) return false;
+                const table = $cell.node(depth),
+                  start = $cell.start(depth);
+                const map = TableMap.get(table);
+                const cellDepth = depth + 2;
+                const index =
+                  map.findCell($cell.before(cellDepth) - start).right - 1;
+                if (index + 1 >= map.width) return false;
+                event.preventDefault();
+                event.stopPropagation();
+                const cols = Array.from(tableDOM.querySelectorAll('col'));
+                const initial = cols.map(
+                  (col) => col.getBoundingClientRect().width,
+                );
+                if (initial.length !== map.width) return true;
+                const styles = cols.map((col) => col.style.cssText);
+                let widths = initial;
+                const move = (next: MouseEvent) => {
+                  widths = resizeAdjacentColumns(
+                    initial,
+                    index,
+                    next.clientX - event.clientX,
+                  );
+                  cols.forEach((col, colIndex) => {
+                    col.style.width = widths[colIndex] + 'px';
+                  });
+                };
+                const finish = () => {
+                  window.removeEventListener('mousemove', move);
+                  window.removeEventListener('mouseup', finish);
+                  window.removeEventListener('blur', cancel);
+                  if (view.isDestroyed) return;
+                  if (widths.every((width, col) => width === initial[col]))
+                    return;
+                  const tr = closeHistory(view.state.tr);
+                  for (const offset of new Set(map.map)) {
+                    const node = tr.doc.nodeAt(start + offset);
+                    if (!node) continue;
+                    const box = map.findCell(offset);
+                    tr.setNodeMarkup(start + offset, undefined, {
+                      ...node.attrs,
+                      colwidth: widths.slice(box.left, box.right),
+                    });
+                  }
+                  tr.setNodeMarkup(start - 1, undefined, {
+                    ...table.attrs,
+                    tableWidth:
+                      initial.reduce((sum, width) => sum + width, 0) + 'px',
+                  });
+                  view.dispatch(tr);
+                  view.dispatch(closeHistory(view.state.tr));
+                };
+                const cancel = () => {
+                  window.removeEventListener('mousemove', move);
+                  window.removeEventListener('mouseup', finish);
+                  window.removeEventListener('blur', cancel);
+                  cols.forEach((col, colIndex) => {
+                    col.style.cssText = styles[colIndex];
+                  });
+                };
+                window.addEventListener('mousemove', move);
+                window.addEventListener('mouseup', finish);
+                window.addEventListener('blur', cancel);
+                return true;
+              }
+              if (
+                !view.editable ||
+                event.button !== 0 ||
+                !(event.target instanceof Element) ||
+                event.target.closest(
+                  'p,h1,h2,h3,h4,h5,h6,pre,li,td,th,.table-edge-controls,.table-resize-handle',
+                )
+              )
+                return false;
+              let handled = false;
+              view.state.doc.descendants((node, position) => {
+                if (handled || node.type.name !== 'table') return !handled;
+                const wrapper = view.nodeDOM(position);
+                if (!(wrapper instanceof Element)) return false;
+                const table = wrapper.querySelector('table');
+                if (!table) return false;
+                const bounds = table.getBoundingClientRect();
+                if (
+                  event.clientY < bounds.top - 48 ||
+                  event.clientY > bounds.bottom + 8
+                )
+                  return false;
+                const insideTable =
+                  event.clientX >= bounds.left &&
+                  event.clientX <= bounds.right &&
+                  event.clientY >= bounds.top &&
+                  event.clientY <= bounds.bottom;
+                if (insideTable) return false;
+                const onControl = Array.from(
+                  wrapper.querySelectorAll(
+                    '.table-axis-control,.table-corner-control,.table-resize-handle',
+                  ),
+                ).some((control) => {
+                  const rect = control.getBoundingClientRect();
+                  return (
+                    event.clientX >= rect.left &&
+                    event.clientX <= rect.right &&
+                    event.clientY >= rect.top &&
+                    event.clientY <= rect.bottom
+                  );
+                });
+                if (onControl) return false;
+                event.preventDefault();
+                moveCursorOutsideTable(
+                  view,
+                  position,
+                  event.clientY >= bounds.top &&
+                    event.clientX >= (bounds.left + bounds.right) / 2,
+                );
+                handled = true;
+                return false;
+              });
+              return handled;
+            },
+          },
+        },
         view(view) {
           const update = () =>
             view.state.doc.descendants((node, position) => {
@@ -702,6 +994,11 @@ class StyledTableView extends TableView {
         if (!size) return;
         moved = true;
         this.table.style.width = `${size.widths.reduce((sum, value) => sum + value, 0)}px`;
+        if (this.table.style.getPropertyValue('--editor-table-width'))
+          this.table.style.setProperty(
+            '--editor-table-width',
+            this.table.style.width,
+          );
         this.table.style.height = `${size.heights.reduce((sum, value) => sum + value, 0)}px`;
         this.table.style.minWidth = '';
         this.table.style.tableLayout = 'fixed';
@@ -762,7 +1059,8 @@ class StyledTableView extends TableView {
       this.controls.replaceChildren();
       return;
     }
-    if (view.dragging) return;
+    if (view.dragging || this.controls.hasAttribute('data-pointer-active'))
+      return;
     const map = TableMap.get(this.node);
     const selection = view.state.selection;
     let cellPosition =
@@ -792,9 +1090,10 @@ class StyledTableView extends TableView {
     };
     const corner = button('전체 셀 선택 · 드래그로 표 이동', '');
     corner.className = 'table-corner-control';
-    corner.style.left = `${this.table.offsetLeft - 18}px`;
-    corner.style.top = `${this.table.offsetTop - 18}px`;
+    corner.style.left = `${this.table.offsetLeft - 21}px`;
+    corner.style.top = `${this.table.offsetTop - 21}px`;
     corner.onclick = () => {
+      view.focus();
       view.dispatch(
         view.state.tr.setSelection(
           CellSelection.create(
@@ -805,9 +1104,22 @@ class StyledTableView extends TableView {
         ),
       );
       view.focus();
+      view.dispatch(view.state.tr.setMeta('table-tools', 'hide'));
     };
     corner.draggable = true;
-    corner.onmousedown = (event) => event.stopPropagation();
+    corner.onmousedown = (event) => {
+      event.stopPropagation();
+      this.controls.setAttribute('data-pointer-active', 'true');
+      window.addEventListener(
+        'mouseup',
+        () => {
+          requestAnimationFrame(() =>
+            this.controls.removeAttribute('data-pointer-active'),
+          );
+        },
+        { once: true },
+      );
+    };
     corner.ondragstart = (event) => {
       const tr = view.state.tr.setSelection(
         NodeSelection.create(view.state.doc, position),
@@ -830,6 +1142,7 @@ class StyledTableView extends TableView {
     ) => {
       const rail = document.createElement('div');
       rail.className = 'table-axis-control';
+      rail.dataset.first = String(index === 0);
       rail.dataset.axis = column ? 'column' : 'row';
       rail.tabIndex = 0;
       rail.setAttribute('role', 'button');
@@ -880,15 +1193,15 @@ class StyledTableView extends TableView {
         column
           ? {
               left: `${start}px`,
-              top: `${this.table.offsetTop - 18}px`,
+              top: `${this.table.offsetTop - 21}px`,
               width: `${length}px`,
-              height: '18px',
+              height: '21px',
             }
           : {
-              left: `${this.table.offsetLeft - 18}px`,
+              left: `${this.table.offsetLeft - 21}px`,
               top: `${start}px`,
               height: `${length}px`,
-              width: '18px',
+              width: '21px',
             },
       );
       [false, true].forEach((after) => {
@@ -954,9 +1267,16 @@ class StyledTableView extends TableView {
     return true;
   }
   applyProperties() {
+    // TableView sets min-width for automatic columns but leaves their old explicit width behind.
+    clearUnsetColumnWidths(this.node, this.colgroup.querySelectorAll('col'));
     for (const name of ['tableWidth', 'tableLayout', 'tableAlign'] as const) {
       const property = tableProperties[name];
       const value: unknown = this.node.attrs[name];
+      if (name === 'tableWidth') {
+        if (typeof value === 'string' && isTablePropertyValue(name, value))
+          this.table.style.setProperty('--editor-table-width', value);
+        else this.table.style.removeProperty('--editor-table-width');
+      }
       if (typeof value === 'string' && isTablePropertyValue(name, value))
         this.table.style.setProperty(property.css, value);
       else if (name !== 'tableWidth')
@@ -990,6 +1310,7 @@ export const richTextExtensions = [
   CellStyle,
   TableProperties,
   TableRowHeight,
+  TableInsertionCursor,
   TableControls,
   Image.extend({
     parseHTML() {
@@ -1129,9 +1450,13 @@ export function parseRichText(
           (attrs.backgroundColor !== null && !isColor(attrs.backgroundColor)) ||
           (attrs.borderColor !== null && !isColor(attrs.borderColor)) ||
           (attrs.borderWidth !== null &&
-            ![1, 2, 3].includes(attrs.borderWidth)) ||
+            !(
+              Number.isInteger(attrs.borderWidth) &&
+              attrs.borderWidth >= 1 &&
+              attrs.borderWidth <= 10
+            )) ||
           (attrs.borderStyle !== null &&
-            !['solid', 'dashed', 'dotted', 'none'].includes(
+            !['solid', 'dashed', 'dotted', 'double', 'none'].includes(
               attrs.borderStyle,
             )) ||
           (attrs.verticalAlign !== null &&

@@ -40,7 +40,7 @@ export default function LabPage() {
         {tools.map(([slug, title, description, kicker]) => (
           <Link className={s.labCard} href={`/lab/${slug}`} key={slug}>
             <span>{kicker}</span>
-            <h2>{title} ↗</h2>
+            <h2>{title}</h2>
             <p>{description}</p>
           </Link>
         ))}

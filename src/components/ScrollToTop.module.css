@@ -36,7 +36,7 @@ button.button:hover {
 :global([data-theme='light']) button.button {
   color: #555361;
   background: #f1f2f5df;
-  border-color: #ffffff66;
+  border-color: #bcbccc99;
   box-shadow:
     0 8px 28px #24203d14,
     inset 0 1px 0 #ffffff99,

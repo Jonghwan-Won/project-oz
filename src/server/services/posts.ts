@@ -5,7 +5,9 @@ import { blankCopy, uuid } from '@/lib/project-form';
 import type { PostForm, PostListItem } from '@/lib/post-form';
 import type { ProjectCopy } from '@/lib/project-form';
 
-export async function getAdminPosts(): Promise<PostListItem[]> {
+export async function getAdminPosts(
+  search = { keyword: '', category: '', status: '' },
+): Promise<PostListItem[]> {
   if (process.env.NODE_ENV !== 'development')
     throw Error('Development admin only');
   if (
@@ -13,12 +15,18 @@ export async function getAdminPosts(): Promise<PostListItem[]> {
     'oz_dev'
   )
     throw Error('Development database required');
-  const result =
-    await pool.query<PostListItem>(`SELECT p.id,p.version,p.slug,p.category,p."isVisible",
+  const result = await pool.query<PostListItem>(
+    `SELECT p.id,p.version,p.slug,p.category,p."isVisible",
     p."createdAt"::text AS "createdAt",p."updatedAt"::text AS "updatedAt",
     (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary))
       FROM "PostTranslation" WHERE "postId"=p.id) AS translations
-    FROM "Post" p WHERE p."deletedAt" IS NULL ORDER BY p."createdAt" DESC,p.id`);
+    FROM "Post" p WHERE p."deletedAt" IS NULL
+    AND ($1 = '' OR position(lower($1) in lower(concat_ws(' ', p.slug, (SELECT string_agg(concat_ws(' ', title, summary), ' ') FROM "PostTranslation" WHERE "postId"=p.id)))) > 0)
+    AND ($2 = '' OR p.category=$2)
+    AND ($3 = '' OR p."isVisible"=($3 = '공개'))
+    ORDER BY p."createdAt" DESC,p.id`,
+    [search.keyword.trim(), search.category, search.status],
+  );
   return result.rows.map((p) => ({
     ...p,
     translations: {

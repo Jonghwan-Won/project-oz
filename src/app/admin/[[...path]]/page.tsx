@@ -34,15 +34,38 @@ const planned = {
 
 export default async function Admin({
   params,
+  searchParams,
 }: {
   params: Promise<{ path?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   if (process.env.NODE_ENV !== 'development') redirect('/login');
   const { path = [] } = await params;
   if (path.length > 2 || (path.length > 1 && path[0] !== 'board')) notFound();
   const section = path[0];
-  if (section === 'projects')
-    return <ProjectManager {...await getAdminProjects()} />;
+  const query = await searchParams;
+  const value = (key: string) =>
+    typeof query[key] === 'string' ? (query[key] as string) : '';
+  if (section === 'projects') {
+    const search = {
+      keyword: value('keyword'),
+      originCode: value('originCode'),
+      typeCode: value('typeCode'),
+      isVisible: value('isVisible'),
+    };
+    const [data, total] = await Promise.all([
+      getAdminProjects(search),
+      getAdminProjectCount(),
+    ]);
+    return (
+      <ProjectManager
+        key={JSON.stringify(search)}
+        {...data}
+        initialSearch={search}
+        total={total}
+      />
+    );
+  }
   if (section === 'board') {
     if (path[1] === 'new') return <PostEditor />;
     if (path[1]) {
@@ -50,8 +73,23 @@ export default async function Admin({
       if (!post) notFound();
       return <PostEditor key={post.id} initialPost={post} />;
     }
-    const posts = await getAdminPosts();
-    return <BoardManager posts={posts} />;
+    const search = {
+      keyword: value('keyword'),
+      category: value('category'),
+      status: value('status'),
+    };
+    const [posts, total] = await Promise.all([
+      getAdminPosts(search),
+      getAdminPostCount(),
+    ]);
+    return (
+      <BoardManager
+        key={JSON.stringify(search)}
+        posts={posts}
+        initialSearch={search}
+        total={total}
+      />
+    );
   }
   if (section) {
     const item = Object.entries(planned).find(([key]) => key === section)?.[1];

@@ -52,6 +52,15 @@ test('admin post list omits body while editor detail reads one ID', async () => 
   await api.getAdminPosts();
   const listQuery = queries.find(({ sql }) => sql.includes('FROM "Post" p'));
   assert.doesNotMatch(listQuery.sql, /'body',body/);
+  await api.getAdminPosts({
+    keyword: ' 글 ',
+    category: '개발 기록',
+    status: '공개',
+  });
+  assert.deepEqual(
+    queries.filter(({ sql }) => sql.includes('FROM "Post" p')).at(-1).values,
+    ['글', '개발 기록', '공개'],
+  );
   await api.getAdminPost('00000000-0000-0000-0000-000000000001');
   const detailQuery = queries
     .filter(({ sql }) => sql.includes('FROM "Post" p'))

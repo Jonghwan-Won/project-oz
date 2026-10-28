@@ -20,7 +20,7 @@
   width: 100%;
 }
 .colorPalette {
-  width: 240px;
+  width: 264px;
   max-width: calc(100vw - 32px);
   display: grid;
   gap: 12px;
@@ -87,7 +87,7 @@
 .editable {
   min-height: 220px;
   max-height: 560px;
-  padding: 16px;
+  padding: 8px 24px;
   outline: none;
   overflow-y: auto;
   overflow-wrap: anywhere;
@@ -102,6 +102,10 @@
 .editable p,
 .content p {
   white-space: pre-wrap;
+}
+.editable p {
+  margin-block: 0 4px;
+  line-height: 1.5;
 }
 .editable a,
 .content a {
@@ -314,8 +318,8 @@
 }
 .glyph {
   display: inline-flex;
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
   font-size: 16px;
@@ -446,7 +450,7 @@
 }
 .editable :global(.tableWrapper) {
   position: relative;
-  padding: 18px 0 0 18px;
+  padding: 21px 0 0;
 }
 .editable :global(.table-edge-controls) {
   position: absolute;
@@ -477,8 +481,8 @@
   background: var(--hover);
 }
 .editable :global(.table-corner-control) {
-  width: 18px;
-  height: 18px;
+  width: 21px;
+  height: 21px;
   padding: 0;
   border: 1px solid var(--line);
   color: var(--ink);
@@ -708,38 +712,300 @@
   order: -100;
   width: 100%;
 }
-.tableTools > button {
-  width: 36px;
+.tableTools {
+  width: 284px;
   padding: 4px;
+  gap: 0;
+  border-radius: 3px;
+}
+.tableToolRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid var(--line);
+}
+.tableToolRow:last-of-type {
+  border-bottom: 0;
+}
+.tableToolRow > button {
+  flex: 1;
+  min-width: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 2px;
+}
+.tableToolRow svg {
+  flex-shrink: 0;
+}
+.toolChevron {
+  font-size: 8px;
+  margin-left: 2px;
 }
 .tableTools .tableToolsToggle {
   order: -101;
   width: 100%;
+  min-height: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
 }
-.tableTools > [title='배경색'] {
-  order: -90;
+.tableToolsCollapsed {
+  width: 64px;
 }
-.tableTools > [title='테두리색'] {
-  order: -88;
+.tableTools .colorPalette {
+  width: 100%;
+  padding: 8px;
+  gap: 6px;
 }
-.tableTools > [title='맨 아래 행 추가'] {
-  order: -70;
+.colorPalette .colorGrid button {
+  min-height: 22px;
+  height: 22px;
+  padding: 0;
 }
-.tableTools > [title='위에 행 추가'] {
-  order: -69;
+.colorPalette {
+  padding: 8px;
+  gap: 6px;
 }
-.tableTools > [title='맨 오른쪽 열 추가'] {
-  order: -68;
+.colorCustom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.tableTools > [title='왼쪽 열 추가'] {
-  order: -67;
+.colorCustom input[type='color'] {
+  width: 30px;
+  padding: 0;
 }
-.tableTools > [title='행 삭제'] {
-  order: -66;
+.colorCustom input:not([type='color']) {
+  width: 80px;
 }
-.tableTools > [title='열 삭제'] {
-  order: -65;
+.tableTools .colorPalette > button {
+  min-height: 28px;
+  padding: 4px;
 }
-.tableTools > [title='표 삭제'] {
-  order: -64;
+.tableProperties > button {
+  margin: 2px;
+}
+@media (pointer: coarse) {
+  .tableTools {
+    width: 324px;
+  }
+  .tableToolRow > button {
+    min-height: 44px;
+  }
+  .colorPalette .colorGrid button {
+    min-height: 32px;
+    height: 32px;
+  }
+}
+
+.borderPresets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.editable:focus :global([data-table-insertion-cursor] table) {
+  box-shadow: 3px 0 0 var(--ink);
+}
+.editable :global(.table-insertion-paragraph) {
+  caret-color: transparent;
+}
+.tableTools[data-panel='cell'],
+.tableTools[data-panel='table'] {
+  width: 420px;
+}
+.tableTools .propertyFields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.tableTools .propertyFields label {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.tableTools .propertyFields select {
+  max-width: 100%;
+}
+.tableTools .propertyFields input[type='number'] {
+  width: 64px;
+}
+.tableTools .tableToolsToggle {
+  width: 32px;
+  margin-inline: auto;
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.tableTools .tableToolsToggle {
+  clip-path: none;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  height: 24px;
+}
+.colorCustom {
+  justify-content: space-between;
+  width: 100%;
+}
+.tableTools[data-panel='borderWidth'] > .tableProperties:not([hidden]),
+.tableTools[data-panel='borderStyle'] > .tableProperties:not([hidden]),
+.tableTools[data-panel='cellAlign'] > .tableProperties:not([hidden]),
+.tableTools[data-panel='verticalAlign'] > .tableProperties:not([hidden]),
+.tableTools[data-panel='size'] > .tableProperties:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+}
+.tableTools[data-panel='cellAlign'] > .tableProperties:not([hidden]) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.tableTools[data-panel='verticalAlign'] > .tableProperties:not([hidden]),
+.tableTools[data-panel='size'] > .tableProperties:not([hidden]) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.tableTools .tableProperties > button {
+  margin: 0;
+  width: 100%;
+  padding-inline: 2px;
+}
+.tableTools .propertyFields label {
+  font-size: 12px;
+}
+.tablePanelActions {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+}
+.colorPalette .colorGrid button:hover,
+.colorPalette .colorGrid button:focus-visible {
+  outline-color: var(--muted);
+}
+.colorPalette input:focus-visible {
+  outline: 1px solid var(--muted);
+  box-shadow: none;
+  border-color: var(--muted);
+}
+.colorCustom {
+  gap: 4px;
+}
+.colorCustom label {
+  gap: 3px;
+  white-space: nowrap;
+}
+.colorCustom input:not([type='color']) {
+  width: 70px;
+}
+.colorPalette .colorCustom > button {
+  padding: 4px;
+  min-height: 28px;
+  flex-shrink: 0;
+}
+
+/* Share typography across toolbar popovers and inline table palettes. */
+.colorPalette {
+  font-family: Arial, 'Malgun Gothic', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.colorPalette label,
+.colorPalette input,
+.colorPalette button,
+.colorPalette small {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.colorPalette label {
+  margin: 0;
+}
+.colorPalette input {
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.colorPalette .colorCustom input[type='color'] {
+  padding: 0;
+}
+
+.colorPalette .colorCustom input[type='color'] {
+  appearance: none;
+  box-sizing: border-box;
+  flex: 0 0 30px;
+  width: 30px;
+  min-width: 30px;
+  height: 28px;
+  padding: 2px;
+}
+.colorPalette input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.colorPalette input[type='color']::-webkit-color-swatch {
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+.colorPalette input[type='color']::-moz-color-swatch {
+  border: 1px solid var(--line);
+  border-radius: 0;
+}
+.editable :global(.table-corner-control) {
+  z-index: 8;
+}
+
+/* Keep the first insertion targets wholly inside their rails, clear of the corner. */
+.editable
+  :global(
+    .table-axis-control[data-axis='column'][data-first='true']
+      button[data-after='false']
+  ) {
+  left: 2px;
+}
+.editable
+  :global(
+    .table-axis-control[data-axis='row'][data-first='true']
+      button[data-after='false']
+  ) {
+  top: 2px;
+}
+.editable :global(.table-axis-control[data-axis='column'] button) {
+  top: 4px;
+}
+.editable :global(.table-axis-control[data-axis='row'] button) {
+  left: 4px;
+}
+
+.editable > :first-child {
+  margin-top: 0;
+}
+.editable > :last-child {
+  margin-bottom: 0;
+}
+.editable :global(.tableWrapper) > table {
+  margin-block: 0;
+}
+.editable > p:has(+ :global(.tableWrapper)) {
+  margin-bottom: 0;
+}
+
+/* Rails overlay the preceding paragraph instead of reserving another text line. */
+.editable > p + :global(.tableWrapper) {
+  padding-top: 4px;
+}
+
+/* Keep column-resize previews at the persisted width, just like the final view. */
+.editable table[style*='--editor-table-width'] {
+  width: var(--editor-table-width) !important;
+}
+
+/* Static rendering lacks the editor's trailing break in empty cell paragraphs. */
+.content td > p,
+.content th > p {
+  min-height: 1.5em;
+  line-height: 1.5;
 }

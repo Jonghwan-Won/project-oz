@@ -214,7 +214,7 @@
   background: var(--admin-accent);
   color: var(--admin-on-accent);
 }
-.panel input,
+.panel input:not([data-editor-color-input]),
 .panel select,
 .panel textarea {
   width: 100%;
@@ -409,7 +409,13 @@
   margin-bottom: 0;
   font-size: 14px;
 }
-.projectForm .fields :global(input:not([type='radio']):not([type='checkbox'])) {
+.projectForm
+  .fields
+  :global(
+    input:not([type='radio']):not([type='checkbox']):not(
+        [data-editor-color-input]
+      )
+  ) {
   min-height: 40px;
   padding: 8px 10px;
   font-weight: 400;

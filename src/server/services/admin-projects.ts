@@ -18,7 +18,9 @@ class ProjectError extends Error {
     super(message);
   }
 }
-export async function getAdminProjects() {
+export async function getAdminProjects(
+  search = { keyword: '', originCode: '', typeCode: '', isVisible: '' },
+) {
   if (process.env.NODE_ENV !== 'development')
     throw Error('Development admin only');
   const identity = await pool.query('SELECT current_database() AS name');
@@ -30,7 +32,18 @@ export async function getAdminProjects() {
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TECHNOLOGY'),'{}') AS technologies,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TOPIC'),'{}') AS tags,
  (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
- FROM "Project" p WHERE p."deletedAt" IS NULL ORDER BY p."startedOn" DESC NULLS LAST,p.id`,
+ FROM "Project" p WHERE p."deletedAt" IS NULL
+ AND ($1 = '' OR position(lower($1) in lower(concat_ws(' ', p.slug, p."customerName", (SELECT string_agg(concat_ws(' ', title, summary), ' ') FROM "ProjectTranslation" WHERE "projectId"=p.id), (SELECT string_agg(t.name, ' ') FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id)))) > 0)
+ AND ($2 = '' OR p."originCode"=$2)
+ AND ($3 = '' OR ($3 = '__unset__' AND p."typeCode" IS NULL) OR p."typeCode"=$3)
+ AND ($4 = '' OR p."isVisible"::text=$4)
+ ORDER BY p."startedOn" DESC NULLS LAST,p.id`,
+      [
+        search.keyword.trim(),
+        search.originCode,
+        search.typeCode,
+        search.isVisible,
+      ],
     ),
     pool.query<ProjectCode>(
       'SELECT "groupKey",code,"nameKo","isActive" FROM "CommonCode" ORDER BY "groupKey",position,code',

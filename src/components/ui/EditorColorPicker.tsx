@@ -103,31 +103,39 @@ export function EditorColorPicker({
           <div className={s.colorGrid}>{recent.map(swatch)}</div>
         </>
       )}
-      <label>
-        다른 색{' '}
-        <input
-          type="color"
-          value={/^#[0-9a-f]{6}$/i.test(hex) ? hex : '#000000'}
-          onChange={(event) => setHex(event.currentTarget.value)}
-        />
-      </label>
-      <label>
-        HEX{' '}
-        <input
-          aria-label={`${label} HEX`}
-          value={hex}
-          placeholder="#000000"
-          maxLength={7}
-          onChange={(event) => setHex(event.currentTarget.value)}
-        />
-      </label>
-      <CommonButton
-        size="sm"
-        disabled={!/^#[0-9a-f]{6}$/i.test(hex)}
-        onClick={() => apply(hex.toLowerCase())}
-      >
-        적용
-      </CommonButton>
+      <div className={s.colorCustom}>
+        <label>
+          다른 색{' '}
+          <input
+            data-editor-color-input
+            type="color"
+            value={/^#[0-9a-f]{6}$/i.test(hex) ? hex : '#000000'}
+            onChange={(event) => {
+              const color = event.currentTarget.value;
+              setHex(color);
+              if (/^#[0-9a-f]{6}$/i.test(color)) apply(color.toLowerCase());
+            }}
+          />
+        </label>
+        <label>
+          HEX{' '}
+          <input
+            data-editor-color-input
+            aria-label={`${label} HEX`}
+            value={hex}
+            placeholder="#000000"
+            maxLength={7}
+            onChange={(event) => setHex(event.currentTarget.value)}
+          />
+        </label>
+        <CommonButton
+          size="sm"
+          disabled={!/^#[0-9a-f]{6}$/i.test(hex)}
+          onClick={() => apply(hex.toLowerCase())}
+        >
+          적용
+        </CommonButton>
+      </div>
     </div>
   );
   if (inline) return panel;

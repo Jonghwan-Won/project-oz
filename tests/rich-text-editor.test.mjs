@@ -38,6 +38,8 @@ test('editor changes propagate when an uploaded image is inserted before focus r
     },
     './CommonSelectBox': {},
     './EditorColorPicker': {},
+    './TableToolIcon': {},
+    '@/lib/editor-table': {},
     '@tiptap/react/menus': {},
     './CommonFileUpload': {},
     './CommonFilePicker': {},
@@ -107,6 +109,8 @@ test('pasted image uploads before insertion and keeps save blocked while uploadi
     },
     './CommonSelectBox': {},
     './EditorColorPicker': {},
+    './TableToolIcon': {},
+    '@/lib/editor-table': {},
     '@tiptap/react/menus': {},
     './CommonFileUpload': {},
     './CommonFilePicker': {},
@@ -192,6 +196,7 @@ test('parent echo preserves the code block cursor, but external content still re
     content: [{ type: 'codeBlock', content: [{ type: 'text', text: 'a' }] }],
   };
   const instance = {
+    state: { selection: {} },
     setEditable: () => {},
     commands: { setContent: () => replacements++ },
     getJSON: () => ({
@@ -216,6 +221,8 @@ test('parent echo preserves the code block cursor, but external content still re
     },
     '@tiptap/react/menus': {},
     './EditorColorPicker': {},
+    './TableToolIcon': {},
+    '@/lib/editor-table': {},
     '@/lib/rich-text': {
       parseRichText: (value) => value,
       richTextExtensions: [],
@@ -307,4 +314,104 @@ test('color palettes are hidden initially while inline table settings remain vis
   assert.doesNotMatch(render(false), /HEX|최근 사용한 색|#ffcccc/);
   assert.match(render(false), /aria-expanded="false"/);
   assert.match(render(true), /HEX/);
+});
+
+test('cell pointer release shows before updating position without an Alt-Tab', () => {
+  let options;
+  const instance = {
+    state: { selection: {} },
+    isActive: (name) => name === 'table',
+    getAttributes: () => ({}),
+    can: () => ({
+      undo: () => false,
+      redo: () => false,
+      mergeCells: () => false,
+    }),
+  };
+  const modules = {
+    react: {
+      useCallback: (fn) => fn,
+      useState: (value) => [value, () => {}],
+      useEffect: () => {},
+      useRef: (value) => ({ current: value }),
+    },
+    '@tiptap/react': {
+      useEditor: (value) => {
+        options = value;
+        return instance;
+      },
+    },
+    '@/lib/rich-text': {
+      parseRichText: (value) => value,
+      richTextExtensions: [],
+    },
+  };
+  const exports = {};
+  new Function('require', 'exports', code)((id) => {
+    if (modules[id]) return modules[id];
+    if (
+      id.startsWith('./') ||
+      id.startsWith('@/') ||
+      id === '@tiptap/react/menus'
+    )
+      return {};
+    return require(id);
+  }, exports);
+  // CSS module default must be defined for the render.
+  modules['./CommonRichText.module.css'] = { __esModule: true, default: {} };
+  exports.CommonRichTextEditor({
+    id: 'editor',
+    label: '본문',
+    value: { type: 'doc' },
+    onChange() {},
+  });
+  const original = [
+    globalThis.Element,
+    globalThis.window,
+    globalThis.requestAnimationFrame,
+  ];
+  const listeners = new Map(),
+    frames = [],
+    metadata = [];
+  class Cell {
+    closest() {
+      return this;
+    }
+  }
+  globalThis.Element = Cell;
+  globalThis.window = {
+    addEventListener: (name, fn) => listeners.set(name, fn),
+    removeEventListener: (name) => listeners.delete(name),
+  };
+  globalThis.requestAnimationFrame = (fn) => frames.push(fn);
+  const view = {
+    dom: { setAttribute() {}, removeAttribute() {} },
+    hasFocus: () => true,
+    state: {
+      get tr() {
+        return { setMeta: (_key, value) => value };
+      },
+    },
+    dispatch: (meta) => metadata.push(meta),
+  };
+  try {
+    options.editorProps.handleDOMEvents.pointerdown(view, {
+      target: new Cell(),
+    });
+    assert.deepEqual(metadata, ['hide']);
+    listeners.get('pointerup')();
+    assert.equal(listeners.size, 0);
+    frames.shift()();
+    assert.deepEqual(metadata, ['hide', 'show', 'updatePosition']);
+    options.editorProps.handleDOMEvents.pointerdown(view, {
+      target: new Cell(),
+    });
+    listeners.get('pointercancel')();
+    view.isDestroyed = true;
+    frames.shift()();
+    assert.deepEqual(metadata, ['hide', 'show', 'updatePosition', 'hide']);
+  } finally {
+    [globalThis.Element, globalThis.window, globalThis.requestAnimationFrame] =
+      original;
+  }
 });

@@ -51,6 +51,16 @@ test('admin project list omits edit body and selected project detail queries one
   await api.getAdminProjects();
   const listQuery = queries.find(({ sql }) => sql.includes('FROM "Project" p'));
   assert.doesNotMatch(listQuery.sql, /'body',body|AS files|attachmentIds/);
+  await api.getAdminProjects({
+    keyword: ' test ',
+    originCode: 'personal',
+    typeCode: '__unset__',
+    isVisible: 'false',
+  });
+  assert.deepEqual(
+    queries.filter(({ sql }) => sql.includes('FROM "Project" p')).at(-1).params,
+    ['test', 'personal', '__unset__', 'false'],
+  );
   await api.getAdminProject('00000000-0000-0000-0000-000000000001');
   const detailQuery = queries
     .filter(({ sql }) => sql.includes('FROM "Project" p'))

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CommonButton, CommonButtonLink } from '@/components/ui/CommonButton';
@@ -10,15 +10,24 @@ import { CommonPagination } from '@/components/ui/CommonPagination';
 import { CommonGrid, type CommonGridColumn } from '@/components/ui/CommonGrid';
 import { CommonConfirm } from '@/components/ui/CommonConfirm';
 import { CommonAlert } from '@/components/ui/CommonAlert';
-import { emptyBoardSearch, matchesBoard, paginate } from '@/lib/admin-list';
+import { CommonLoading } from '@/components/ui/CommonLoading';
+import { emptyBoardSearch, paginate } from '@/lib/admin-list';
 import type { PostListItem } from '@/lib/post-form';
 import { categories } from '@/content/site';
 import s from './admin.module.css';
 
-export function BoardManager({ posts }: { posts: PostListItem[] }) {
+export function BoardManager({
+  posts,
+  initialSearch,
+  total,
+}: {
+  posts: PostListItem[];
+  initialSearch: typeof emptyBoardSearch;
+  total: number;
+}) {
   const router = useRouter();
-  const [search, setSearch] = useState(emptyBoardSearch);
-  const [applied, setApplied] = useState(emptyBoardSearch);
+  const [searching, startSearch] = useTransition();
+  const [search, setSearch] = useState(initialSearch);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selected, setSelected] = useState<string[]>([]);
@@ -26,23 +35,7 @@ export function BoardManager({ posts }: { posts: PostListItem[] }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [deleted, setDeleted] = useState(false);
-  // shortcut: 소량 개발 목록은 프론트 검색/페이징, 운영 데이터 증가 시 서버 조회로 전환.
-  const filtered = posts.filter((post) =>
-    matchesBoard(
-      {
-        title: Object.values(post.translations)
-          .map((c) => c.title)
-          .join(' '),
-        summary: Object.values(post.translations)
-          .map((c) => c.summary)
-          .join(' '),
-        slug: post.slug,
-        category: post.category,
-        status: post.isVisible ? '공개' : '비공개',
-      },
-      applied,
-    ),
-  );
+  const filtered = posts;
   const result = paginate(filtered, page, pageSize);
   const dateFormat = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Asia/Seoul',
@@ -167,13 +160,22 @@ export function BoardManager({ posts }: { posts: PostListItem[] }) {
     <section>
       <CommonSearchPanel
         onSearch={() => {
-          setApplied({ ...search });
+          const url = '/admin/board?' + new URLSearchParams(search);
+          startSearch(() => {
+            if (window.location.pathname + window.location.search === url)
+              router.refresh();
+            else router.push(url, { scroll: false });
+          });
           setPage(1);
           setSelected([]);
         }}
         onReset={() => {
           setSearch(emptyBoardSearch);
-          setApplied(emptyBoardSearch);
+          startSearch(() => {
+            if (window.location.search)
+              router.push('/admin/board', { scroll: false });
+            else router.refresh();
+          });
           setPage(1);
           setSelected([]);
         }}
@@ -216,7 +218,7 @@ export function BoardManager({ posts }: { posts: PostListItem[] }) {
       <div className={s.listPanel}>
         <div className={s.heading}>
           <p aria-live="polite">
-            전체 {posts.length}건 · 검색 결과 {filtered.length}건
+            전체 {total}건 · 검색 결과 {filtered.length}건
           </p>
           <div className={s.actions}>
             <CommonButton
@@ -271,6 +273,7 @@ export function BoardManager({ posts }: { posts: PostListItem[] }) {
         content="삭제되었습니다."
         onClose={() => setDeleted(false)}
       />
+      <CommonLoading open={searching} />
     </section>
   );
 }

@@ -8,7 +8,17 @@ import {
   textStyleSizeOptions,
   isSafeLink,
 } from '@/lib/rich-text';
-import { CellSelection, TableMap } from '@tiptap/pm/tables';
+import { CellSelection } from '@tiptap/pm/tables';
+import {
+  tableSelectionBounds,
+  leaveInsertedTable,
+  equalizeTableCells,
+  mergeTableCells,
+  splitTableCell,
+  setTableBorders,
+  setTableBorderStyle,
+} from '@/lib/editor-table';
+import { TableToolIcon } from './TableToolIcon';
 import { BubbleMenu, type BubbleMenuProps } from '@tiptap/react/menus';
 import { EditorColorPicker } from './EditorColorPicker';
 import { CommonSelectBox } from './CommonSelectBox';
@@ -23,7 +33,7 @@ const tableMenuOptions: BubbleMenuProps['options'] = {
   strategy: 'fixed',
   placement: 'bottom',
   offset: 12,
-  flip: true,
+  flip: false,
   shift: { padding: 12 },
 };
 const showTableTools: NonNullable<BubbleMenuProps['shouldShow']> = ({
@@ -58,6 +68,8 @@ export function CommonRichTextEditor({
   onUploadBusyChange?: (busy: boolean) => void;
 }) {
   const [tablePanel, setTablePanel] = useState('');
+  const [splitSize, setSplitSize] = useState({ columns: 2, rows: 1 });
+  const [splitError, setSplitError] = useState('');
   const [tableToolsCollapsed, setTableToolsCollapsed] = useState(false);
   const [tablePickerOpen, setTablePickerOpen] = useState(false);
   const [tableSize, setTableSize] = useState({ rows: 2, columns: 3 });
@@ -86,8 +98,18 @@ export function CommonRichTextEditor({
           view.dispatch(view.state.tr.setMeta('table-tools', 'hide'));
           const finish = () => {
             view.dom.removeAttribute('data-cell-dragging');
-            if (!view.isDestroyed)
-              view.dispatch(view.state.tr.setMeta('table-tools', 'show'));
+            // BubbleMenu positions before showing; update again once visible.
+            requestAnimationFrame(() => {
+              if (view.isDestroyed) return;
+              const active = view.hasFocus() && editor?.isActive('table');
+              view.dispatch(
+                view.state.tr.setMeta('table-tools', active ? 'show' : 'hide'),
+              );
+              if (active)
+                view.dispatch(
+                  view.state.tr.setMeta('table-tools', 'updatePosition'),
+                );
+            });
             window.removeEventListener('pointerup', finish);
             window.removeEventListener('pointercancel', finish);
           };
@@ -189,6 +211,12 @@ export function CommonRichTextEditor({
     editor?.setEditable(!disabled);
   }, [editor, disabled]);
   useEffect(() => {
+    if (editor)
+      editor.view.dispatch(
+        editor.state.tr.setMeta('table-tools', 'updatePosition'),
+      );
+  }, [editor, tablePanel, tableToolsCollapsed]);
+  useEffect(() => {
     // Parent echoes must not reset selection after Tiptap appends a trailing paragraph.
     if (value === lastEmitted.current) return;
     const content = parseRichText(value, localImages);
@@ -201,36 +229,10 @@ export function CommonRichTextEditor({
   }, [editor, value, localImages]);
   const tableAnchor = useCallback(() => {
     if (!editor) return null;
-    const selection = editor.state.selection;
-    let position =
-      selection instanceof CellSelection ? selection.$headCell.pos : -1;
-    if (position < 0) {
-      for (let depth = selection.$from.depth; depth > 0; depth--)
-        if (
-          ['tableCell', 'tableHeader'].includes(
-            selection.$from.node(depth).type.name,
-          )
-        ) {
-          position = selection.$from.before(depth);
-          break;
-        }
-    }
-    if (position < 0) return null;
-    const dom = editor.view.nodeDOM(position);
-    if (!(dom instanceof Element)) return null;
-    const table = dom.closest('table');
-    if (!table) return null;
+    const bounds = tableSelectionBounds(editor);
+    if (!bounds) return null;
     return {
-      getBoundingClientRect: () => {
-        const cellBounds = dom.getBoundingClientRect();
-        const tableBounds = table.getBoundingClientRect();
-        return new DOMRect(
-          cellBounds.left,
-          tableBounds.bottom,
-          cellBounds.width,
-          0,
-        );
-      },
+      getBoundingClientRect: () => tableSelectionBounds(editor) ?? bounds,
     };
   }, [editor]);
   const tableMenuContainer = useCallback(
@@ -350,15 +352,9 @@ export function CommonRichTextEditor({
       chain.unsetMark('textStyle').run();
     else chain.setMark('textStyle', attrs).run();
   };
-  const tableEdge = () => {
-    const { $from } = editor.state.selection;
-    for (let depth = $from.depth; depth > 0; depth--) {
-      if ($from.node(depth).type.name !== 'table') continue;
-      const map = TableMap.get($from.node(depth));
-      return $from.start(depth) + map.map[map.map.length - 1] + 2;
-    }
-    return editor.state.selection.from;
-  };
+  const cellsSelected =
+    editor.state.selection instanceof CellSelection &&
+    editor.state.selection.ranges.length > 1;
   const cellAttributes = editor.getAttributes(
     editor.isActive('tableHeader') ? 'tableHeader' : 'tableCell',
   );
@@ -753,7 +749,11 @@ export function CommonRichTextEditor({
                                 withHeaderRow: false,
                               })
                               .run();
+                            leaveInsertedTable(editor);
                             setTablePickerOpen(false);
+                            requestAnimationFrame(() => {
+                              if (!editor.isDestroyed) editor.view.focus();
+                            });
                           }}
                         />
                       );
@@ -838,6 +838,7 @@ export function CommonRichTextEditor({
         shouldShow={showTableTools}
         options={tableMenuOptions}
         getReferencedVirtualElement={tableAnchor}
+        updateDelay={0}
         pluginKey="table-tools"
         style={{ zIndex: 310 }}
       >
@@ -845,159 +846,396 @@ export function CommonRichTextEditor({
           className={`${s.tableTools} ${tableToolsCollapsed ? s.tableToolsCollapsed : ''}`}
           data-table-tools
           data-panel={tablePanel}
+          onMouseDown={(event) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest('button')
+            )
+              event.preventDefault();
+          }}
         >
-          {[
-            ['테두리', '▦', -89, 'cell'],
-            ['테두리 두께', '☰', -87, 'cell'],
-            ['테두리 종류', '┄', -86, 'cell'],
-            ['폭 맞춤', '↔', -85, 'fit'],
-            ['가로 정렬', '≡', -55, 'cell'],
-            ['세로 정렬', '↕', -54, 'cell'],
-          ].map(([label, icon, order, panel]) => (
-            <CommonButton
-              key={label}
-              size="sm"
-              title={String(label)}
-              aria-label={String(label)}
-              style={{ order: Number(order) }}
-              onClick={() =>
-                panel === 'fit'
-                  ? editor
-                      .chain()
-                      .focus()
-                      .updateAttributes('table', { tableWidth: '100%' })
-                      .run()
-                  : setTablePanel(String(panel))
-              }
-            >
-              {icon}
-            </CommonButton>
-          ))}
           <CommonButton
             onClick={() => setTableToolsCollapsed(!tableToolsCollapsed)}
             className={s.tableToolsToggle}
+            title={tableToolsCollapsed ? '표 도구 펼치기' : '표 도구 접기'}
+            aria-label={tableToolsCollapsed ? '표 도구 펼치기' : '표 도구 접기'}
+            aria-expanded={!tableToolsCollapsed}
           >
-            {tableToolsCollapsed ? '표 도구 펼치기' : '표 도구 접기'}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path
+                d={tableToolsCollapsed ? 'm4 6 4 4 4-4' : 'm4 10 4-4 4 4'}
+              />
+            </svg>
           </CommonButton>
-          <CommonButton
-            size="sm"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => editor.chain().focus().addRowBefore().run()}
-            title="위에 행 추가"
-            aria-label="위에 행 추가"
+          <div className={s.tableToolRow} role="group" aria-label="표 스타일">
+            {[
+              ['배경색', 'backgroundColor'],
+              ['테두리', 'borders'],
+              ['테두리색', 'borderColor'],
+              ['테두리 두께', 'borderWidth'],
+              ['테두리 종류', 'borderStyle'],
+              ['폭 맞춤', 'fit'],
+            ].map(([label, panel]) => (
+              <CommonButton
+                key={panel}
+                size="sm"
+                title={label}
+                aria-label={label}
+                onClick={() =>
+                  panel === 'fit'
+                    ? editor
+                        .chain()
+                        .focus()
+                        .updateAttributes('table', { tableWidth: '100%' })
+                        .run()
+                    : setTablePanel(panel)
+                }
+              >
+                <TableToolIcon name={panel} />
+                {['borders', 'borderWidth', 'borderStyle'].includes(panel) && (
+                  <span className={s.toolChevron}>▾</span>
+                )}
+              </CommonButton>
+            ))}
+          </div>
+          <div
+            className={s.tableToolRow}
+            role="group"
+            aria-label="행과 열 편집"
           >
-            ↑▤
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() => editor.chain().focus().addRowAfter().run()}
-            title="아래에 행 추가"
-            aria-label="아래에 행 추가"
+            {[
+              {
+                label: '위에 행 추가',
+                icon: 'rowBefore',
+                run: () => editor.chain().focus().addRowBefore().run(),
+              },
+              {
+                label: '아래에 행 추가',
+                icon: 'rowAfter',
+                run: () => editor.chain().focus().addRowAfter().run(),
+              },
+              {
+                label: '왼쪽 열 추가',
+                icon: 'columnBefore',
+                run: () => editor.chain().focus().addColumnBefore().run(),
+              },
+              {
+                label: '오른쪽 열 추가',
+                icon: 'columnAfter',
+                run: () => editor.chain().focus().addColumnAfter().run(),
+              },
+              {
+                label: '행 삭제',
+                icon: 'rowDelete',
+                run: () => editor.chain().focus().deleteRow().run(),
+              },
+              {
+                label: '열 삭제',
+                icon: 'columnDelete',
+                run: () => editor.chain().focus().deleteColumn().run(),
+              },
+              {
+                label: '표 삭제',
+                icon: 'delete',
+                run: () => editor.chain().focus().deleteTable().run(),
+              },
+            ].map(({ label, icon, run }) => (
+              <CommonButton
+                key={icon}
+                size="sm"
+                title={label}
+                aria-label={label}
+                onClick={run}
+              >
+                <TableToolIcon name={icon} />
+              </CommonButton>
+            ))}
+          </div>
+          <div className={s.tableToolRow} role="group" aria-label="셀 편집">
+            <CommonButton
+              size="sm"
+              title="정렬"
+              aria-label="정렬"
+              onClick={() => setTablePanel('cellAlign')}
+            >
+              <TableToolIcon name="cellAlign" />
+              <span className={s.toolChevron}>▾</span>
+            </CommonButton>
+            <CommonButton
+              size="sm"
+              title="세로 정렬"
+              aria-label="세로 정렬"
+              onClick={() => setTablePanel('verticalAlign')}
+            >
+              <TableToolIcon name="verticalAlign" />
+              <span className={s.toolChevron}>▾</span>
+            </CommonButton>
+            {cellsSelected ? (
+              <>
+                <CommonButton
+                  size="sm"
+                  title="셀 크기"
+                  aria-label="셀 크기"
+                  onClick={() => setTablePanel('size')}
+                >
+                  <TableToolIcon name="size" />
+                  <span className={s.toolChevron}>▾</span>
+                </CommonButton>
+                <CommonButton
+                  size="sm"
+                  title="셀 병합"
+                  aria-label="셀 병합"
+                  disabled={!editor.can().mergeCells()}
+                  onClick={() => mergeTableCells(editor)}
+                >
+                  <TableToolIcon name="merge" />
+                </CommonButton>
+              </>
+            ) : (
+              <CommonButton
+                size="sm"
+                title="셀 나누기"
+                aria-label="셀 나누기"
+                onClick={() => setTablePanel('split')}
+              >
+                <TableToolIcon name="split" />
+              </CommonButton>
+            )}
+            <CommonButton
+              size="sm"
+              disabled
+              title="셀 속성"
+              aria-label="셀 속성"
+              onClick={() => setTablePanel('cell')}
+            >
+              <TableToolIcon name="cell" />
+            </CommonButton>
+            <CommonButton
+              size="sm"
+              disabled
+              title="표 속성"
+              aria-label="표 속성"
+              onClick={() => setTablePanel('table')}
+            >
+              <TableToolIcon name="table" />
+            </CommonButton>
+          </div>
+          <div className={s.tableProperties} hidden={tablePanel !== 'size'}>
+            {(
+              [
+                ['width', '열 너비 같게'],
+                ['height', '행 높이 같게'],
+                ['both', '셀 크기 같게'],
+              ] as const
+            ).map(([axis, label]) => (
+              <CommonButton
+                key={axis}
+                size="sm"
+                onClick={() => {
+                  equalizeTableCells(editor, axis);
+                  setTablePanel('');
+                }}
+              >
+                {label}
+              </CommonButton>
+            ))}
+          </div>
+          <div
+            className={s.tableProperties}
+            hidden={
+              ![
+                'borderWidth',
+                'borderStyle',
+                'cellAlign',
+                'verticalAlign',
+              ].includes(tablePanel)
+            }
           >
-            ↓▤
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => editor.chain().focus().addColumnBefore().run()}
-            title="왼쪽 열 추가"
-            aria-label="왼쪽 열 추가"
-          >
-            ←▥
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() => editor.chain().focus().addColumnAfter().run()}
-            title="오른쪽 열 추가"
-            aria-label="오른쪽 열 추가"
-          >
-            ▥→
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() => editor.chain().focus().deleteRow().run()}
-            title="행 삭제"
-            aria-label="행 삭제"
-          >
-            −▤
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() => editor.chain().focus().deleteColumn().run()}
-            title="열 삭제"
-            aria-label="열 삭제"
-          >
-            −▥
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            disabled={!editor.can().mergeCells()}
-            onClick={() => editor.chain().focus().mergeCells().run()}
-            title="셀 병합"
-            aria-label="셀 병합"
-          >
-            ⊞
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            disabled={!editor.can().splitCell()}
-            onClick={() => editor.chain().focus().splitCell().run()}
-            title="셀 나누기"
-            aria-label="셀 나누기"
-          >
-            ⊟
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() => editor.chain().focus().deleteTable().run()}
-            title="표 삭제"
-            aria-label="표 삭제"
-          >
-            ×▦
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => editor.chain().focus().toggleHeaderRow().run()}
-            title="머리글 행"
-            aria-label="머리글 행"
-          >
-            H↔
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
-            title="머리글 열"
-            aria-label="머리글 열"
-          >
-            H↕
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => editor.chain().focus().toggleHeaderCell().run()}
-            title="머리글 셀"
-            aria-label="머리글 셀"
-          >
-            H
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            title="배경색"
-            aria-label="배경색"
-            onClick={() => setTablePanel('backgroundColor')}
-          >
-            ▨
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            title="테두리색"
-            aria-label="테두리색"
-            onClick={() => setTablePanel('borderColor')}
-          >
-            ✎
-          </CommonButton>
+            {(tablePanel === 'borderWidth'
+              ? Array.from({ length: 10 }, (_, i) => [
+                  String(i + 1),
+                  String(i + 1) + 'px',
+                ])
+              : tablePanel === 'borderStyle'
+                ? [
+                    ['none', '없음'],
+                    ['solid', '실선'],
+                    ['dotted', '점선'],
+                    ['dashed', '파선'],
+                    ['double', '이중선'],
+                  ]
+                : tablePanel === 'cellAlign'
+                  ? [
+                      ['left', '왼쪽 정렬'],
+                      ['center', '가운데 정렬'],
+                      ['right', '오른쪽 정렬'],
+                      ['justify', '양쪽 정렬'],
+                    ]
+                  : tablePanel === 'verticalAlign'
+                    ? [
+                        ['top', '위쪽 정렬'],
+                        ['middle', '가운데 정렬'],
+                        ['bottom', '아래쪽 정렬'],
+                      ]
+                    : []
+            ).map(([value, label]) => (
+              <CommonButton
+                key={value}
+                size="sm"
+                onClick={() => {
+                  if (tablePanel === 'borderStyle')
+                    setTableBorderStyle(editor, value);
+                  else
+                    editor
+                      .chain()
+                      .focus()
+                      .setCellAttribute(
+                        tablePanel,
+                        tablePanel === 'borderWidth' ? Number(value) : value,
+                      )
+                      .run();
+                  setTablePanel('');
+                }}
+              >
+                {label}
+              </CommonButton>
+            ))}
+          </div>
+          <div className={s.tableProperties} hidden={tablePanel !== 'borders'}>
+            <div className={s.borderPresets}>
+              {[
+                ['all', '모든 테두리'],
+                ['none', '테두리 없음'],
+                ['outer', '바깥 테두리'],
+                ['inner', '안쪽 테두리'],
+                ['top', '위 테두리'],
+                ['bottom', '아래 테두리'],
+                ['left', '왼쪽 테두리'],
+                ['right', '오른쪽 테두리'],
+                ['horizontal', '안쪽 가로 테두리'],
+                ['vertical', '안쪽 세로 테두리'],
+              ].map(([mode, label]) => (
+                <CommonButton
+                  key={mode}
+                  size="sm"
+                  title={label}
+                  aria-label={label}
+                  onClick={() => {
+                    setTableBorders(editor, mode);
+                    setTablePanel('');
+                  }}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2 2h16v16H2z M2 10h16 M10 2v16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeDasharray="1 2"
+                      opacity=".35"
+                    />
+                    <path
+                      d={
+                        (
+                          {
+                            all: 'M2 2h16v16H2z M2 10h16 M10 2v16',
+                            none: '',
+                            outer: 'M2 2h16v16H2z',
+                            inner: 'M2 10h16 M10 2v16',
+                            top: 'M2 2h16',
+                            bottom: 'M2 18h16',
+                            left: 'M2 2v16',
+                            right: 'M18 2v16',
+                            horizontal: 'M2 10h16',
+                            vertical: 'M10 2v16',
+                          } as Record<string, string>
+                        )[mode]
+                      }
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                </CommonButton>
+              ))}
+            </div>
+          </div>
+          <div className={s.tableProperties} hidden={tablePanel !== 'split'}>
+            <div className={s.propertyFields}>
+              <label>
+                열 개수
+                <input
+                  aria-label="나눌 열 개수"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={splitSize.columns}
+                  onChange={(event) =>
+                    setSplitSize({
+                      ...splitSize,
+                      columns: Number(event.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                행 개수
+                <input
+                  aria-label="나눌 행 개수"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={splitSize.rows}
+                  onChange={(event) =>
+                    setSplitSize({
+                      ...splitSize,
+                      rows: Number(event.target.value),
+                    })
+                  }
+                />
+              </label>
+            </div>
+            {splitError && <p role="alert">{splitError}</p>}
+            <div className={s.tablePanelActions}>
+              <CommonButton
+                size="sm"
+                onClick={() => {
+                  if (
+                    splitTableCell(editor, splitSize.columns, splitSize.rows)
+                  ) {
+                    setSplitError('');
+                    setTablePanel('');
+                  } else
+                    setSplitError(
+                      '행·열은 1~10으로 입력해 주세요. 표는 최대 10,000칸까지 나눌 수 있습니다.',
+                    );
+                }}
+              >
+                확인
+              </CommonButton>
+              <CommonButton
+                size="sm"
+                onClick={() => {
+                  setSplitError('');
+                  setTablePanel('');
+                }}
+              >
+                취소
+              </CommonButton>
+            </div>
+          </div>
           {['backgroundColor', 'borderColor'].includes(tablePanel) && (
             <EditorColorPicker
               inline
@@ -1023,15 +1261,13 @@ export function CommonRichTextEditor({
               ←
             </CommonButton>
           )}
-          <CommonButton
-            size="sm"
-            title="셀 속성"
-            aria-label="셀 속성"
-            onClick={() => setTablePanel('cell')}
-          >
-            ▧
-          </CommonButton>
           <div className={s.tableProperties} hidden={tablePanel !== 'cell'}>
+            <CommonButton
+              size="sm"
+              onClick={() => editor.chain().focus().toggleHeaderCell().run()}
+            >
+              제목 셀 전환
+            </CommonButton>
             <div className={s.propertyFields}>
               <label>
                 테두리 두께{' '}
@@ -1059,6 +1295,11 @@ export function CommonRichTextEditor({
                   <option value="1">1px</option>
                   <option value="2">2px</option>
                   <option value="3">3px</option>
+                  {[4, 5, 6, 7, 8, 9, 10].map((width) => (
+                    <option key={width} value={width}>
+                      {width}px
+                    </option>
+                  ))}
                 </select>
               </label>
               <label>
@@ -1071,20 +1312,17 @@ export function CommonRichTextEditor({
                     ''
                   }
                   onChange={(event) =>
-                    editor
-                      .chain()
-                      .focus()
-                      .setCellAttribute(
-                        'borderStyle',
-                        event.currentTarget.value || null,
-                      )
-                      .run()
+                    setTableBorderStyle(
+                      editor,
+                      event.currentTarget.value || null,
+                    )
                   }
                 >
                   <option value="">기본</option>
                   <option value="solid">실선</option>
                   <option value="dashed">파선</option>
                   <option value="dotted">점선</option>
+                  <option value="double">이중선</option>
                   <option value="none">없음</option>
                 </select>
               </label>
@@ -1177,6 +1415,10 @@ export function CommonRichTextEditor({
                     .setCellAttribute('borderColor', null)
                     .setCellAttribute('borderWidth', null)
                     .setCellAttribute('borderStyle', null)
+                    .setCellAttribute('cellBorderTop', null)
+                    .setCellAttribute('cellBorderRight', null)
+                    .setCellAttribute('cellBorderBottom', null)
+                    .setCellAttribute('cellBorderLeft', null)
                     .setCellAttribute('verticalAlign', null)
                     .setCellAttribute('cellAlign', null)
                     .setCellAttribute('cellPadding', null)
@@ -1188,15 +1430,19 @@ export function CommonRichTextEditor({
               </CommonButton>
             </div>
           </div>
-          <CommonButton
-            size="sm"
-            title="표 속성"
-            aria-label="표 속성"
-            onClick={() => setTablePanel('table')}
-          >
-            ▦
-          </CommonButton>
           <div className={s.tableProperties} hidden={tablePanel !== 'table'}>
+            <CommonButton
+              size="sm"
+              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+            >
+              제목 행 전환
+            </CommonButton>
+            <CommonButton
+              size="sm"
+              onClick={() => editor.chain().focus().toggleHeaderColumn().run()}
+            >
+              제목 열 전환
+            </CommonButton>
             <div className={s.propertyFields}>
               {[
                 {
@@ -1263,38 +1509,6 @@ export function CommonRichTextEditor({
               ))}
             </div>
           </div>
-          <CommonButton
-            size="sm"
-            onClick={() =>
-              editor
-                .chain()
-                .focus()
-                .setTextSelection(tableEdge())
-                .addRowAfter()
-                .run()
-            }
-            className={s.tableAction}
-            title="맨 아래 행 추가"
-            aria-label="맨 아래 행 추가"
-          >
-            ⇣▤
-          </CommonButton>
-          <CommonButton
-            size="sm"
-            onClick={() =>
-              editor
-                .chain()
-                .focus()
-                .setTextSelection(tableEdge())
-                .addColumnAfter()
-                .run()
-            }
-            className={s.tableAction}
-            title="맨 오른쪽 열 추가"
-            aria-label="맨 오른쪽 열 추가"
-          >
-            ▥⇥
-          </CommonButton>
         </div>
       </BubbleMenu>
       <EditorContent editor={editor} />

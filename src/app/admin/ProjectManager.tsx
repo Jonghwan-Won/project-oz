@@ -10,8 +10,8 @@ import { CommonLoading } from '@/components/ui/CommonLoading';
 import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
 import { CommonPagination } from '@/components/ui/CommonPagination';
 import { CommonGrid, type CommonGridColumn } from '@/components/ui/CommonGrid';
-import { emptyProjectSearch, matchesProject, paginate } from '@/lib/admin-list';
-import { useRef, useState } from 'react';
+import { emptyProjectSearch, paginate } from '@/lib/admin-list';
+import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CommonButton } from '@/components/ui/CommonButton';
 import { ProjectTag } from '@/components/ProjectTag';
@@ -41,22 +41,23 @@ const formatFileSize = (bytes: number) =>
 export function ProjectManager({
   projects,
   codes,
+  initialSearch,
+  total,
 }: {
   projects: ProjectListItem[];
   codes: ProjectCode[];
+  initialSearch: typeof emptyProjectSearch;
+  total: number;
 }) {
   const router = useRouter();
+  const [searching, startSearch] = useTransition();
   const technologyOptions = codes
     .filter((code) => code.groupKey === 'TECHNOLOGY' && code.isActive)
     .map((code) => code.nameKo);
-  const [search, setSearch] = useState(emptyProjectSearch);
-  const [appliedSearch, setAppliedSearch] = useState(emptyProjectSearch);
+  const [search, setSearch] = useState(initialSearch);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  // shortcut: 현재 개발 목록은 소량이므로 클라이언트 검색/페이징, 운영 목록 연결 시 서버 조회로 전환.
-  const filtered = projects.filter((project) =>
-    matchesProject(project, appliedSearch),
-  );
+  const filtered = projects;
   const result = paginate(filtered, page, pageSize);
   const [uploads, setUploads] = useState(0);
   const uploadBusy = (busy: boolean) =>
@@ -317,14 +318,24 @@ export function ProjectManager({
     <section>
       <CommonSearchPanel
         onSearch={() => {
-          setAppliedSearch({ ...search });
+          const url = '/admin/projects?' + new URLSearchParams(search);
+          startSearch(() => {
+            if (window.location.pathname + window.location.search === url)
+              router.refresh();
+            else router.push(url, { scroll: false });
+          });
           setPage(1);
           setSelected([]);
         }}
         onReset={() => {
           setSearch(emptyProjectSearch);
-          setAppliedSearch(emptyProjectSearch);
+          startSearch(() => {
+            if (window.location.search)
+              router.push('/admin/projects', { scroll: false });
+            else router.refresh();
+          });
           setPage(1);
+          setSelected([]);
         }}
       >
         <label>
@@ -387,7 +398,7 @@ export function ProjectManager({
       <div className={s.listPanel}>
         <div className={s.heading}>
           <p aria-live="polite">
-            전체 {projects.length}건 · 검색 결과 {filtered.length}건
+            전체 {total}건 · 검색 결과 {filtered.length}건
           </p>
           <div className={s.actions}>
             <CommonButton
@@ -936,7 +947,7 @@ export function ProjectManager({
         variant={saveAlert?.variant}
         content={saveAlert?.content ?? ''}
       />
-      <CommonLoading open={saving || loadingProject} />
+      <CommonLoading open={saving || loadingProject || searching} />
     </section>
   );
 }
