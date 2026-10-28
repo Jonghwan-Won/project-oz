@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { getPublicProjects } from '@/server/services/projects';
 import { getMessages } from '@/i18n/server';
-import { MainPageLink } from '@/components/MainPageLink';
 
 export async function generateMetadata() {
   const { messages } = await getMessages();

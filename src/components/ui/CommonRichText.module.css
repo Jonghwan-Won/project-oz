@@ -12,6 +12,70 @@
   padding: 10px;
   border-bottom: 1px solid var(--line);
 }
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+.colorPalette {
+  width: 240px;
+  max-width: calc(100vw - 32px);
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  z-index: 320;
+}
+.colorPalette label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.colorPalette input {
+  min-width: 0;
+  max-width: 160px;
+}
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.colorGrid button {
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #80808040;
+  border-radius: 0;
+}
+.colorGrid button:focus-visible,
+.colorGrid button:hover {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: -2px;
+}
+.colorGrid button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px #808080;
+}
+.noColor {
+  background: linear-gradient(135deg, white 47%, #e33 48%, #e33 52%, white 53%);
+}
+.tableProperties {
+  width: 100%;
+}
+.tableProperties summary {
+  cursor: pointer;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+}
+.propertyFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+}
 .toolbar button[aria-pressed='true'] {
   background: var(
     --admin-accent,
@@ -39,6 +103,12 @@
 .content p {
   white-space: pre-wrap;
 }
+.editable a,
+.content a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .editable ul,
 .content ul {
   list-style: disc;
@@ -54,6 +124,65 @@
   border-left: 3px solid var(--accent-ink);
   padding-left: 16px;
   margin-left: 0;
+}
+.editable blockquote[data-quote-style='quotation'],
+.content blockquote[data-quote-style='quotation'] {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.5em 0;
+  padding: 0 1em;
+  border-left: 0;
+}
+.editable blockquote[data-quote-style='quotation'][data-text-align='center'],
+.content blockquote[data-quote-style='quotation'][data-text-align='center'],
+.editable
+  blockquote[data-quote-style='quotation']:not([data-text-align]):has(
+    > [style*='text-align: center']
+  ),
+.content
+  blockquote[data-quote-style='quotation']:not([data-text-align]):has(
+    > [style*='text-align: center']
+  ) {
+  margin-inline: auto;
+}
+.editable blockquote[data-quote-style='quotation'][data-text-align='right'],
+.content blockquote[data-quote-style='quotation'][data-text-align='right'],
+.editable
+  blockquote[data-quote-style='quotation']:not([data-text-align]):has(
+    > [style*='text-align: right']
+  ),
+.content
+  blockquote[data-quote-style='quotation']:not([data-text-align]):has(
+    > [style*='text-align: right']
+  ) {
+  margin-left: auto;
+  margin-right: 0;
+}
+.editable blockquote[data-quote-style='quotation'] > p,
+.content blockquote[data-quote-style='quotation'] > p {
+  margin: 0;
+}
+.editable blockquote[data-quote-style='quotation']::before,
+.content blockquote[data-quote-style='quotation']::before,
+.editable blockquote[data-quote-style='quotation']::after,
+.content blockquote[data-quote-style='quotation']::after {
+  position: absolute;
+  color: var(--accent-ink);
+  font-size: 1.25em;
+  line-height: 1;
+}
+.editable blockquote[data-quote-style='quotation']::before,
+.content blockquote[data-quote-style='quotation']::before {
+  content: '“';
+  left: 0;
+  top: 0;
+}
+.editable blockquote[data-quote-style='quotation']::after,
+.content blockquote[data-quote-style='quotation']::after {
+  content: '”';
+  right: 0;
+  bottom: 0;
 }
 .editable pre,
 .content pre {
@@ -121,6 +250,68 @@
   border-color: transparent;
   font-size: 14px;
 }
+.colorTool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.colorTool:hover {
+  background: var(--surface-hover);
+}
+.colorTool:focus-within {
+  outline: 2px solid var(--accent-ink);
+}
+.colorTool input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.linkPicker {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(320px, calc(100vw - 48px));
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #0004;
+}
+.linkPicker label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.linkPicker input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+}
+.linkPicker p {
+  color: #e57373;
+  font-size: 12px;
+}
+.linkPicker > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
 .glyph {
   display: inline-flex;
   width: 18px;
@@ -136,7 +327,15 @@
   flex-wrap: wrap;
   align-items: center;
   padding: 10px;
-  border-bottom: 1px solid var(--line);
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px #0004;
 }
 .tableTools label {
   display: flex;
@@ -144,10 +343,62 @@
   gap: 4px;
   margin: 0;
 }
+.tableTools .tableToolsToggle {
+  width: 100%;
+}
+.tableToolsCollapsed {
+  width: auto;
+}
+.tableToolsCollapsed > :not(.tableToolsToggle) {
+  display: none;
+}
+.editable td > p,
+.editable th > p,
+.content td > p,
+.content th > p {
+  margin: 0;
+}
+.editable td,
+.editable th,
+.content td,
+.content th {
+  padding: 2px 8px;
+}
+.editable
+  :global(.tableWrapper:not([data-table-focused]) .table-resize-handle) {
+  display: none;
+}
+.editable tr:has(:global(.row-resize-handle:hover)) > td::after,
+.editable tr:has(:global(.row-resize-handle:hover)) > th::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent-ink);
+  pointer-events: none;
+}
 .tableTools button {
   min-height: 36px;
   padding: 6px 10px;
   font-size: 12px;
+}
+.tableTools .tableAction {
+  width: 40px;
+  padding: 6px 2px;
+}
+.tableTools .colorPalette {
+  position: static !important;
+  transform: none !important;
+}
+.tableTools select {
+  min-height: 36px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
 }
 .editable,
 .content {
@@ -192,6 +443,115 @@
 }
 .editable:global(.resize-cursor) {
   cursor: col-resize;
+}
+.editable :global(.tableWrapper) {
+  position: relative;
+  padding: 18px 0 0 18px;
+}
+.editable :global(.table-edge-controls) {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.editable
+  :global(.tableWrapper:not([data-table-focused]) .table-edge-controls) {
+  visibility: hidden;
+  pointer-events: none;
+}
+.editable :global(.tableWrapper:not([data-table-focused]) .table-axis-control),
+.editable
+  :global(.tableWrapper:not([data-table-focused]) .table-corner-control) {
+  pointer-events: none;
+}
+.editable :global(.table-corner-control)::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--accent-ink);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+.editable :global(.table-corner-control),
+.editable :global(.table-axis-control) {
+  position: absolute;
+  pointer-events: auto;
+  background: var(--hover);
+}
+.editable :global(.table-corner-control) {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  cursor: grab;
+}
+.editable :global(.table-axis-control[data-active='true']) {
+  background: color-mix(in srgb, var(--accent-ink) 25%, var(--surface));
+}
+.editable :global(.table-axis-control button) {
+  position: absolute;
+  opacity: 0;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  font-size: 11px;
+  line-height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  z-index: 7;
+}
+.editable :global(.table-axis-control:hover button),
+.editable :global(.table-axis-control:focus-within button) {
+  opacity: 1;
+}
+.editable
+  :global(.table-axis-control[data-axis='column'] button[data-after='false']) {
+  left: -6px;
+  top: 3px;
+}
+.editable
+  :global(.table-axis-control[data-axis='column'] button[data-after='true']) {
+  right: -6px;
+  top: 3px;
+}
+.editable
+  :global(.table-axis-control[data-axis='row'] button[data-after='false']) {
+  top: -6px;
+  left: 3px;
+}
+.editable
+  :global(.table-axis-control[data-axis='row'] button[data-after='true']) {
+  bottom: -6px;
+  left: 3px;
+}
+.editable :global(.table-resize-handle) {
+  position: absolute;
+  z-index: 5;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.editable :global(.table-resize-handle)::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  background: var(--accent-ink);
+  border: 1px solid var(--surface);
+  border-radius: 2px;
+}
+.editable :global(.table-resize-handle:focus-visible) {
+  outline: 2px solid var(--accent-ink);
+}
+.editable[contenteditable='false'] :global(.table-resize-handle) {
+  display: none;
+}
+.editable :global(.tableWrapper[data-resizing]) {
+  user-select: none;
 }
 .editable :global(.row-resize-handle) {
   position: absolute;
@@ -325,4 +685,61 @@
 }
 .editable :global([data-resize-handle='bottom-right']) {
   transform: translate(50%, 50%);
+}
+
+.editable td,
+.editable th,
+.content td,
+.content th {
+  padding: 2px 8px;
+}
+
+.editable :global(.row-resize-handle:hover) {
+  background: transparent;
+}
+.tableTools[data-panel]:not([data-panel=''])
+  > :not(.panelBack):not(.tableProperties):not(.colorPalette) {
+  display: none;
+}
+.tableProperties[hidden] {
+  display: none;
+}
+.tableTools .panelBack {
+  order: -100;
+  width: 100%;
+}
+.tableTools > button {
+  width: 36px;
+  padding: 4px;
+}
+.tableTools .tableToolsToggle {
+  order: -101;
+  width: 100%;
+}
+.tableTools > [title='배경색'] {
+  order: -90;
+}
+.tableTools > [title='테두리색'] {
+  order: -88;
+}
+.tableTools > [title='맨 아래 행 추가'] {
+  order: -70;
+}
+.tableTools > [title='위에 행 추가'] {
+  order: -69;
+}
+.tableTools > [title='맨 오른쪽 열 추가'] {
+  order: -68;
+}
+.tableTools > [title='왼쪽 열 추가'] {
+  order: -67;
+}
+.tableTools > [title='행 삭제'] {
+  order: -66;
+}
+.tableTools > [title='열 삭제'] {
+  order: -65;
+}
+.tableTools > [title='표 삭제'] {
+  order: -64;
 }

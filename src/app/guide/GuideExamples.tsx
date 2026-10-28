@@ -5,7 +5,6 @@ import { CommonFilePicker } from '@/components/ui/CommonFilePicker';
 import { CommonModal } from '@/components/ui/CommonModal';
 import { CommonInput } from '@/components/ui/CommonInput';
 import { CommonRichTextEditor } from '@/components/ui/CommonRichTextEditor';
-import { CommonRichTextView } from '@/components/ui/CommonRichTextView';
 import { CommonAssetLinks } from '@/components/ui/CommonAssetLinks';
 import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
 import { CommonGrid, type CommonGridColumn } from '@/components/ui/CommonGrid';
@@ -101,6 +100,13 @@ export function GuideExamples({
   const [editorDocument, setEditorDocument] = useState(() =>
     textDocument('가이드에서 편집할 수 있는 예제입니다.'),
   );
+  const [localImages] = useState(() => new Set<string>());
+  useEffect(() => {
+    return () => {
+      for (const url of localImages) URL.revokeObjectURL(url);
+      localImages.clear();
+    };
+  }, [localImages]);
   const [loadingDemo, setLoadingDemo] = useState(false);
   const [result, setResult] = useState('아직 호출하지 않았습니다.');
   const [alert, setAlert] = useState<{
@@ -220,6 +226,12 @@ export function GuideExamples({
               label="가이드 에디터 예제"
               value={editorDocument}
               uploadsEnabled={false}
+              localImages={localImages}
+              onLocalImage={(file) => {
+                const url = URL.createObjectURL(file);
+                localImages.add(url);
+                return url;
+              }}
               onChange={(document) => setEditorDocument(document)}
             />
           </div>
@@ -227,8 +239,8 @@ export function GuideExamples({
           <p>
             CommonAssetLinks는 이미 등록된 파일의 다운로드 링크를 표시합니다.
             아래 파일 선택 예제는 화면 상태만 확인합니다. 선택한 파일은 브라우저
-            안에만 머물고 API 요청이나 NAS 업로드는 하지 않습니다. 가이드
-            에디터의 이미지 업로드도 꺼 두었습니다.
+            안에만 머물고 API 요청이나 NAS 업로드는 하지 않습니다. 가이드 에디터
+            이미지도 브라우저에서만 표시되며 새로고침하면 사라집니다.
           </p>
           <CommonAssetLinks
             assets={[

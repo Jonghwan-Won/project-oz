@@ -4,11 +4,8 @@ import type { ReactNode } from 'react';
 import { CommonFilePicker } from './CommonFilePicker';
 import { CommonLoading } from './CommonLoading';
 import s from './CommonFileUpload.module.css';
-import {
-  isUploadedAsset,
-  maxUploadBytes,
-  type UploadedAsset,
-} from '@/lib/files';
+import { maxUploadBytes, type UploadedAsset } from '@/lib/files';
+import { uploadFile } from '@/lib/upload-file';
 export function CommonFileUpload({
   label,
   imagesOnly = false,
@@ -81,23 +78,7 @@ export function CommonFileUpload({
           controller.current = new AbortController();
           const signal = controller.current.signal;
           try {
-            const form = new FormData();
-            form.set('file', file);
-            const response = await fetch('/api/assets', {
-              method: 'POST',
-              signal,
-              body: form,
-            });
-            const result: unknown = await response.json();
-            if (!response.ok || !isUploadedAsset(result))
-              throw Error(
-                result &&
-                  typeof result === 'object' &&
-                  'message' in result &&
-                  typeof result.message === 'string'
-                  ? result.message
-                  : '업로드에 실패했습니다.',
-              );
+            const result = await uploadFile(file, signal);
             if (signal.aborted) return;
             onUploaded(result);
             setMessage('');
