@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { categories, getCategoryLabel } from '@/content/site';
 import { getPublicPosts } from '@/server/services/posts';
 import { getMessages } from '@/i18n/server';
-import { MainPageLink } from '@/components/MainPageLink';
+import { paginate } from '@/lib/admin-list';
 import s from './board.module.css';
 export async function generateMetadata() {
   const { messages } = await getMessages();
@@ -13,7 +13,7 @@ export async function generateMetadata() {
 export default async function Board({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; page?: string }>;
 }) {
   const { messages, locale } = await getMessages();
   const copy = messages.board;
@@ -31,6 +31,17 @@ export default async function Board({
         .toLowerCase()
         .includes(q.trim().toLowerCase()),
   );
+  const requestedPage =
+    typeof params.page === 'string' && /^\d+$/.test(params.page)
+      ? Number(params.page)
+      : 1;
+  const result = paginate(selected, requestedPage, 10);
+  const firstPage = Math.max(
+    1,
+    Math.min(result.page - 2, result.totalPages - 4),
+  );
+  const pageHref = (page: number) =>
+    '/board?' + new URLSearchParams({ category, q, page: String(page) });
   return (
     <div className={s.page}>
       {/* <MainPageLink href="/#board" label={messages.navigation.main} /> */}
@@ -50,51 +61,9 @@ export default async function Board({
             </Link>
           ))}
         </nav>
-        <form className={s.search} action="/board" role="search">
-          <CommonInput type="hidden" name="category" value={category} />
-          <label className="srOnly" htmlFor="query">
-            {copy.searchLabel}
-          </label>
-          <div className={s.searchField}>
-            <CommonInput
-              id="query"
-              name="q"
-              maxLength={100}
-              defaultValue={q}
-              placeholder={copy.placeholder}
-            />
-          </div>
-          <CommonButton
-            className={s.searchButton}
-            variant="neutral"
-            type="submit"
-            aria-label={copy.search}
-            title={copy.search}
-          >
-            <svg
-              width="21"
-              height="21"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <circle cx="10.5" cy="10.5" r="6.5" />
-              <path d="m16 16 4.5 4.5" />
-            </svg>
-          </CommonButton>
-        </form>
-      </div>
-      <div className={s.results}>
-        <h2>{getCategoryLabel(category, messages)}</h2>
-        <span>
-          {copy.count} <strong>{selected.length}</strong>
-        </span>
       </div>
       <ul className={s.list}>
-        {selected.map((post) => (
+        {result.items.map((post) => (
           <li key={post.id}>
             <Link className={s.row} href={'/board/' + post.id}>
               <div className={s.content}>
@@ -109,13 +78,40 @@ export default async function Board({
                 <h3>{post.title}</h3>
                 {post.excerpt && <p className={s.excerpt}>{post.excerpt}</p>}
               </div>
-              <span className={s.arrow} aria-hidden="true">
-                ↗
-              </span>
             </Link>
           </li>
         ))}
       </ul>
+      {selected.length > 0 && (
+        <nav className={s.pagination} aria-label={copy.paginationLabel}>
+          {result.page > 1 && (
+            <Link
+              href={pageHref(result.page - 1)}
+              aria-label={copy.previousPage}
+            >
+              ←
+            </Link>
+          )}
+          {Array.from(
+            { length: Math.min(5, result.totalPages) },
+            (_, index) => firstPage + index,
+          ).map((page) => (
+            <Link
+              key={page}
+              href={pageHref(page)}
+              aria-label={`${copy.pageLabel} ${page}`}
+              aria-current={page === result.page ? 'page' : undefined}
+            >
+              {page}
+            </Link>
+          ))}
+          {result.page < result.totalPages && (
+            <Link href={pageHref(result.page + 1)} aria-label={copy.nextPage}>
+              →
+            </Link>
+          )}
+        </nav>
+      )}
       {!selected.length && (
         <div className={s.empty}>
           <span className={s.emptyMark} aria-hidden="true">
@@ -123,11 +119,53 @@ export default async function Board({
           </span>
           <h2>{copy.empty}</h2>
           <p>{q ? copy.emptyQuery : copy.emptyCategory}</p>
-          <Link className="textLink" href="/board">
+          {/* <Link className="textLink" href="/board">
             {copy.allLink}
-          </Link>
+          </Link> */}
         </div>
       )}
+      <form
+        className={s.search}
+        action="/board"
+        role="search"
+        autoComplete="off"
+      >
+        <CommonInput type="hidden" name="category" value={category} />
+        <label className="srOnly" htmlFor="query">
+          {copy.searchLabel}
+        </label>
+        <div className={s.searchField}>
+          <CommonInput
+            id="query"
+            name="q"
+            autoComplete="off"
+            maxLength={100}
+            defaultValue={q}
+            placeholder={copy.placeholder}
+          />
+        </div>
+        <CommonButton
+          className={s.searchButton}
+          variant="neutral"
+          type="submit"
+          aria-label={copy.search}
+          title={copy.search}
+        >
+          <svg
+            width="21"
+            height="21"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="10.5" cy="10.5" r="6.5" />
+            <path d="m16 16 4.5 4.5" />
+          </svg>
+        </CommonButton>
+      </form>
     </div>
   );
 }

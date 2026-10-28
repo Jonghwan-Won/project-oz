@@ -156,17 +156,114 @@
 }
 
 .footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding-top: 24px;
+  display: block;
+  padding: 21px 3%;
   border-top: 1px solid var(--line);
 }
 
-.endmark {
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 3px 0 12px;
+}
+.listHeader h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.listHeader h2 span,
+.listHeader a {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+.listHeader a {
+  flex-shrink: 0;
+}
+.listHeader a:hover {
   color: var(--accent-ink);
-  font-size: 28px;
+}
+.listLabels,
+.relatedLink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.listLabels {
+  padding: 0 2px 2px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.relatedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.relatedList li {
+  border-bottom: 1px solid var(--line);
+}
+.relatedLink {
+  min-height: 44px;
+  padding: 2px;
+  font-size: 14px;
+  color: var(--secondary);
+}
+.relatedLink > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.relatedLink time {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.relatedLink[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 700;
+}
+.relatedLink:hover {
+  color: var(--accent-ink);
+  background: var(--surface);
+}
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+  padding-top: 3px;
+}
+.pagination a {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.pagination a::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.pagination a:hover::before,
+.pagination a[aria-current='page']::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.pagination a:hover,
+.pagination a[aria-current='page'] {
+  color: var(--on-accent);
 }
 
 @media (max-width: 600px) {

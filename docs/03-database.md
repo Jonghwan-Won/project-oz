@@ -51,6 +51,8 @@ menus.route_key는 코드의 허용된 라우트 목록에 매핑한다. 카테�
 실험실과 프로젝트 테이블을 따로 만들지 않는다. 프로젝트는 is_visible로 노출을 제어하고 시작일 최신순으로 보여준다. 공개 전환은 링크 검증과 권한 확인 후 수행한다. 실험실에서의 세부 기록 공개 여부도 각각 유지한다.
 
 ## 문의·파일·운영
+
+2026-10-28: `Inquiry`에 비로그인 문의와 버그 제보 본문을 저장한다. `INQUIRY_TYPE` 공통코드는 0 버그 제보, 1 문의이고 `INQUIRY_STATUS`는 0 대기, 1 접수, 2 수정중이다. 최초 상태는 대기이며 작성자·수정자는 로그인 도입 전 NULL이다. 생성·수정 시각은 UTC timestamptz다. 조회·처리 관리자 화면과 답변 기능은 아직 없다.
 | 테이블 | 핵심 필드·제약 |
 |---|---|
 | inquiries | id, owner_id, type(CONTACT/BUG), title, body, page_url, status, version |

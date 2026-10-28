@@ -31,3 +31,6 @@
   resize: vertical;
   min-height: 110px;
 }
+.root .textarea {
+  font-weight: 400;
+}

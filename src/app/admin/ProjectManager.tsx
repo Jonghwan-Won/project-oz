@@ -169,8 +169,12 @@ export function ProjectManager({
     {
       key: 'period',
       header: '기간',
-      render: (project) =>
-        formatProjectPeriod(project.startedOn, project.endedOn) || '미입력',
+      width: 220,
+      render: (project) => (
+        <span className={s.gridPeriod}>
+          {formatProjectPeriod(project.startedOn, project.endedOn) || '미입력'}
+        </span>
+      ),
       align: 'center',
     },
     {
@@ -869,7 +873,7 @@ export function ProjectManager({
           getRowKey={(project) => project.id}
           caption="프로젝트 목록 · 행을 더블클릭하거나 프로젝트명을 눌러 수정합니다."
           emptyMessage="검색 결과가 없습니다."
-          minWidth={900}
+          minWidth={1000}
           wrapClassName={s.gridWrap}
           tableClassName={`${s.grid} ${s.projectGrid}`}
           emptyCellClassName={s.empty}

@@ -94,7 +94,10 @@
   width: 60px;
 }
 .projectGrid {
-  min-width: 900px;
+  min-width: 1000px;
+}
+.gridPeriod {
+  white-space: nowrap;
 }
 .gridTitle {
   display: flex;

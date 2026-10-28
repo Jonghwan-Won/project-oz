@@ -29,11 +29,13 @@
 }
 .tools {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 24px 0 32px;
   border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .filter {
   display: flex;
@@ -63,6 +65,7 @@
 .search {
   display: flex;
   width: min(100%, 420px);
+  margin: 32px auto 0;
   gap: 8px;
 }
 .searchField {
@@ -77,28 +80,6 @@
   min-height: 46px;
   padding: 0;
 }
-.results {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
-}
-.results h2 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-}
-.results > span {
-  color: var(--muted);
-  font-size: 12px;
-}
-.results strong {
-  margin-left: 6px;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
 .list {
   margin: 0;
   padding: 0;
@@ -107,12 +88,33 @@
 .list li {
   border-bottom: 1px solid var(--line);
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 32px;
+}
+.pagination a {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+.pagination a:hover,
+.pagination a[aria-current='page'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 32px 20px;
+  padding: 24px 20px;
   border-radius: 12px;
   transition: background 160ms ease;
 }
@@ -162,22 +164,6 @@
   font-size: 14px;
   line-height: 1.8;
 }
-.arrow {
-  display: grid;
-  place-items: center;
-  flex: 0 0 42px;
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--muted);
-  font-size: 22px;
-}
-.row:hover .arrow,
-.row:focus-visible .arrow {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
 .empty {
   padding: 60px 20px;
   text-align: center;
@@ -198,6 +184,11 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+}
+@media (max-width: 900px) {
+  .search {
+    width: 100%;
+  }
 }
 @media (max-width: 600px) {
   .page {
@@ -220,17 +211,9 @@
     padding: 10px 12px;
     font-size: 12px;
   }
-  .search {
-    width: 100%;
-  }
   .row {
     gap: 16px;
-    padding: 26px 0;
-  }
-  .arrow {
-    flex-basis: 32px;
-    height: 32px;
-    font-size: 18px;
+    padding: 20px 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

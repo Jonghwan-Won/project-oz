@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getPublicPost } from '@/server/services/posts';
+import { getPublicPost, getPublicPosts } from '@/server/services/posts';
 import { CommonRichTextView } from '@/components/ui/CommonRichTextView';
 import { getCategoryLabel } from '@/content/site';
 import { getMessages } from '@/i18n/server';
-import { CommonButtonLink } from '@/components/ui/CommonButton';
+import { paginate } from '@/lib/admin-list';
 import s from './post.module.css';
 
 export async function generateMetadata({
@@ -20,13 +20,25 @@ export async function generateMetadata({
 }
 export default async function Post({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { messages, locale } = await getMessages();
   const { id } = await params;
   const post = await getPublicPost(id, locale);
   if (!post) notFound();
+  const posts = await getPublicPosts(locale);
+  const currentIndex = posts.findIndex((item) => item.id === post.id);
+  const { page } = await searchParams;
+  const requestedPage =
+    typeof page === 'string' && /^\d+$/.test(page)
+      ? Number(page)
+      : Math.floor(Math.max(0, currentIndex) / 5) + 1;
+  const result = paginate(posts, requestedPage, 5);
+  const firstPage = Math.floor((result.page - 1) / 5) * 5 + 1;
+  const lastPage = Math.min(firstPage + 4, result.totalPages);
   return (
     <article className={s.article}>
       <Link className={s.back} href="/board">
@@ -56,13 +68,78 @@ export default async function Post({
       <div className={s.body}>
         <CommonRichTextView value={post.body} />
       </div>
+
       <footer className={s.footer}>
-        <span className={s.endmark} aria-hidden="true">
-          ✳
-        </span>
-        <CommonButtonLink href="/board" variant="neutral">
-          {messages.board.back}
-        </CommonButtonLink>
+        <section id="post-list" aria-label={messages.board.postNavigation}>
+          <div className={s.listHeader}>
+            <h2>
+              {getCategoryLabel('전체', messages)}{' '}
+              <span>
+                {messages.board.count} {posts.length}
+              </span>
+            </h2>
+            <Link href="/board">{messages.board.allLink} →</Link>
+          </div>
+          <div className={s.listLabels}>
+            <span>{messages.board.postTitle}</span>
+            <span>{messages.board.postDate}</span>
+          </div>
+          <ul className={s.relatedList}>
+            {result.items.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={'/board/' + item.id}
+                  className={s.relatedLink}
+                  aria-current={item.id === post.id ? 'page' : undefined}
+                >
+                  <span title={item.title}>{item.title}</span>
+                  <time dateTime={item.date.replaceAll('.', '-')}>
+                    {item.date}
+                  </time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {result.totalPages > 1 && (
+            <nav
+              className={s.pagination}
+              aria-label={messages.board.paginationLabel}
+            >
+              {firstPage > 1 && (
+                <Link
+                  href={`?page=${firstPage - 1}`}
+                  scroll={false}
+                  aria-label={messages.board.previousPage}
+                >
+                  {messages.board.previousGroup}
+                </Link>
+              )}
+              {Array.from(
+                { length: lastPage - firstPage + 1 },
+                (_, index) => firstPage + index,
+              ).map((number) => (
+                <Link
+                  key={number}
+                  href={`?page=${number}`}
+                  scroll={false}
+                  aria-label={`${messages.board.pageLabel} ${number}`}
+                  aria-current={number === result.page ? 'page' : undefined}
+                >
+                  {number}
+                </Link>
+              ))}
+              {lastPage < result.totalPages && (
+                <Link
+                  href={`?page=${lastPage + 1}`}
+                  scroll={false}
+                  aria-label={messages.board.nextPage}
+                >
+                  {messages.board.nextGroup}
+                </Link>
+              )}
+            </nav>
+          )}
+        </section>
       </footer>
     </article>
   );

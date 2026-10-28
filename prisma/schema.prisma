@@ -34,6 +34,8 @@ model User {
   createdProjects Project[] @relation("ProjectCreator")
   updatedProjects Project[] @relation("ProjectUpdater")
   assets          Asset[]
+  createdInquiries Inquiry[] @relation("InquiryCreator")
+  updatedInquiries Inquiry[] @relation("InquiryUpdater")
 }
 
 model CommonCodeGroup {
@@ -59,8 +61,29 @@ model CommonCode {
   group     CommonCodeGroup @relation(fields: [groupKey], references: [key], onDelete: Restrict)
   origins   Project[]       @relation("ProjectOrigin")
   types     Project[]       @relation("ProjectType")
+  inquiryTypes Inquiry[]    @relation("InquiryType")
+  inquiryStatuses Inquiry[] @relation("InquiryStatus")
 
   @@id([groupKey, code])
+}
+
+model Inquiry {
+  id String @id @default(uuid()) @db.Uuid
+  typeGroup String @default("INQUIRY_TYPE") @db.VarChar(60)
+  typeCode String @db.VarChar(60)
+  statusGroup String @default("INQUIRY_STATUS") @db.VarChar(60)
+  statusCode String @default("0") @db.VarChar(60)
+  body String @db.VarChar(4000)
+  createdById String? @db.Uuid
+  updatedById String? @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  type CommonCode @relation("InquiryType", fields: [typeGroup, typeCode], references: [groupKey, code], onDelete: Restrict)
+  status CommonCode @relation("InquiryStatus", fields: [statusGroup, statusCode], references: [groupKey, code], onDelete: Restrict)
+  createdBy User? @relation("InquiryCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy User? @relation("InquiryUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  @@index([statusGroup, statusCode, createdAt])
+  @@index([typeGroup, typeCode])
 }
 
 model Project {
