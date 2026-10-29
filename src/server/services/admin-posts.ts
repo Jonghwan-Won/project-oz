@@ -1,3 +1,5 @@
+import { requireAdmin } from '@/server/admin-access';
+import { getAdminSession } from '@/server/auth';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { pool } from '@/server/db';
@@ -13,8 +15,7 @@ class PostError extends Error {
   }
 }
 export async function savePost(input: unknown) {
-  if (process.env.NODE_ENV !== 'development')
-    throw new PostError(403, '로컬 개발 관리자 전용입니다.');
+  await requireAdmin();
   let form;
   try {
     form = parsePostForm(input);
@@ -26,11 +27,7 @@ export async function savePost(input: unknown) {
   }
   const client = await pool.connect();
   try {
-    if (
-      (await client.query('SELECT current_database() AS name')).rows[0].name !==
-      'oz_dev'
-    )
-      throw new PostError(403, '개발 DB만 변경할 수 있습니다.');
+    await requireAdmin();
     await client.query('BEGIN');
     if (form.id) {
       const current = (
@@ -93,8 +90,7 @@ export async function savePost(input: unknown) {
 }
 
 export async function deletePosts(input: unknown) {
-  if (process.env.NODE_ENV !== 'development')
-    throw new PostError(403, '로컬 개발 관리자 전용입니다.');
+  await requireAdmin();
   if (
     !Array.isArray(input) ||
     !input.length ||
@@ -112,11 +108,7 @@ export async function deletePosts(input: unknown) {
     throw new PostError(400, '삭제할 게시글을 확인해 주세요.');
   const client = await pool.connect();
   try {
-    if (
-      (await client.query('SELECT current_database() AS name')).rows[0].name !==
-      'oz_dev'
-    )
-      throw new PostError(403, '개발 DB만 변경할 수 있습니다.');
+    await requireAdmin();
     await client.query('BEGIN');
     const rows = (
       await client.query(
@@ -152,17 +144,13 @@ export async function deletePosts(input: unknown) {
 }
 export async function savePostRequest(request: Request) {
   try {
-    // shortcut: localhost development only; replace this gate with admin session authorization before production use.
     if (
-      process.env.NODE_ENV !== 'development' ||
-      !['localhost', '127.0.0.1', '[::1]'].includes(
-        new URL(request.url).hostname,
-      ) ||
+      !(await getAdminSession(request.headers)) ||
       request.headers.get('origin') !== new URL(request.url).origin
     )
       throw new PostError(
         403,
-        '게시글 변경은 로컬 개발 관리자에서만 지원합니다.',
+        '게시글 변경은 관리자 로그인 후에만 지원합니다.',
       );
     const reader = request.body?.getReader();
     if (!reader) throw new PostError(400, '입력을 확인해 주세요.');

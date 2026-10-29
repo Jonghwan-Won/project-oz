@@ -1,8 +1,12 @@
 import { checkGuideDatabase } from '@/server/services/guide';
+import { getAdminSession } from '@/server/auth';
 
 export async function GET(request: Request) {
   const headers = { 'Cache-Control': 'no-store' };
-  if (process.env.NODE_ENV !== 'development') {
+  if (
+    process.env.NODE_ENV !== 'development' ||
+    !(await getAdminSession(request.headers))
+  ) {
     return Response.json(
       { ok: false, message: '찾을 수 없습니다.' },
       { status: 404, headers },

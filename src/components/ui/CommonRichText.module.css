@@ -85,9 +85,10 @@
   color: var(--admin-on-accent, var(--ink));
 }
 .editable {
+  color: var(--ink);
   min-height: 220px;
   max-height: 560px;
-  padding: 8px 24px;
+  padding: 8px 24px 24px;
   outline: none;
   overflow-y: auto;
   overflow-wrap: anywhere;
@@ -102,6 +103,10 @@
 .editable p,
 .content p {
   white-space: pre-wrap;
+}
+.editor .editable p,
+.content.content p {
+  color: var(--ink);
 }
 .editable p {
   margin-block: 0 4px;
@@ -1008,4 +1013,11 @@
 .content th > p {
   min-height: 1.5em;
   line-height: 1.5;
+}
+
+.controls {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }

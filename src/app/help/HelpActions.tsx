@@ -72,22 +72,28 @@ export function HelpActions({ copy }: { copy: HelpCopy }) {
   return (
     <>
       <section className={s.contactSection} aria-label={copy.actionsLabel}>
-        <article id="bug" className={s.contactCard}>
+        <button
+          type="button"
+          id="bug"
+          className={s.contactCard}
+          onClick={() => show('bug')}
+        >
           <span className={s.cardLabel}>FEEDBACK</span>
-          <h2>{copy.bugTitle}</h2>
-          <p>{copy.bugDescription}</p>
-          <CommonButton variant="neutral" onClick={() => show('bug')}>
-            {copy.bugModalTitle}
-          </CommonButton>
-        </article>
-        <article id="contact" className={s.contactCard}>
+          <span className={s.contactTitle}>{copy.bugTitle}</span>
+          <span className={s.contactDescription}>{copy.bugDescription}</span>
+        </button>
+        <button
+          type="button"
+          id="contact"
+          className={s.contactCard}
+          onClick={() => show('contact')}
+        >
           <span className={s.cardLabel}>CONTACT</span>
-          <h2>{copy.contactTitle}</h2>
-          <p>{copy.contactDescription}</p>
-          <CommonButton variant="primary" onClick={() => show('contact')}>
-            {copy.contactModalTitle}
-          </CommonButton>
-        </article>
+          <span className={s.contactTitle}>{copy.contactTitle}</span>
+          <span className={s.contactDescription}>
+            {copy.contactDescription}
+          </span>
+        </button>
       </section>
       <CommonModal
         open={open}

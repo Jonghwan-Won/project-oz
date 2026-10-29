@@ -1,0 +1,96 @@
+.page {
+  min-height: min(760px, 85svh);
+  display: grid;
+  place-items: center;
+  padding-top: 48px;
+  padding-bottom: 64px;
+}
+.card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: min(100%, 520px);
+  padding: clamp(28px, 6vw, 52px);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent) 9%, var(--surface)),
+    var(--surface) 55%,
+    color-mix(in srgb, var(--accent-blue) 5%, var(--surface))
+  );
+  box-shadow: 0 24px 80px #00000012;
+}
+.mark {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin: 0 0 24px;
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+.mark span {
+  font-size: 20px;
+  color: var(--accent-ink);
+}
+.card h1 {
+  margin: 0 0 20px;
+  font-size: clamp(30px, 5vw, 40px);
+  letter-spacing: -0.05em;
+  line-height: 1.2;
+}
+.description {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.access {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 20px 0;
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.access > span {
+  color: var(--accent-ink);
+}
+.access p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.actions {
+  margin-bottom: 16px;
+}
+.github {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+}
+.error {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.buttonContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.buttonContent svg {
+  display: block;
+  flex-shrink: 0;
+}
+.buttonContent > span {
+  line-height: 1;
+  transform: translateY(2px);
+}

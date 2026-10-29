@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import s from '../guide/guide.module.css';
 
@@ -24,10 +23,9 @@ const tools = [
 ] as const;
 
 export default function LabPage() {
-  if (process.env.NODE_ENV !== 'development') notFound();
   return (
     <main className={`page ${s.guide}`}>
-      <p className="eyebrow">PLAYGROUND · DEVELOPMENT ONLY</p>
+      <p className="eyebrow">PLAYGROUND</p>
       <h1>
         실험실
         <span className="accentDot" />

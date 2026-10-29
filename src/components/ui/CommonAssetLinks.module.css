@@ -37,3 +37,8 @@
   color: var(--muted);
   font-size: 12px;
 }
+
+.assets a[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

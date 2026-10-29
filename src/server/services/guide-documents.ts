@@ -1,9 +1,11 @@
 import 'server-only';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { headers } from 'next/headers';
+import { getAdminSession } from '@/server/auth';
 
 export async function getGuideDocuments() {
-  if (process.env.NODE_ENV !== 'development') return [];
+  if (!(await getAdminSession(await headers()))) return [];
   const entries = await readdir(path.join(process.cwd(), 'docs'), {
     withFileTypes: true,
   });

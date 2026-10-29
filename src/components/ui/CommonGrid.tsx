@@ -16,7 +16,6 @@ export function CommonGrid<Row>({
   columns,
   getRowKey,
   caption,
-  emptyMessage,
   minWidth,
   wrapClassName,
   tableClassName,
@@ -28,7 +27,6 @@ export function CommonGrid<Row>({
   columns: CommonGridColumn<Row>[];
   getRowKey: (row: Row) => string;
   caption: string;
-  emptyMessage: string;
   minWidth: number;
   wrapClassName: string;
   tableClassName: string;
@@ -58,8 +56,16 @@ export function CommonGrid<Row>({
         <Table.Tbody>
           {rows.length === 0 ? (
             <Table.Tr>
-              <Table.Td colSpan={columns.length} className={emptyCellClassName}>
-                {emptyMessage}
+              <Table.Td
+                colSpan={columns.length}
+                className={emptyCellClassName}
+                style={{
+                  textAlign: 'center',
+                  verticalAlign: 'middle',
+                  height: 120,
+                }}
+              >
+                검색 결과가 없습니다.
               </Table.Td>
             </Table.Tr>
           ) : (

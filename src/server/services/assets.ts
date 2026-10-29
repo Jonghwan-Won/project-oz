@@ -4,6 +4,7 @@ import { mkdir, realpath, writeFile, readFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { pool } from '@/server/db';
 import { fileFormat, maxUploadBytes } from '@/lib/files';
+import { getAdminSession } from '@/server/auth';
 
 class FileError extends Error {
   constructor(
@@ -13,9 +14,6 @@ class FileError extends Error {
     super(message);
   }
 }
-const local = (request: Request) =>
-  process.env.NODE_ENV === 'development' &&
-  ['localhost', '127.0.0.1', '[::1]'].includes(new URL(request.url).hostname);
 const failure = (error: unknown) =>
   Response.json(
     {
@@ -43,12 +41,8 @@ async function storageRoot() {
 let lastUpload = 0;
 export async function uploadAsset(request: Request) {
   try {
-    // shortcut: local development uploads only; require a server admin session before enabling production writes.
-    if (!local(request))
-      throw new FileError(
-        403,
-        '현재 파일 업로드는 로컬 개발 관리자에서만 지원합니다.',
-      );
+    if (!(await getAdminSession(request.headers)))
+      throw new FileError(403, '관리자 로그인 후 업로드할 수 있습니다.');
     if (request.headers.get('origin') !== new URL(request.url).origin)
       throw new FileError(403, '허용되지 않은 요청입니다.');
     if (Date.now() - lastUpload < 1000)
@@ -146,7 +140,7 @@ export async function readAsset(request: Request, id: string) {
       mimeType: string;
     }>(
       `SELECT a."storageKey",a."originalName",a."mimeType" FROM "Asset" a WHERE a.id=$1 AND ($2 OR EXISTS(SELECT 1 FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL) OR EXISTS(SELECT 1 FROM "PostAsset" pa JOIN "Post" p ON p.id=pa."postId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL))`,
-      [id, local(request)],
+      [id, !!(await getAdminSession(request.headers))],
     );
     const asset = result.rows[0];
     if (!asset) throw new FileError(404, '파일을 찾을 수 없습니다.');

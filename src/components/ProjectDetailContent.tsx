@@ -9,10 +9,12 @@ export function ProjectDetailContent({
   project,
   locale = 'ko',
   heading = 'h2',
+  downloadsDisabled = false,
 }: {
   project: ProjectDetailData;
   locale?: string;
   heading?: 'h1' | 'h2';
+  downloadsDisabled?: boolean;
 }) {
   const en = locale === 'en';
   const Heading = heading;
@@ -74,7 +76,10 @@ export function ProjectDetailContent({
         {project.attachments.length > 0 && (
           <section>
             <h3>{en ? 'Attachments' : '첨부파일'}</h3>
-            <CommonAssetLinks assets={project.attachments} />
+            <CommonAssetLinks
+              assets={project.attachments}
+              disabled={downloadsDisabled}
+            />
           </section>
         )}
         {project.tags.length > 0 && (

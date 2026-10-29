@@ -1,5 +1,6 @@
 import { getMessages } from '@/i18n/server';
 import { HelpActions } from './HelpActions';
+import { ContactCard } from '@/components/ContactCard';
 import s from './help.module.css';
 
 export async function generateMetadata() {
@@ -8,7 +9,7 @@ export async function generateMetadata() {
 }
 
 export default async function Help() {
-  const { messages } = await getMessages();
+  const { messages, locale } = await getMessages();
   const copy = messages.contact;
   return (
     <div className={`page ${s.help}`}>
@@ -17,6 +18,13 @@ export default async function Help() {
         <h1 className="accentDot">{copy.title}</h1>
         <p>{copy.intro}</p>
       </header>
+      <div className={s.directContact}>
+        <ContactCard
+          title={messages.home.contactTitle}
+          description={messages.home.contactDescription}
+          locale={locale}
+        />
+      </div>
       <section
         id="faq"
         className={s.faqSection}

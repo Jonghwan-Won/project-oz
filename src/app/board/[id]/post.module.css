@@ -95,12 +95,12 @@
   padding: 40px 0 28px;
   font-size: 17px;
   line-height: 1.9;
-  color: var(--secondary);
+  color: var(--ink);
 }
 
 .body p {
-  margin: 0 0 1.4em;
-  line-height: inherit;
+  margin: 0 0 4px;
+  line-height: 1.5;
 }
 
 .body :is(h1, h2, h3, h4) {

@@ -43,11 +43,13 @@ export function ProjectManager({
   codes,
   initialSearch,
   total,
+  readOnly = true,
 }: {
   projects: ProjectListItem[];
   codes: ProjectCode[];
   initialSearch: typeof emptyProjectSearch;
   total: number;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [searching, startSearch] = useTransition();
@@ -106,6 +108,7 @@ export function ProjectManager({
       header: (
         <CommonInput
           type="checkbox"
+          disabled={readOnly}
           aria-label="현재 페이지 전체 선택"
           checked={
             result.items.length > 0 &&
@@ -132,6 +135,7 @@ export function ProjectManager({
         <CommonInput
           type="checkbox"
           aria-label={project.translations.ko.title + ' 선택'}
+          disabled={readOnly}
           checked={selected.includes(project.id)}
           onChange={(event) =>
             setSelected(
@@ -206,12 +210,14 @@ export function ProjectManager({
     },
   ];
   const change = (patch: Partial<ProjectForm>) => {
+    if (readOnly) return;
     if (!draft) return;
     const next = { ...draft, ...patch };
     setDraft(next);
     setDirty(JSON.stringify(next) !== originalDraft.current);
   };
   async function saveProject() {
+    if (readOnly) return;
     if (!draft) return;
     setSaving(true);
     setMessage('');
@@ -248,6 +254,7 @@ export function ProjectManager({
     }
   }
   const copy = (patch: Partial<ProjectCopy>) => {
+    if (readOnly) return;
     if (!draft) return;
     const next = {
       ...draft,
@@ -316,6 +323,12 @@ export function ProjectManager({
     : null;
   return (
     <section>
+      {readOnly && (
+        <p className={s.notice}>
+          공개 데이터로 둘러보는 읽기 전용 화면입니다. 등록·수정·삭제는 관리자만
+          사용할 수 있습니다.
+        </p>
+      )}
       <CommonSearchPanel
         onSearch={() => {
           const url = '/admin/projects?' + new URLSearchParams(search);
@@ -402,7 +415,12 @@ export function ProjectManager({
           </p>
           <div className={s.actions}>
             <CommonButton
-              disabled={selectedProjects.length === 0 || saving || uploads > 0}
+              disabled={
+                readOnly ||
+                selectedProjects.length === 0 ||
+                saving ||
+                uploads > 0
+              }
               onClick={() => {
                 setMessage('');
                 setConfirmDelete(true);
@@ -412,7 +430,7 @@ export function ProjectManager({
             </CommonButton>
             <CommonButton
               variant="primary"
-              disabled={saving || uploads > 0}
+              disabled={readOnly || saving || uploads > 0}
               onClick={() => {
                 const next = blankProject();
                 setDraft(next);
@@ -437,7 +455,13 @@ export function ProjectManager({
         {draft && (
           <CommonModal
             open
-            title={mode === 'create' ? '프로젝트 등록' : '프로젝트 수정'}
+            title={
+              readOnly
+                ? '프로젝트 상세'
+                : mode === 'create'
+                  ? '프로젝트 등록'
+                  : '프로젝트 수정'
+            }
             onClose={() => {
               requestClose();
             }}
@@ -457,7 +481,7 @@ export function ProjectManager({
                   form="project-editor-form"
                   variant="primary"
                   className={s.adminPrimary}
-                  disabled={saving || uploads > 0}
+                  disabled={readOnly || saving || uploads > 0}
                   size="sm"
                 >
                   저장
@@ -477,7 +501,7 @@ export function ProjectManager({
               className={s.projectForm}
               onSubmit={async (event) => {
                 event.preventDefault();
-                if (!saving && uploads === 0) setConfirmSave(true);
+                if (!readOnly && !saving && uploads === 0) setConfirmSave(true);
               }}
             >
               {message && (
@@ -486,7 +510,7 @@ export function ProjectManager({
                 </p>
               )}
               <fieldset
-                disabled={saving || uploads > 0}
+                disabled={readOnly || saving || uploads > 0}
                 className={s.editorFields}
               >
                 <div className={s.formSectionTitleRow}>
@@ -709,7 +733,8 @@ export function ProjectManager({
                   id="project-introduction"
                   label="프로젝트 소개"
                   contentClassName={s.projectEditorContent}
-                  disabled={saving || uploads > 0}
+                  disabled={readOnly || saving || uploads > 0}
+                  uploadsEnabled={!readOnly}
                   onUploadBusyChange={uploadBusy}
                   value={draft.translations[locale].body}
                   onChange={(body) => copy({ body })}
@@ -720,6 +745,7 @@ export function ProjectManager({
                     <small>* PNG · JPEG · WebP, 최대 10MB</small>
                   </div>
                   <CommonFileUpload
+                    disabled={readOnly}
                     label="파일 선택"
                     compact
                     onBusyChange={uploadBusy}
@@ -732,7 +758,14 @@ export function ProjectManager({
                     {draft.thumbnailFile && (
                       <ul className={s.thumbnailFiles}>
                         <li className={s.assetRow}>
-                          <a href={draft.thumbnailFile.downloadUrl}>
+                          <a
+                            href={
+                              readOnly
+                                ? undefined
+                                : draft.thumbnailFile.downloadUrl
+                            }
+                            aria-disabled={readOnly || undefined}
+                          >
                             {draft.thumbnailFile.name}
                           </a>
                           <small className={s.assetSize}>
@@ -761,6 +794,7 @@ export function ProjectManager({
                     <small>* PDF · PNG · JPEG · WebP, 최대 10MB</small>
                   </div>
                   <CommonFileUpload
+                    disabled={readOnly}
                     label="파일 선택"
                     compact
                     onBusyChange={uploadBusy}
@@ -780,7 +814,14 @@ export function ProjectManager({
                         );
                         return (
                           <li key={id} className={s.assetRow}>
-                            <a href={'/api/assets/' + id + '?download=1'}>
+                            <a
+                              href={
+                                readOnly
+                                  ? undefined
+                                  : '/api/assets/' + id + '?download=1'
+                              }
+                              aria-disabled={readOnly || undefined}
+                            >
                               {file?.name ?? '첨부파일 다운로드'}
                             </a>
                             {file && (
@@ -828,7 +869,11 @@ export function ProjectManager({
               </CommonButton>
             }
           >
-            <ProjectDetailContent project={previewData} locale={locale} />
+            <ProjectDetailContent
+              project={previewData}
+              locale={locale}
+              downloadsDisabled={readOnly}
+            />
           </CommonModal>
         )}
         <CommonConfirm
@@ -883,7 +928,6 @@ export function ProjectManager({
           columns={gridColumns}
           getRowKey={(project) => project.id}
           caption="프로젝트 목록 · 행을 더블클릭하거나 프로젝트명을 눌러 수정합니다."
-          emptyMessage="검색 결과가 없습니다."
           minWidth={1000}
           wrapClassName={s.gridWrap}
           tableClassName={`${s.grid} ${s.projectGrid}`}

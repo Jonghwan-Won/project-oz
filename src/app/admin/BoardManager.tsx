@@ -20,10 +20,12 @@ export function BoardManager({
   posts,
   initialSearch,
   total,
+  readOnly = true,
 }: {
   posts: PostListItem[];
   initialSearch: typeof emptyBoardSearch;
   total: number;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [searching, startSearch] = useTransition();
@@ -50,7 +52,7 @@ export function BoardManager({
         <CommonInput
           type="checkbox"
           aria-label="현재 페이지 전체 선택"
-          disabled={busy || !result.items.length}
+          disabled={readOnly || busy || !result.items.length}
           checked={
             !!result.items.length &&
             result.items.every((p) => selected.includes(p.id))
@@ -76,7 +78,7 @@ export function BoardManager({
         <CommonInput
           type="checkbox"
           aria-label={`${post.translations.ko.title} 선택`}
-          disabled={busy}
+          disabled={readOnly || busy}
           checked={selected.includes(post.id)}
           onChange={(event) =>
             setSelected(
@@ -158,6 +160,12 @@ export function BoardManager({
   }
   return (
     <section>
+      {readOnly && (
+        <p className={s.notice}>
+          공개 데이터로 둘러보는 읽기 전용 화면입니다. 등록·수정·삭제는 관리자만
+          사용할 수 있습니다.
+        </p>
+      )}
       <CommonSearchPanel
         onSearch={() => {
           const url = '/admin/board?' + new URLSearchParams(search);
@@ -222,14 +230,20 @@ export function BoardManager({
           </p>
           <div className={s.actions}>
             <CommonButton
-              disabled={!selected.length || busy}
+              disabled={readOnly || !selected.length || busy}
               onClick={() => setConfirm(true)}
             >
               삭제
             </CommonButton>
-            <CommonButtonLink href="/admin/board/new" variant="primary">
-              등록
-            </CommonButtonLink>
+            {readOnly ? (
+              <CommonButton disabled variant="primary">
+                등록
+              </CommonButton>
+            ) : (
+              <CommonButtonLink href="/admin/board/new" variant="primary">
+                등록
+              </CommonButtonLink>
+            )}
           </div>
         </div>
         {message && (
@@ -242,7 +256,6 @@ export function BoardManager({
           columns={columns}
           getRowKey={(post) => post.id}
           caption="게시글 목록"
-          emptyMessage="검색 결과가 없습니다."
           minWidth={900}
           wrapClassName={s.gridWrap}
           tableClassName={`${s.grid} ${s.projectGrid}`}

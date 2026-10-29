@@ -38,6 +38,60 @@ model User {
   updatedInquiries Inquiry[] @relation("InquiryUpdater")
 }
 
+model AuthUser {
+  id            String @id
+  name          String
+  email         String @unique
+  emailVerified Boolean @default(false)
+  image         String?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @db.Timestamptz(6)
+  sessions      AuthSession[]
+  accounts      AuthAccount[]
+}
+
+model AuthSession {
+  id        String @id
+  userId    String
+  token     String @unique
+  expiresAt DateTime @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @db.Timestamptz(6)
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model AuthAccount {
+  id                    String @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime @db.Timestamptz(6)
+  user                  AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model AuthVerification {
+  id         String @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @db.Timestamptz(6)
+  @@index([identifier])
+}
+
 model CommonCodeGroup {
   key         String       @id @db.VarChar(60)
   nameKo      String       @db.VarChar(100)

@@ -21,6 +21,21 @@ function service(mode, query = async () => ({ rows: [] })) {
   new Function('require', 'exports', 'process', output)(
     (id) => {
       if (id === 'server-only') return {};
+      if (id === '@/server/admin-access')
+        return {
+          requireAdmin: async () => {
+            if (mode === 'production') throw Error('Unauthorized');
+            return {};
+          },
+        };
+      if (id === '@/server/auth')
+        return {
+          getAdminSession: async (headers) =>
+            mode !== 'production' &&
+            headers.get('origin') === 'http://localhost'
+              ? {}
+              : null,
+        };
       if (id === '@/server/db')
         return {
           pool: {
@@ -39,6 +54,21 @@ function service(mode, query = async () => ({ rows: [] })) {
   );
   return exports;
 }
+test('dashboard project totals exclude deleted records and count visible items', async () => {
+  const queries = [];
+  const api = service('development', async (sql) => {
+    queries.push(sql);
+    return sql.includes('current_database')
+      ? { rows: [{ name: 'oz_dev' }] }
+      : { rows: [{ total: 4, visible: 3 }] };
+  });
+  assert.deepEqual(await api.getAdminProjectSummary(), {
+    total: 4,
+    visible: 3,
+  });
+  assert.match(queries[0], /"deletedAt" IS NULL/);
+  assert.match(queries[0], /FILTER \(WHERE "isVisible"\)/);
+});
 test('admin project list omits edit body and selected project detail queries one ID', async () => {
   const queries = [];
   const query = async (sql, params) => {
@@ -71,7 +101,7 @@ test('admin project list omits edit body and selected project detail queries one
     '00000000-0000-0000-0000-000000000001',
   ]);
 });
-test('project changes deny production, remote hosts and cross-origin requests before DB access', async () => {
+test('project changes deny unauthenticated and cross-origin requests before DB access', async () => {
   for (const method of ['POST', 'DELETE'])
     for (const [mode, url, origin] of [
       ['production', 'http://localhost/api/admin/projects', 'http://localhost'],

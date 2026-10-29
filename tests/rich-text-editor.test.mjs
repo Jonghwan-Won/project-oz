@@ -197,7 +197,9 @@ test('parent echo preserves the code block cursor, but external content still re
   };
   const instance = {
     state: { selection: {} },
-    setEditable: () => {},
+    setEditable: (_editable, emitUpdate = true) => {
+      if (emitUpdate) options.onUpdate({ editor: instance });
+    },
     commands: { setContent: () => replacements++ },
     getJSON: () => ({
       ...body,
@@ -268,6 +270,12 @@ test('parent echo preserves the code block cursor, but external content still re
     });
   };
   render(body);
+  effects[1]();
+  assert.equal(
+    echoed,
+    undefined,
+    'initial editable setup must not mark the form dirty',
+  );
   options.onUpdate({ editor: { getJSON: () => body, getText: () => 'a' } });
   render(echoed);
   effects.at(-1)();

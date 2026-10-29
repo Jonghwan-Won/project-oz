@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/server/admin-access';
 import 'server-only';
 import { cache } from 'react';
 import { pool } from '@/server/db';
@@ -7,20 +8,16 @@ import type { ProjectCopy } from '@/lib/project-form';
 
 export async function getAdminPosts(
   search = { keyword: '', category: '', status: '' },
+  publicOnly = false,
 ): Promise<PostListItem[]> {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
-  if (
-    (await pool.query('SELECT current_database() AS name')).rows[0].name !==
-    'oz_dev'
-  )
-    throw Error('Development database required');
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return [];
   const result = await pool.query<PostListItem>(
     `SELECT p.id,p.version,p.slug,p.category,p."isVisible",
     p."createdAt"::text AS "createdAt",p."updatedAt"::text AS "updatedAt",
     (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary))
       FROM "PostTranslation" WHERE "postId"=p.id) AS translations
-    FROM "Post" p WHERE p."deletedAt" IS NULL
+    FROM "Post" p WHERE p."deletedAt" IS NULL ${publicOnly ? 'AND p."isVisible"=true' : ''}
     AND ($1 = '' OR position(lower($1) in lower(concat_ws(' ', p.slug, (SELECT string_agg(concat_ws(' ', title, summary), ' ') FROM "PostTranslation" WHERE "postId"=p.id)))) > 0)
     AND ($2 = '' OR p.category=$2)
     AND ($3 = '' OR p."isVisible"=($3 = '공개'))
@@ -36,20 +33,18 @@ export async function getAdminPosts(
   }));
 }
 
-export async function getAdminPost(id: string): Promise<PostForm | null> {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
+export async function getAdminPost(
+  id: string,
+  publicOnly = false,
+): Promise<PostForm | null> {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return null;
   if (!uuid(id)) return null;
-  if (
-    (await pool.query('SELECT current_database() AS name')).rows[0].name !==
-    'oz_dev'
-  )
-    throw Error('Development database required');
   const result = await pool.query<PostForm>(
     `SELECT p.id,p.version,p.slug,p.category,p."isVisible",
     p."createdAt"::text AS "createdAt",p."updatedAt"::text AS "updatedAt",
     (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary,'body',body)) FROM "PostTranslation" WHERE "postId"=p.id) AS translations
-    FROM "Post" p WHERE p.id=$1 AND p."deletedAt" IS NULL`,
+    FROM "Post" p WHERE p.id=$1 AND p."deletedAt" IS NULL ${publicOnly ? 'AND p."isVisible"=true' : ''}`,
     [id],
   );
   const post = result.rows[0];
@@ -64,21 +59,24 @@ export async function getAdminPost(id: string): Promise<PostForm | null> {
     : null;
 }
 
-export async function getAdminPostCount(): Promise<number> {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
-  if (
-    (await pool.query('SELECT current_database() AS name')).rows[0].name !==
-    'oz_dev'
-  )
-    throw Error('Development database required');
+export async function getAdminPostCount(publicOnly = false): Promise<number> {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return 0;
   return Number(
     (
       await pool.query<{ count: string }>(
-        'SELECT count(*)::text AS count FROM "Post" WHERE "deletedAt" IS NULL',
+        `SELECT count(*)::text AS count FROM "Post" WHERE "deletedAt" IS NULL ${publicOnly ? 'AND "isVisible"=true' : ''}`,
       )
     ).rows[0].count,
   );
+}
+export async function getAdminPostSummary(publicOnly = false) {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return { total: 0, visible: 0 };
+  const result = await pool.query<{ total: number; visible: number }>(
+    `SELECT count(*)::int AS total, count(*) FILTER (WHERE "isVisible")::int AS visible FROM "Post" WHERE "deletedAt" IS NULL ${publicOnly ? 'AND "isVisible"=true' : ''}`,
+  );
+  return result.rows[0];
 }
 
 export type PublicPost = ProjectCopy & {

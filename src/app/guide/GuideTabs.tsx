@@ -26,23 +26,26 @@ const colors = [
   ['--line', '테두리'],
 ];
 
-export function GuideTabs() {
+export function GuideTabs({ admin = false }: { admin?: boolean }) {
+  const visibleTabs = tabs.filter(
+    ([id]) => admin || !['api', 'environment'].includes(id),
+  );
   const [active, setActive] = useState<(typeof tabs)[number][0]>('ui');
   function moveTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const next =
       event.key === 'ArrowRight'
-        ? (index + 1) % tabs.length
+        ? (index + 1) % visibleTabs.length
         : event.key === 'ArrowLeft'
-          ? (index + tabs.length - 1) % tabs.length
+          ? (index + visibleTabs.length - 1) % visibleTabs.length
           : event.key === 'Home'
             ? 0
             : event.key === 'End'
-              ? tabs.length - 1
+              ? visibleTabs.length - 1
               : -1;
     if (next < 0) return;
     event.preventDefault();
-    setActive(tabs[next][0]);
-    document.getElementById(`tab-${tabs[next][0]}`)?.focus();
+    setActive(visibleTabs[next][0]);
+    document.getElementById(`tab-${visibleTabs[next][0]}`)?.focus();
   }
   return (
     <div className={`page ${s.guide}`}>
@@ -50,12 +53,9 @@ export function GuideTabs() {
         개발 가이드
         <span className="accentDot" />
       </h1>
-      <p>
-        공통 UI와 개발 환경 정보를 주제별 탭으로 확인합니다. npm run dev에서만
-        열립니다.
-      </p>
+      <p>공통 UI와 화면 동작을 주제별 탭으로 확인합니다.</p>
       <div className={s.tabs} role="tablist" aria-label="가이드 항목">
-        {tabs.map(([id, label], index) => (
+        {visibleTabs.map(([id, label], index) => (
           <button
             key={id}
             id={`tab-${id}`}
@@ -70,7 +70,7 @@ export function GuideTabs() {
           </button>
         ))}
       </div>
-      {tabs.map(([id]) => (
+      {visibleTabs.map(([id]) => (
         <section
           key={id}
           id={`panel-${id}`}
@@ -117,14 +117,12 @@ export function GuideTabs() {
               <section className={s.section}>
                 <h2>개발 환경에서 확인할 수 있는 것</h2>
                 <p>
-                  이 화면과 가이드 API는 개발 환경에서만 열립니다. 브라우저는
-                  DB에 직접 연결하지 않고, 서버가 필요한 검사만 수행합니다.
+                  진단 API는 개발 환경의 관리자에게만 열립니다. 브라우저는 DB에
+                  직접 연결하지 않고, 서버가 필요한 검사만 수행합니다.
                 </p>
                 <div className={s.tableWrap}>
                   <table>
-                    <caption>
-                      개발 가이드에서 제공하는 검사 범위
-                    </caption>
+                    <caption>개발 가이드에서 제공하는 검사 범위</caption>
                     <thead>
                       <tr>
                         <th>검사</th>
@@ -135,7 +133,9 @@ export function GuideTabs() {
                     <tbody>
                       <tr>
                         <th>API 응답</th>
-                        <td>/api/guide에서 서버 시각과 성공 응답을 반환합니다.</td>
+                        <td>
+                          /api/guide에서 서버 시각과 성공 응답을 반환합니다.
+                        </td>
                         <td>DB 연결 여부</td>
                       </tr>
                       <tr>
@@ -145,15 +145,17 @@ export function GuideTabs() {
                       </tr>
                       <tr>
                         <th>운영 환경</th>
-                        <td>/guide와 가이드 API는 404를 반환합니다.</td>
+                        <td>
+                          공통 UI 가이드는 공개하고 진단 API는 404를 반환합니다.
+                        </td>
                         <td>개발 검사 API 사용</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <p>
-                  로그인·세션·역할 기반 권한은 아직 구현되지 않았습니다. 이 표는
-                  접근 권한표가 아니라 현재 가이드 기능의 동작 범위입니다.
+                  관리자 여부는 GitHub 고유 계정과 유효한 서버 세션으로
+                  확인합니다.
                 </p>
                 <Link className="textLink" href="/guide/environment">
                   개발·운영 환경 구조도 열기 →

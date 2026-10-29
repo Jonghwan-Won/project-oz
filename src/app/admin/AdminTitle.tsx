@@ -6,9 +6,9 @@ const titles: Record<string, string> = {
   '/admin': '대시보드',
   '/admin/projects': '프로젝트 관리',
   '/admin/board': '게시글 관리',
-  '/admin/categories': '분류 관리',
-  '/admin/media': '미디어 관리',
-  '/admin/settings': '사이트 관리',
+  '/admin/inquiries': '문의사항 관리',
+  '/admin/codes': '공통코드 관리',
+  '/admin/assets': '첨부파일 관리',
 };
 
 export function AdminTitle() {

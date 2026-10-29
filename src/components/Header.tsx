@@ -1,12 +1,14 @@
 'use client';
 import Link from 'next/link';
+import { CommonLoading } from '@/components/ui/CommonLoading';
+import { authClient } from '@/lib/auth-client';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import type { Theme } from '@/theme/theme';
 import type { Locale } from '@/i18n/locale';
 import type { Messages } from '@/i18n/ko';
 import { BrandLogo } from '@/components/BrandLogo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 const links = ['home', 'about', 'projects', 'board', 'help'] as const;
 
@@ -24,6 +26,36 @@ export function Header({
   themeLabels: Messages['theme'];
 }) {
   const path = usePathname();
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+  const [signingOut, setSigningOut] = useState(false);
+  const signOutPending = useRef(false);
+  const [signOutError, setSignOutError] = useState(false);
+  async function signOut() {
+    if (signOutPending.current) return;
+    signOutPending.current = true;
+    setSigningOut(true);
+    setSignOutError(false);
+    try {
+      const result = await authClient.signOut();
+      if (result.error) throw Error('Sign out failed');
+      router.replace('/');
+      router.refresh();
+      signOutPending.current = false;
+      setSigningOut(false);
+    } catch {
+      setSignOutError(true);
+      signOutPending.current = false;
+      setSigningOut(false);
+    }
+  }
+  const accountLabel = isPending
+    ? '…'
+    : session
+      ? locale === 'en'
+        ? 'Sign out'
+        : '로그아웃'
+      : labels.login;
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
@@ -145,23 +177,31 @@ export function Header({
               setOpen(false);
             }}
           >
-            {id === 'home'
-              ? locale === 'en'
-                ? 'Home'
-                : '홈'
-              : labels[id]}
+            {id === 'home' ? (locale === 'en' ? 'Home' : '홈') : labels[id]}
           </Link>
         ))}
-        <Link
-          className="mobileLogin"
-          href="/login"
-          onClick={() => setOpen(false)}
-        >
-          {labels.login}
-        </Link>
+        {session ? (
+          <button
+            type="button"
+            className="mobileLogin authButton"
+            disabled={signingOut}
+            onClick={signOut}
+          >
+            {accountLabel}
+          </button>
+        ) : (
+          <Link
+            className="mobileLogin"
+            href="/login"
+            onClick={() => setOpen(false)}
+          >
+            {accountLabel}
+          </Link>
+        )}
       </nav>
+      <CommonLoading open={signingOut} />
       <div className="headerActions">
-        {process.env.NODE_ENV === 'development' && (
+        {
           <Link
             className="headerIcon"
             href="/lab"
@@ -187,13 +227,13 @@ export function Header({
               <path d="M7.5 16h9" />
             </svg>
           </Link>
-        )}
-        {process.env.NODE_ENV === 'development' && (
+        }
+        {
           <Link
             className="headerIcon"
             href="/admin"
-            aria-label="개발 관리자"
-            title="개발 관리자"
+            aria-label="관리자"
+            title="관리자"
             onClick={() => setOpen(false)}
           >
             <svg
@@ -213,8 +253,8 @@ export function Header({
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
           </Link>
-        )}
-        {process.env.NODE_ENV === 'development' && (
+        }
+        {
           <Link
             className="headerIcon"
             href="/guide"
@@ -242,12 +282,30 @@ export function Header({
               <path d="M12 5.5v15" />
             </svg>
           </Link>
-        )}
+        }
         <LanguageSwitcher locale={locale} labels={languageLabels} />
         <ThemeToggle theme={theme} labels={themeLabels} />
-        <Link className="login" href="/login">
-          {labels.login}
-        </Link>
+        {session ? (
+          <button
+            type="button"
+            className="login authButton"
+            disabled={signingOut}
+            onClick={signOut}
+          >
+            {accountLabel}
+          </button>
+        ) : (
+          <Link className="login" href="/login">
+            {accountLabel}
+          </Link>
+        )}
+        {signOutError && (
+          <span role="alert">
+            {locale === 'en'
+              ? 'Please try again.'
+              : '로그아웃을 다시 시도해 주세요.'}
+          </span>
+        )}
       </div>
     </header>
   );
