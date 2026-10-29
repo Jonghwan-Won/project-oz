@@ -15,7 +15,13 @@ import { blankPost, parsePostForm, type PostForm } from '@/lib/post-form';
 import { categories } from '@/content/site';
 import s from './admin.module.css';
 
-export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
+export function PostEditor({
+  initialPost,
+  readOnly = true,
+}: {
+  initialPost?: PostForm;
+  readOnly?: boolean;
+}) {
   const router = useRouter();
   const [draft, setDraft] = useState(initialPost ?? blankPost);
   const [dirty, setDirty] = useState(false);
@@ -30,10 +36,12 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
   const [saved, setSaved] = useState('');
   const busy = saving || uploads > 0;
   const change = (patch: Partial<PostForm>) => {
+    if (readOnly) return;
     setDirty(true);
     setDraft((current) => ({ ...current, ...patch }));
   };
   const copy = (patch: Partial<PostForm['translations']['ko']>) => {
+    if (readOnly) return;
     setDirty(true);
     setDraft((current) => ({
       ...current,
@@ -85,6 +93,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
     };
   }, [dirty]);
   async function save() {
+    if (readOnly) return;
     setConfirm(null);
     setSaving(true);
     setMessage('');
@@ -134,11 +143,16 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
   const content = draft.translations.ko;
   return (
     <section>
+      {readOnly && (
+        <p className={s.notice}>
+          읽기 전용 상세 화면입니다. 미리보기와 목록 이동은 사용할 수 있습니다.
+        </p>
+      )}
       <form
         className={`${s.panel} ${s.projectForm} ${s.postForm}`}
         onSubmit={(e) => {
           e.preventDefault();
-          if (busy) return;
+          if (readOnly || busy) return;
           try {
             parsePostForm(draft);
             setConfirm('save');
@@ -150,7 +164,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
         }}
       >
         <div className={s.heading}>
-          <h2>게시글 {draft.id ? '수정' : '등록'}</h2>
+          <h2>게시글 {readOnly ? '상세' : draft.id ? '수정' : '등록'}</h2>
           <div className={s.actions}>
             <CommonButton
               disabled={busy}
@@ -164,7 +178,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
             {initialPost && (
               <CommonButton
                 className={s.deleteButton}
-                disabled={busy}
+                disabled={readOnly || busy}
                 onClick={() => setConfirm('delete')}
               >
                 삭제
@@ -179,7 +193,11 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
               {preview ? '돌아가기' : '미리보기'}
             </CommonButton>
 
-            <CommonButton type="submit" variant="primary" disabled={busy}>
+            <CommonButton
+              type="submit"
+              variant="primary"
+              disabled={readOnly || busy}
+            >
               저장
             </CommonButton>
           </div>
@@ -208,7 +226,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                   aria-label="게시글 노출 여부"
                   className={s.visibilitySwitch}
                   checked={draft.isVisible}
-                  disabled={busy}
+                  disabled={readOnly || busy}
                   onChange={(event) =>
                     change({ isVisible: event.currentTarget.checked })
                   }
@@ -221,7 +239,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                 <CommonSelectBox
                   aria-label="게시글 카테고리"
                   value={draft.category}
-                  disabled={busy}
+                  disabled={readOnly || busy}
                   onValueChange={(category) => change({ category })}
                   options={categories
                     .slice(1)
@@ -239,7 +257,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                   required
                   maxLength={200}
                   value={content.title}
-                  disabled={busy}
+                  disabled={readOnly || busy}
                   onChange={(e) => copy({ title: e.target.value })}
                 />
               </label>
@@ -249,7 +267,7 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                   rows={3}
                   maxLength={4000}
                   value={content.summary}
-                  disabled={busy}
+                  disabled={readOnly || busy}
                   onChange={(e) => copy({ summary: e.target.value })}
                 />
               </label>
@@ -259,7 +277,8 @@ export function PostEditor({ initialPost }: { initialPost?: PostForm }) {
                   id="post-body"
                   label="게시글 본문"
                   value={content.body}
-                  disabled={saving}
+                  disabled={readOnly || saving}
+                  uploadsEnabled={!readOnly}
                   onChange={(body) => copy({ body })}
                   onUploadBusyChange={(value) =>
                     setUploads((count) => Math.max(0, count + (value ? 1 : -1)))

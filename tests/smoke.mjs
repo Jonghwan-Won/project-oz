@@ -77,14 +77,49 @@ for (const route of [
   assert.equal(result.status, 200, route);
   assert.match(await result.text(), /ddoza/);
 }
-for (const route of ['/admin', '/admin/posts']) {
+for (const route of [
+  '/admin',
+  '/admin/projects',
+  '/admin/board',
+  '/admin/assets',
+  '/guide',
+  '/lab/ideas',
+  '/lab/markdown',
+]) {
+  const result = await fetch(base + route);
+  assert.equal(result.status, 200, route);
+}
+for (const route of ['/admin/inquiries', '/admin/codes', '/admin/board/new']) {
   const result = await fetch(base + route, { redirect: 'manual' });
-  if (process.env.SMOKE_PRODUCTION === '1') {
-    assert.equal(result.status, 307);
-    assert.equal(result.headers.get('location'), '/login');
-  } else {
-    assert.equal(result.status, route === '/admin' ? 200 : 404);
+  if (result.status === 307)
+    assert.equal(result.headers.get('location'), '/login', route);
+  else {
+    assert.equal(result.status, 200, route);
+    assert.match(
+      await result.text(),
+      /NEXT_REDIRECT;replace;\/login;307;/,
+      route,
+    );
   }
+}
+assert.equal((await fetch(base + '/guide/environment')).status, 404);
+for (const route of [
+  '/api/admin/projects',
+  '/api/admin/posts',
+  '/api/admin/assets',
+  '/api/admin/codes',
+  '/api/admin/inquiries',
+]) {
+  const result = await fetch(base + route, {
+    method: route.endsWith('assets')
+      ? 'DELETE'
+      : route.endsWith('inquiries')
+        ? 'PATCH'
+        : 'POST',
+    headers: { origin: base },
+    body: '{}',
+  });
+  assert.equal(result.status, 403, route);
 }
 for (const route of ['/board/missing', '/work/missing'])
   assert.equal((await fetch(base + route)).status, 404);

@@ -1,3 +1,5 @@
+import { requireAdmin } from '@/server/admin-access';
+import { getAdminSession } from '@/server/auth';
 import 'server-only';
 import { randomUUID, createHash } from 'node:crypto';
 import { pool } from '@/server/db';
@@ -20,19 +22,19 @@ class ProjectError extends Error {
 }
 export async function getAdminProjects(
   search = { keyword: '', originCode: '', typeCode: '', isVisible: '' },
+  publicOnly = false,
 ) {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
-  const identity = await pool.query('SELECT current_database() AS name');
-  if (identity.rows[0].name !== 'oz_dev')
-    throw Error('Development database required');
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL)
+    return { projects: [], codes: [] };
+
   const [projects, codes] = await Promise.all([
     pool.query<ProjectListItem>(
       `SELECT p.id,p.version,p.slug,p."customerName",COALESCE(to_char(p."startedOn",'YYYY-MM-DD'),'') AS "startedOn",COALESCE(to_char(p."endedOn",'YYYY-MM-DD'),'') AS "endedOn",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p."isVisible",p.placeholder,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TECHNOLOGY'),'{}') AS technologies,
  COALESCE((SELECT array_agg(t.name ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id AND t.kind='TOPIC'),'{}') AS tags,
  (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
- FROM "Project" p WHERE p."deletedAt" IS NULL
+ FROM "Project" p WHERE p."deletedAt" IS NULL ${publicOnly ? 'AND p."isVisible"=true' : ''}
  AND ($1 = '' OR position(lower($1) in lower(concat_ws(' ', p.slug, p."customerName", (SELECT string_agg(concat_ws(' ', title, summary), ' ') FROM "ProjectTranslation" WHERE "projectId"=p.id), (SELECT string_agg(t.name, ' ') FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id)))) > 0)
  AND ($2 = '' OR p."originCode"=$2)
  AND ($3 = '' OR ($3 = '__unset__' AND p."typeCode" IS NULL) OR p."typeCode"=$3)
@@ -46,7 +48,7 @@ export async function getAdminProjects(
       ],
     ),
     pool.query<ProjectCode>(
-      'SELECT "groupKey",code,"nameKo","isActive" FROM "CommonCode" ORDER BY "groupKey",position,code',
+      `SELECT "groupKey",code,"nameKo","isActive" FROM "CommonCode" ${publicOnly ? `WHERE "groupKey" IN ('PROJECT_ORIGIN','PROJECT_TYPE','PROJECT_LIFECYCLE','TECHNOLOGY') AND "isActive"=true` : ''} ORDER BY "groupKey",position,code`,
     ),
   ]);
   return {
@@ -61,12 +63,13 @@ export async function getAdminProjects(
   };
 }
 
-export async function getAdminProject(id: string): Promise<ProjectForm | null> {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
-  const identity = await pool.query('SELECT current_database() AS name');
-  if (identity.rows[0].name !== 'oz_dev')
-    throw Error('Development database required');
+export async function getAdminProject(
+  id: string,
+  publicOnly = false,
+): Promise<ProjectForm | null> {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return null;
+
   const result = await pool.query<ProjectForm>(
     `SELECT p.id,p.version,p.slug,p."customerName",COALESCE(to_char(p."startedOn",'YYYY-MM-DD'),'') AS "startedOn",COALESCE(to_char(p."endedOn",'YYYY-MM-DD'),'') AS "endedOn",to_char(p."updatedAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "updatedAt",p."originCode",COALESCE(p."typeCode",'') AS "typeCode",COALESCE(p.lifecycle::text,'') AS lifecycle,p."isVisible",p.placeholder,
     COALESCE(p."thumbnailUrl",(SELECT '/api/assets/'||"assetId" FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='COVER'),'') AS thumbnail,
@@ -76,7 +79,7 @@ export async function getAdminProject(id: string): Promise<ProjectForm | null> {
     COALESCE((SELECT array_agg("assetId"::text ORDER BY position,id) FROM "ProjectAsset" WHERE "projectId"=p.id AND usage='ATTACHMENT'),'{}') AS "attachmentIds",
     COALESCE((SELECT jsonb_agg(jsonb_build_object('id',a.id,'name',a."originalName",'size',a."byteSize",'mimeType',a."mimeType",'url','/api/assets/'||a.id,'downloadUrl','/api/assets/'||a.id||'?download=1')) FROM "ProjectAsset" pa JOIN "Asset" a ON a.id=pa."assetId" WHERE pa."projectId"=p.id AND pa.usage='ATTACHMENT'),'[]'::jsonb) AS files,
     (SELECT jsonb_object_agg(locale,jsonb_build_object('title',title,'summary',summary,'body',body)) FROM "ProjectTranslation" WHERE "projectId"=p.id) AS translations
-    FROM "Project" p WHERE p.id=$1 AND p."deletedAt" IS NULL`,
+    FROM "Project" p WHERE p.id=$1 AND p."deletedAt" IS NULL ${publicOnly ? 'AND p."isVisible"=true' : ''}`,
     [id],
   );
   const project = result.rows[0];
@@ -91,25 +94,29 @@ export async function getAdminProject(id: string): Promise<ProjectForm | null> {
     : null;
 }
 
-export async function getAdminProjectCount(): Promise<number> {
-  if (process.env.NODE_ENV !== 'development')
-    throw Error('Development admin only');
-  if (
-    (await pool.query('SELECT current_database() AS name')).rows[0].name !==
-    'oz_dev'
-  )
-    throw Error('Development database required');
+export async function getAdminProjectCount(
+  publicOnly = false,
+): Promise<number> {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return 0;
   return Number(
     (
       await pool.query<{ count: string }>(
-        'SELECT count(*)::text AS count FROM "Project" WHERE "deletedAt" IS NULL',
+        `SELECT count(*)::text AS count FROM "Project" WHERE "deletedAt" IS NULL ${publicOnly ? 'AND "isVisible"=true' : ''}`,
       )
     ).rows[0].count,
   );
 }
+export async function getAdminProjectSummary(publicOnly = false) {
+  if (!publicOnly) await requireAdmin();
+  if (publicOnly && !process.env.DATABASE_URL) return { total: 0, visible: 0 };
+  const result = await pool.query<{ total: number; visible: number }>(
+    `SELECT count(*)::int AS total, count(*) FILTER (WHERE "isVisible")::int AS visible FROM "Project" WHERE "deletedAt" IS NULL ${publicOnly ? 'AND "isVisible"=true' : ''}`,
+  );
+  return result.rows[0];
+}
 export async function saveProject(input: unknown) {
-  if (process.env.NODE_ENV !== 'development')
-    throw new ProjectError(403, '로컬 개발 관리자 전용입니다.');
+  await requireAdmin();
   let form: ProjectForm;
   try {
     form = parseProjectForm(input);
@@ -121,11 +128,7 @@ export async function saveProject(input: unknown) {
   }
   const client = await pool.connect();
   try {
-    if (
-      (await client.query('SELECT current_database() AS name')).rows[0].name !==
-      'oz_dev'
-    )
-      throw new ProjectError(403, '개발 DB만 변경할 수 있습니다.');
+    await requireAdmin();
     await client.query('BEGIN');
     const current = form.id
       ? (
@@ -304,8 +307,7 @@ export async function saveProject(input: unknown) {
   }
 }
 export async function deleteProjects(input: unknown) {
-  if (process.env.NODE_ENV !== 'development')
-    throw new ProjectError(403, '로컬 개발 관리자 전용입니다.');
+  await requireAdmin();
   if (!Array.isArray(input) || input.length === 0 || input.length > 100)
     throw new ProjectError(400, '삭제할 프로젝트를 선택해 주세요.');
   const items: { id: string; version: number }[] = [];
@@ -324,11 +326,7 @@ export async function deleteProjects(input: unknown) {
   }
   const client = await pool.connect();
   try {
-    if (
-      (await client.query('SELECT current_database() AS name')).rows[0].name !==
-      'oz_dev'
-    )
-      throw new ProjectError(403, '개발 DB만 변경할 수 있습니다.');
+    await requireAdmin();
     await client.query('BEGIN');
     const rows = (
       await client.query<{ id: string; version: number }>(
@@ -362,17 +360,13 @@ export async function deleteProjects(input: unknown) {
 }
 export async function saveProjectRequest(request: Request) {
   try {
-    // shortcut: localhost development only; replace this gate with admin session authorization before production use.
     if (
-      process.env.NODE_ENV !== 'development' ||
-      !['localhost', '127.0.0.1', '[::1]'].includes(
-        new URL(request.url).hostname,
-      ) ||
+      !(await getAdminSession(request.headers)) ||
       request.headers.get('origin') !== new URL(request.url).origin
     )
       throw new ProjectError(
         403,
-        '프로젝트 변경은 로컬 개발 관리자에서만 지원합니다.',
+        '프로젝트 변경은 관리자 로그인 후에만 지원합니다.',
       );
     const reader = request.body?.getReader();
     if (!reader) throw new ProjectError(400, '입력을 확인해 주세요.');

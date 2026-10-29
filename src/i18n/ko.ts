@@ -15,7 +15,8 @@ export const ko = {
     faqTitle: '자주 묻는 질문',
     faqDescription: '작업실과 OZ에 대한 궁금증을 모았어요.',
     contactTitle: '함께 이야기하기',
-    contactDescription: '문의 기능과 공개 연락처를 준비하고 있어요.',
+    contactDescription:
+      '채용 제안이나 프로젝트에 관한 이야기를 기다립니다. 편하게 이메일로 연락주세요.',
     creditsStart: '또자의 OZ 세상을',
     creditsEnd: '함께 만들어가는 도구들',
     creditsIntro: '생각을 현실로 옮길 수 있도록,',
@@ -261,10 +262,10 @@ export const ko = {
       '발생 화면의 주소와 사용한 기기, 재현 순서를 적어 주시면 제보에 도움이 됩니다.',
     bugModalTitle: '버그 제보',
     contactTitle: '함께 이야기하고 싶다면',
-    contactDescription:
-      '궁금한 점이나 나누고 싶은 내용을 적어 주세요.',
+    contactDescription: '궁금한 점이나 나누고 싶은 내용을 적어 주세요.',
     contactModalTitle: '문의 하기',
-    messagePlaceholder: '내용을 입력해 주세요.',
+    messagePlaceholder:
+      '답변을 원하시면 연락받을 이메일 주소도 함께 적어 주세요.',
     messageLabel: '내용',
     emptyMessage: '내용을 입력해 주세요.',
     closeConfirm: '입력한 내용이 있습니다. 닫으시겠습니까?',
@@ -315,12 +316,22 @@ export const ko = {
     ],
   },
   account: {
-    metadata: '로그인 안내',
-    title: '조금만 기다려 주세요.',
-    intro: '로그인과 비공개 문의 기능을 준비하고 있습니다.',
+    metadata: '로그인',
+    title: '나의 작업실로.',
+    intro: '지정된 GitHub 계정으로 로그인하고,\n프로젝트와 기록을 관리하세요.',
     notice:
-      '현재는 공개 콘텐츠를 둘러볼 수 있습니다. 로그인 공급자 연결 전에는 계정을 만들거나 관리자 권한을 부여하지 않습니다.',
-    home: '작업실로 돌아가기',
+      '관리자 전용 로그인입니다.\n공개 콘텐츠는 로그인 없이 둘러볼 수 있어요.',
+    home: 'OZ 둘러보기',
+    unavailable:
+      '지금은 로그인에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+    failed:
+      '로그인하지 못했습니다. 지정된 GitHub 계정인지 확인하고 다시 시도해 주세요.',
+    otherAccount:
+      '다른 계정으로 로그인되어 있습니다. 로그아웃 후 관리자 계정으로 다시 로그인해 주세요.',
+    connecting: '연결 중…',
+    signOut: '로그아웃',
+    signIn: 'GitHub로 로그인',
+    connectionFailed: '연결하지 못했습니다. 잠시 후 다시 시도해 주세요.',
   },
   theme: {
     light: '라이트 테마로 변경',

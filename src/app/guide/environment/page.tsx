@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
+import { getAdminSession } from '@/server/auth';
 import { CommonButtonLink } from '@/components/ui/CommonButton';
 import s from './environment.module.css';
 import { NetworkDiagram } from './NetworkDiagram';
@@ -109,8 +111,8 @@ const history = [
   },
 ];
 
-export default function EnvironmentPage() {
-  if (process.env.NODE_ENV !== 'development') notFound();
+export default async function EnvironmentPage() {
+  if (!(await getAdminSession(await headers()))) notFound();
   return (
     <div className={`page ${s.page}`}>
       <h1>

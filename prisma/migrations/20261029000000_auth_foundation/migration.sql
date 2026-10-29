@@ -1,0 +1,7 @@
+CREATE TABLE "AuthUser" ("id" TEXT PRIMARY KEY, "name" TEXT NOT NULL, "email" TEXT NOT NULL UNIQUE, "emailVerified" BOOLEAN NOT NULL DEFAULT false, "image" TEXT, "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT now(), "updatedAt" TIMESTAMPTZ(6) NOT NULL);
+CREATE TABLE "AuthSession" ("id" TEXT PRIMARY KEY, "userId" TEXT NOT NULL REFERENCES "AuthUser"("id") ON DELETE CASCADE, "token" TEXT NOT NULL UNIQUE, "expiresAt" TIMESTAMPTZ(6) NOT NULL, "ipAddress" TEXT, "userAgent" TEXT, "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT now(), "updatedAt" TIMESTAMPTZ(6) NOT NULL);
+CREATE INDEX "AuthSession_userId_idx" ON "AuthSession"("userId");
+CREATE TABLE "AuthAccount" ("id" TEXT PRIMARY KEY, "accountId" TEXT NOT NULL, "providerId" TEXT NOT NULL, "userId" TEXT NOT NULL REFERENCES "AuthUser"("id") ON DELETE CASCADE, "accessToken" TEXT, "refreshToken" TEXT, "idToken" TEXT, "accessTokenExpiresAt" TIMESTAMPTZ(6), "refreshTokenExpiresAt" TIMESTAMPTZ(6), "scope" TEXT, "password" TEXT, "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT now(), "updatedAt" TIMESTAMPTZ(6) NOT NULL, UNIQUE ("providerId", "accountId"));
+CREATE INDEX "AuthAccount_userId_idx" ON "AuthAccount"("userId");
+CREATE TABLE "AuthVerification" ("id" TEXT PRIMARY KEY, "identifier" TEXT NOT NULL, "value" TEXT NOT NULL, "expiresAt" TIMESTAMPTZ(6) NOT NULL, "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT now(), "updatedAt" TIMESTAMPTZ(6) NOT NULL);
+CREATE INDEX "AuthVerification_identifier_idx" ON "AuthVerification"("identifier");

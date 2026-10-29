@@ -1,0 +1,28 @@
+.workspace {
+  display: grid;
+  gap: 20px;
+}
+.workspace button[aria-pressed='true'] {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+.note {
+  margin: 16px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.form {
+  display: grid;
+  gap: 18px;
+}
+.form > label:not(.active) {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

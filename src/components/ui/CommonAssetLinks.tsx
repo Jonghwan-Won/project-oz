@@ -1,6 +1,12 @@
 import type { UploadedAsset } from '@/lib/files';
 import s from './CommonAssetLinks.module.css';
-export function CommonAssetLinks({ assets }: { assets: UploadedAsset[] }) {
+export function CommonAssetLinks({
+  assets,
+  disabled = false,
+}: {
+  assets: UploadedAsset[];
+  disabled?: boolean;
+}) {
   return (
     <ul className={s.assets}>
       {assets.map((asset) => (
@@ -15,7 +21,11 @@ export function CommonAssetLinks({ assets }: { assets: UploadedAsset[] }) {
               strokeWidth="1.5"
             />
           </svg>
-          <a href={asset.downloadUrl} download={asset.name}>
+          <a
+            href={disabled ? undefined : asset.downloadUrl}
+            aria-disabled={disabled || undefined}
+            download={disabled ? undefined : asset.name}
+          >
             {asset.name}
           </a>
           <small>({Math.ceil(asset.size / 1024)} KB)</small>

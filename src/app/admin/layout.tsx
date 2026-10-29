@@ -1,4 +1,5 @@
-import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { getAdminSession } from '@/server/auth';
 import { AdminNav } from './AdminNav';
 import type { Metadata } from 'next';
 import s from './admin.module.css';
@@ -6,21 +7,20 @@ import { AdminTitle } from './AdminTitle';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
-  title: '개발 관리자',
+  title: '관리자',
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // shortcut: 개발 전용 화면 초안, 실제 저장을 연결할 때 서버 세션·권한 검사 추가.
-  if (process.env.NODE_ENV !== 'development') redirect('/login');
+  const admin = !!(await getAdminSession(await headers()));
   return (
     <div className={`page ${s.shell}`}>
       <div className={s.workspace}>
-        <AdminNav />
+        <AdminNav admin={admin} />
         <div className={s.main}>
           <div className={s.intro}>
             <AdminTitle />

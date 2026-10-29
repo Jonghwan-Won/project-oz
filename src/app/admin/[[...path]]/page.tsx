@@ -11,26 +11,19 @@ import {
 } from '@/server/services/posts';
 import { BoardManager } from '../BoardManager';
 import { PostEditor } from '../PostEditor';
+import { CodeManager } from '../CodeManager';
+import { getAdminCodes } from '@/server/services/admin-codes';
+import { AssetManager } from '../AssetManager';
+import { getAdminAssets } from '@/server/services/admin-assets';
+import { emptyAssetSearch, formatAssetSize } from '@/lib/admin-assets';
+import { headers } from 'next/headers';
+import { InquiryManager } from '../InquiryManager';
+import { getAdminInquiries } from '@/server/services/admin-inquiries';
 
-import { CommonButtonLink } from '@/components/ui/CommonButton';
+import { CommonButton, CommonButtonLink } from '@/components/ui/CommonButton';
 import s from '../admin.module.css';
-
-const planned = {
-  categories: {
-    title: '분류 관리',
-    description:
-      '프로젝트 유형·작업 구분과 게시판 카테고리를 관리할 메뉴입니다.',
-  },
-  media: {
-    title: '미디어 관리',
-    description:
-      '프로젝트 썸네일과 게시글 첨부 이미지를 관리할 메뉴입니다. NAS 파일 저장 연동 후 구현합니다.',
-  },
-  settings: {
-    title: '사이트 관리',
-    description: '사이트 소개·메뉴·공개 설정을 관리할 메뉴입니다.',
-  },
-};
+import { getAdminSession } from '@/server/auth';
+import { getDashboardSummary } from '@/server/services/dashboard';
 
 export default async function Admin({
   params,
@@ -39,10 +32,17 @@ export default async function Admin({
   params: Promise<{ path?: string[] }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  if (process.env.NODE_ENV !== 'development') redirect('/login');
   const { path = [] } = await params;
   if (path.length > 2 || (path.length > 1 && path[0] !== 'board')) notFound();
   const section = path[0];
+  const admin = await getAdminSession(await headers());
+  const readOnly = !admin;
+  if (
+    readOnly &&
+    (['codes', 'inquiries'].includes(section) ||
+      (section === 'board' && path[1] === 'new'))
+  )
+    redirect('/login');
   const query = await searchParams;
   const value = (key: string) =>
     typeof query[key] === 'string' ? (query[key] as string) : '';
@@ -54,12 +54,13 @@ export default async function Admin({
       isVisible: value('isVisible'),
     };
     const [data, total] = await Promise.all([
-      getAdminProjects(search),
-      getAdminProjectCount(),
+      getAdminProjects(search, readOnly),
+      getAdminProjectCount(readOnly),
     ]);
     return (
       <ProjectManager
         key={JSON.stringify(search)}
+        readOnly={readOnly}
         {...data}
         initialSearch={search}
         total={total}
@@ -67,11 +68,13 @@ export default async function Admin({
     );
   }
   if (section === 'board') {
-    if (path[1] === 'new') return <PostEditor />;
+    if (path[1] === 'new') return <PostEditor readOnly={readOnly} />;
     if (path[1]) {
-      const post = await getAdminPost(path[1]);
+      const post = await getAdminPost(path[1], readOnly);
       if (!post) notFound();
-      return <PostEditor key={post.id} initialPost={post} />;
+      return (
+        <PostEditor key={post.id} initialPost={post} readOnly={readOnly} />
+      );
     }
     const search = {
       keyword: value('keyword'),
@@ -79,52 +82,114 @@ export default async function Admin({
       status: value('status'),
     };
     const [posts, total] = await Promise.all([
-      getAdminPosts(search),
-      getAdminPostCount(),
+      getAdminPosts(search, readOnly),
+      getAdminPostCount(readOnly),
     ]);
     return (
       <BoardManager
         key={JSON.stringify(search)}
+        readOnly={readOnly}
         posts={posts}
         initialSearch={search}
         total={total}
       />
     );
   }
-  if (section) {
-    const item = Object.entries(planned).find(([key]) => key === section)?.[1];
-    if (!item) notFound();
+  if (section === 'codes') return <CodeManager {...await getAdminCodes()} />;
+  if (section === 'inquiries') {
+    const search = {
+      type: value('type'),
+      status: value('status'),
+      keyword: value('keyword'),
+    };
     return (
-      <section className={s.panel}>
-        <p>{item.description}</p>
-        <p>현재는 메뉴와 용도를 확인하는 준비 화면입니다.</p>
-      </section>
+      <InquiryManager
+        key={JSON.stringify(search)}
+        {...await getAdminInquiries(search)}
+        initialSearch={search}
+      />
     );
   }
-  const postCount = await getAdminPostCount();
-  const projectCount = await getAdminProjectCount();
+  if (section === 'assets') {
+    const search = {
+      keyword: value('keyword'),
+      filter: value('filter') || emptyAssetSearch.filter,
+      sort: value('sort') || emptyAssetSearch.sort,
+    };
+    return (
+      <AssetManager
+        key={JSON.stringify(search)}
+        readOnly={readOnly}
+        {...await getAdminAssets(search, readOnly)}
+        initialSearch={search}
+      />
+    );
+  }
+  if (section) notFound();
+  const { postsSummary, projectsSummary, unusedAssets, pendingInquiries } =
+    await getDashboardSummary();
   return (
     <section>
-      {/* <p>프로젝트는 개발 DB, 게시글은 저장소 콘텐츠를 기준으로 표시합니다.</p> */}
+      {readOnly && (
+        <p className={s.notice}>
+          관리 화면을 읽기 전용으로 둘러보고 있습니다. 공개 콘텐츠만 표시하며
+          문의·공통코드는 관리자 전용입니다. 대시보드는 집계 정보만 표시합니다.
+        </p>
+      )}
       <div className={s.stats}>
         <div className={s.panel}>
           <span>프로젝트</span>
-          <strong>{projectCount}</strong>
+          <strong>{projectsSummary.total}개</strong>
+          <small>
+            노출 {projectsSummary.visible}개 · 미노출{' '}
+            {projectsSummary.total - projectsSummary.visible}개
+          </small>
           <CommonButtonLink href="/admin/projects">
             프로젝트 관리
           </CommonButtonLink>
         </div>
         <div className={s.panel}>
           <span>게시글</span>
-          <strong>{postCount}</strong>
+          <strong>{postsSummary.total}개</strong>
+          <small>
+            노출 {postsSummary.visible}개 · 미노출{' '}
+            {postsSummary.total - postsSummary.visible}개
+          </small>
           <CommonButtonLink href="/admin/board">게시판 관리</CommonButtonLink>
+        </div>
+        {
+          <div className={s.panel}>
+            <span>처리 대기 문의</span>
+            <strong>{pendingInquiries}건</strong>
+            <small>상태가 대기인 문의·버그 제보</small>
+            {readOnly ? (
+              <CommonButton disabled title="관리자만 확인할 수 있습니다.">
+                대기 문의 확인
+              </CommonButton>
+            ) : (
+              <CommonButtonLink href="/admin/inquiries?status=0">
+                대기 문의 확인
+              </CommonButtonLink>
+            )}
+          </div>
+        }
+        <div className={s.panel}>
+          <span>미사용 첨부파일</span>
+          <strong>{unusedAssets.count}개</strong>
+          <small>
+            총 {formatAssetSize(unusedAssets.size)} · 저장된 콘텐츠에 연결되지
+            않은 파일
+          </small>
+          <CommonButtonLink href="/admin/assets?filter=unused">
+            미사용 파일 확인
+          </CommonButtonLink>
         </div>
       </div>
       <div className={s.panel}>
-        <h3>다음 연결 항목</h3>
+        <h3>관리 권한 안내</h3>
         <p>
-          프로젝트와 게시판 조회·저장은 개발 DB에 연결했습니다. 운영 관리자
-          인증·권한은 다음 단계입니다.
+          공개 콘텐츠는 누구나 조회할 수 있습니다. 등록·수정·삭제와 내부 관리
+          정보는 지정된 GitHub 계정으로 로그인한 관리자만 사용할 수 있습니다.
         </p>
       </div>
     </section>

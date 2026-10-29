@@ -10,6 +10,7 @@ import { getCategoryLabel } from '@/content/site';
 import s from './page.module.css';
 import { getPublicPosts } from '@/server/services/posts';
 import { HomeSectionNav } from '@/components/HomeSectionNav';
+import { ContactCard } from '@/components/ContactCard';
 const tools = [
   {
     name: 'Codex',
@@ -131,10 +132,11 @@ export default async function Home() {
             <h3>{copy.faqTitle}</h3>
             <p>{copy.faqDescription}</p>
           </Link>
-          <Link className="interactiveCard" href="/help#contact">
-            <h3>{copy.contactTitle}</h3>
-            <p>{copy.contactDescription}</p>
-          </Link>
+          <ContactCard
+            title={copy.contactTitle}
+            description={copy.contactDescription}
+            locale={locale}
+          />
         </div>
       </section>
       <section

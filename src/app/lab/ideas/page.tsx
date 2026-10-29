@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { IdeaPlayground } from '@/app/guide/ideas/IdeaPlayground';
 
 export const metadata: Metadata = {
@@ -8,6 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function LabIdeasPage() {
-  if (process.env.NODE_ENV !== 'development') notFound();
   return <IdeaPlayground />;
 }

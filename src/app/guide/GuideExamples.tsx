@@ -317,7 +317,6 @@ export function GuideExamples({
             columns={guideColumns}
             getRowKey={(row) => String(row.id)}
             caption="공통 그리드 예제"
-            emptyMessage="검색 결과가 없습니다."
             minWidth={560}
             wrapClassName={s.guideGridWrap}
             tableClassName={s.guideGrid}

@@ -8,6 +8,7 @@ import { maxUploadBytes, type UploadedAsset } from '@/lib/files';
 import { uploadFile } from '@/lib/upload-file';
 export function CommonFileUpload({
   label,
+  disabled = false,
   imagesOnly = false,
   duplicateNames = [],
   compact = false,
@@ -20,6 +21,7 @@ export function CommonFileUpload({
   onBusyChange,
 }: {
   label: string;
+  disabled?: boolean;
   imagesOnly?: boolean;
   duplicateNames?: string[];
   compact?: boolean;
@@ -43,7 +45,7 @@ export function CommonFileUpload({
         compact={compact}
         native={native}
         icon={icon}
-        disabled={busy}
+        disabled={disabled || busy}
         accept={
           imagesOnly
             ? 'image/png,image/jpeg,image/webp'
@@ -51,6 +53,7 @@ export function CommonFileUpload({
         }
         aria-describedby={id}
         onSelect={async (file) => {
+          if (disabled) return;
           const normalize = (name: string) =>
             name.normalize('NFKC').toLocaleLowerCase();
           if (

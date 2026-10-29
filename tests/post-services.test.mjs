@@ -22,6 +22,21 @@ export function loadPostModule(
   new Function('require', 'exports', 'process', output)(
     (id) => {
       if (id === 'server-only') return {};
+      if (id === '@/server/admin-access')
+        return {
+          requireAdmin: async () => {
+            if (env.NODE_ENV === 'production') throw Error('Unauthorized');
+            return {};
+          },
+        };
+      if (id === '@/server/auth')
+        return {
+          getAdminSession: async (headers) =>
+            env.NODE_ENV !== 'production' &&
+            headers.get('origin') === 'http://localhost'
+              ? {}
+              : null,
+        };
       if (id === '@/server/db') return { pool };
       if (id.startsWith('@/'))
         return loadPostModule('src/' + id.slice(2) + '.ts', pool, env);
@@ -39,6 +54,20 @@ export function loadPostModule(
   return exports;
 }
 const form = loadPostModule('src/lib/post-form.ts');
+test('dashboard post totals exclude deleted records and count visible items', async () => {
+  const queries = [];
+  const api = loadPostModule('src/server/services/posts.ts', {
+    query: async (sql) => {
+      queries.push(sql);
+      return sql.includes('current_database')
+        ? { rows: [{ name: 'oz_dev' }] }
+        : { rows: [{ total: 4, visible: 2 }] };
+    },
+  });
+  assert.deepEqual(await api.getAdminPostSummary(), { total: 4, visible: 2 });
+  assert.match(queries[0], /"deletedAt" IS NULL/);
+  assert.match(queries[0], /FILTER \(WHERE "isVisible"\)/);
+});
 test('admin post list omits body while editor detail reads one ID', async () => {
   const queries = [];
   const api = loadPostModule('src/server/services/posts.ts', {
@@ -95,7 +124,7 @@ test('post form validates bilingual rich text, categories, visibility and identi
   ])
     assert.throws(() => form.parsePostForm({ ...input, ...patch }));
 });
-test('post writes reject production, remote and cross-origin requests before DB access', async () => {
+test('post writes reject unauthenticated and cross-origin requests before DB access', async () => {
   for (const method of ['POST', 'DELETE'])
     for (const [mode, url, origin] of [
       ['production', 'http://localhost/api/admin/posts', 'http://localhost'],

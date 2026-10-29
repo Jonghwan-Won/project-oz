@@ -46,11 +46,6 @@ export default async function RootLayout({
               <BrandLogo />
             </Link>
             <p>{messages.site.footer}</p>
-            <div>
-              <Link href="/help">{messages.navigation.help}</Link>
-              <Link href="/about">{messages.navigation.about}</Link>
-              <Link href="/admin">{messages.site.admin}</Link>
-            </div>
             <small>© 2026 ddoza. Made with curiosity.</small>
           </footer>
           <ScrollToTop label={messages.site.backToTop} />

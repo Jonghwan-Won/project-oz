@@ -17,7 +17,8 @@ export const en = {
     faqTitle: 'Frequently asked questions',
     faqDescription: 'A few answers about this studio and OZ.',
     contactTitle: 'Let’s talk',
-    contactDescription: 'Contact options are coming soon.',
+    contactDescription:
+      'Have a role or a project in mind? I’d love to hear from you. Get in touch by email.',
     creditsStart: 'The tools that help',
     creditsEnd: 'build ddoza’s world of OZ',
     creditsIntro: 'All these tools are my glass slippers,',
@@ -274,7 +275,8 @@ export const en = {
     contactDescription:
       'Write a question or a topic you would like to discuss.',
     contactModalTitle: 'Contact us',
-    messagePlaceholder: 'Write your message.',
+    messagePlaceholder:
+      'If you would like a reply, please include your email address.',
     messageLabel: 'Message',
     emptyMessage: 'Please enter a message.',
     closeConfirm: 'Your message has not been sent. Close anyway?',
@@ -325,12 +327,21 @@ export const en = {
     ],
   },
   account: {
-    metadata: 'About sign-in',
-    title: 'Coming soon.',
-    intro: 'Sign-in and private inquiries are in preparation.',
+    metadata: 'Sign in',
+    title: 'Back to your workspace.',
+    intro:
+      'Sign in with your designated GitHub account to manage projects and stories.',
     notice:
-      'For now, you can explore public content. Accounts and administrator access are not available until an authentication provider is connected.',
-    home: 'Back to the studio',
+      'Administrator sign-in only. You can explore public content without signing in.',
+    home: 'Explore OZ',
+    unavailable: 'Sign-in is temporarily unavailable.',
+    failed:
+      'Sign-in failed. Check your designated GitHub account and try again.',
+    otherAccount: 'Sign out to use your administrator account.',
+    connecting: 'Connecting…',
+    signOut: 'Sign out',
+    signIn: 'Continue with GitHub',
+    connectionFailed: 'Could not connect. Please try again.',
   },
   theme: {
     light: 'Switch to light theme',

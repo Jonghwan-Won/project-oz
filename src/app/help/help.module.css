@@ -2,6 +2,9 @@
   max-width: 1040px;
   margin-inline: auto;
 }
+.directContact {
+  margin-bottom: 56px;
+}
 .intro {
   max-width: 720px;
   margin-bottom: 64px;
@@ -35,7 +38,13 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--surface);
+  background:
+    radial-gradient(
+      ellipse at top right,
+      color-mix(in srgb, var(--accent-ink) 8%, transparent),
+      transparent 62%
+    ),
+    var(--surface);
   transition:
     border-color 180ms ease,
     background 180ms ease;
@@ -107,6 +116,13 @@
   padding: 28px;
   border: 1px solid var(--line);
   border-radius: 18px;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease;
   background:
     radial-gradient(
       ellipse at top right,
@@ -115,14 +131,30 @@
     ),
     var(--surface);
 }
-.contactCard h2 {
+.contactCard:hover {
+  border-color: color-mix(in srgb, var(--accent-ink) 55%, var(--line));
+  transform: translateY(-3px);
+}
+.contactCard:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .contactCard {
+    transition: none;
+  }
+  .contactCard:hover {
+    transform: none;
+  }
+}
+.contactTitle {
   margin: 18px 0 8px;
   font-size: 21px;
   letter-spacing: -0.035em;
+  font-weight: 700;
 }
-.contactCard p {
-  flex: 1;
-  margin: 0 0 22px;
+.contactDescription {
+  margin: 0;
   color: var(--muted);
   font-size: 14px;
 }

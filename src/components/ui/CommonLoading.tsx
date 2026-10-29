@@ -13,6 +13,8 @@ export function CommonLoading({ open }: { open: boolean }) {
       onClose={() => {}}
       centered
       fullScreen
+      overlayProps={{ color: 'var(--bg)', backgroundOpacity: 0.35, blur: 2 }}
+      styles={{ content: { background: 'transparent', boxShadow: 'none' } }}
       zIndex={1200}
       padding={0}
       withCloseButton={false}
@@ -20,7 +22,6 @@ export function CommonLoading({ open }: { open: boolean }) {
       closeOnClickOutside={false}
       aria-label={label}
       classNames={{
-        overlay: s.overlay,
         content: s.content,
         body: s.body,
       }}

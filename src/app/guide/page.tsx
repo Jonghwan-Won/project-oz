@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { GuideTabs } from './GuideTabs';
+import { headers } from 'next/headers';
+import { getAdminSession } from '@/server/auth';
 
 export const metadata: Metadata = {
   title: '개발 가이드',
   robots: { index: false, follow: false },
 };
 
-export default function Guide() {
-  if (process.env.NODE_ENV !== 'development') notFound();
-  return <GuideTabs />;
+export default async function Guide() {
+  return <GuideTabs admin={!!(await getAdminSession(await headers()))} />;
 }

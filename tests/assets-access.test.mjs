@@ -22,13 +22,21 @@ function service(mode, query = async () => ({ rows: [] })) {
   const exports = {};
   new Function('require', 'exports', 'process', output)(
     (id) =>
-      id === 'server-only'
-        ? {}
-        : id === '@/server/db'
-          ? { pool: { query } }
-          : id === '@/lib/files'
-            ? files
-            : require(id),
+      id === '@/server/auth'
+        ? {
+            getAdminSession: async (headers) =>
+              mode !== 'production' &&
+              headers.get('origin') === 'http://localhost'
+                ? {}
+                : null,
+          }
+        : id === 'server-only'
+          ? {}
+          : id === '@/server/db'
+            ? { pool: { query } }
+            : id === '@/lib/files'
+              ? files
+              : require(id),
     exports,
     { env: { NODE_ENV: mode } },
   );
@@ -71,7 +79,11 @@ test('production asset reads do not use the development private-file exception',
   const api = service('production', async (_sql, values) => {
     assert.match(_sql, /p\."deletedAt" IS NULL/);
     assert.match(_sql, /FROM "PostAsset" pa JOIN "Post" p/);
-    assert.equal((_sql.match(/p\."isVisible"=true AND p\."deletedAt" IS NULL/g) ?? []).length, 2);
+    assert.equal(
+      (_sql.match(/p\."isVisible"=true AND p\."deletedAt" IS NULL/g) ?? [])
+        .length,
+      2,
+    );
     params = values;
     return { rows: [] };
   });
