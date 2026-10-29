@@ -53,7 +53,7 @@ export const ko = {
     projects: '프로젝트',
     board: '게시판',
     help: '연락',
-    home: 'ddoza 홈',
+    home: 'ddozaa 홈',
     main: '돌아가기',
     menu: '주 메뉴',
     open: '메뉴 열기',
@@ -94,7 +94,7 @@ export const ko = {
   },
   projectItems: {
     'project-oz': {
-      title: 'ddoza',
+      title: 'ddozaa',
       summary:
         '소개와 프로젝트, 기록을 하나로 연결하는 개인 작업실. 지금 보고 있는 이 공간을 만들고 있습니다.',
       sections: [
@@ -104,7 +104,7 @@ export const ko = {
         },
         {
           title: '첫 번째 기록 · 2026.10.20',
-          body: 'Next.js와 TypeScript로 첫 실행 기반을 만들었습니다. 브랜드 이름 ddoza와 OZ 콘셉트, 공개 메뉴와 모바일 화면을 구성하는 단계입니다.',
+          body: 'Next.js와 TypeScript로 첫 실행 기반을 만들었습니다. 브랜드 이름 ddozaa와 OZ 콘셉트, 공개 메뉴와 모바일 화면을 구성하는 단계입니다.',
         },
         {
           title: '다음으로 만들 것',
@@ -198,8 +198,8 @@ export const ko = {
   },
   site: {
     backToTop: '맨 위로 이동',
-    title: 'ddoza - 작은 아이디어를 현실로',
-    description: '만들고, 기록하고, 연결하는 ddoza의 작업실.',
+    title: 'ddozaa - 작은 아이디어를 현실로',
+    description: '만들고, 기록하고, 연결하는 ddozaa의 작업실.',
     skip: '본문 바로가기',
     footer: '작은 호기심에서, 다음 가능성으로.',
     admin: '관리자',
@@ -220,7 +220,7 @@ export const ko = {
       },
       {
         title: '별명 하나에서 시작된 세계',
-        body: '잠이 많기도 하지만, 금방 또 잠들어서 붙은 별명이 ‘또자’입니다. 익숙한 이름을 ddoza로 적다 그 안의 oz를 발견했습니다. 그렇게 이름 붙인 OZ는, 만들고 기록한 것들로 조금씩 넓혀가는 저의 작업실입니다.',
+        body: '잠이 많기도 하지만, 금방 또 잠들어서 붙은 별명이 ‘또자’입니다. 익숙한 이름을 ddozaa로 적다 그 안의 oz를 발견했습니다. 그렇게 이름 붙인 OZ는, 만들고 기록한 것들로 조금씩 넓혀가는 저의 작업실입니다.',
       },
     ],
     notice: '작은 생각이 새로운 현실로. OZ는 지금도 만드는 중입니다.',
@@ -237,14 +237,14 @@ export const ko = {
     faqLabel: '자주 묻는 질문',
     faq: [
       {
-        question: 'ddoza는 어떤 공간인가요?',
+        question: 'ddozaa는 어떤 공간인가요?',
         answer:
           '개인 소개와 프로젝트, 개발 기록, 관심 있는 정보를 함께 나누는 작업실입니다.',
       },
       {
         question: 'OZ는 어떤 의미인가요?',
         answer:
-          '별명 ddoza 안에서 발견한 oz에서 시작했습니다. 또자가 필요한 기능을 만들고, 실험과 기록을 쌓으며 넓혀가는 개인 세계입니다.',
+          '별명 ddozaa 안에서 발견한 oz에서 시작했습니다. 또자가 필요한 기능을 만들고, 실험과 기록을 쌓으며 넓혀가는 개인 세계입니다.',
       },
       {
         question: '어떤 프로젝트를 소개하나요?',

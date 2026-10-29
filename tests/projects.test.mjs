@@ -34,7 +34,7 @@ test('projects sort by latest start date and home selects only two', () => {
   assert.deepEqual(
     sorted.map((project) => ko.projectItems[project.slug].title),
     [
-      'ddoza',
+      'ddozaa',
       'AK아이에스 S&OP 사업관리 시스템 개발',
       '제주항공 기내 통합운영 시스템 고도화',
       '서플러스글로벌 SemiMarket 구축 및 고도화',

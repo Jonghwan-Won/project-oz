@@ -48,7 +48,7 @@ export default async function About() {
       </div>
       <section className={s.origin}>
         <div className={s.wordmark} aria-hidden="true">
-          dd<span>oz</span>a
+          dd<span>oz</span>aa
         </div>
         <div>
           <h2>{copy.sections[2].title}</h2>

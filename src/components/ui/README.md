@@ -23,7 +23,7 @@
 
 글자 색상·배경색·취소선과 링크를 지원한다. 링크는 텍스트를 선택한 뒤 주소를 입력하며 http(s) 및 사이트 내부 경로만 허용한다. 들여쓰기·내어쓰기는 문단과 제목에 적용하고 목록에서는 항목의 중첩을 조정한다. 표 도구는 행·열 추가와 삭제, 셀 병합·분리, 머리글 전환, 셀 배경·테두리·세로 정렬을 제공한다. 색과 셀 스타일은 저장된 문서에도 유지된다.
 
-CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 처리한다. CommonRichTextEditor는 기본적으로 이미지 업로드 버튼을 제공한다. 가이드에서는 업로드를 끄고 브라우저 메모리의 이미지로 파일 선택과 붙여넣기를 시험하며, 화면을 나가면 이미지가 사라진다. CommonFileUpload는 NAS 업로드, CommonAssetLinks는 원본 이름 다운로드 링크에 사용한다. 저장·권한·현재 제한은 [에디터·파일 문서](../../../docs/15-editor-files.md)를 따른다.
+CommonRichTextEditor/CommonRichTextView는 Tiptap JSON 편집·출력을 공통 처리한다. CommonRichTextEditor는 기본적으로 이미지 업로드 버튼을 제공한다. 가이드에서는 업로드를 끄고 브라우저 메모리의 이미지로 파일 선택과 붙여넣기를 시험하며, 화면을 나가면 이미지가 사라진다. CommonFileUpload는 NAS 업로드, CommonAssetLinks는 원본 이름 다운로드 링크에 사용한다. 저장·권한·현재 제한은 [에디터·파일 문서](../../../docs/15-에디터-파일.md)를 따른다.
 
 ## 버튼 스타일·컬러·크기
 

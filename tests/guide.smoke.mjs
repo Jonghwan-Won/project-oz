@@ -49,7 +49,7 @@ const markdown = await fetch(`${base}/guide/markdown`);
 assert.equal(markdown.status, 200);
 const markdownHtml = await markdown.text();
 assert.match(markdownHtml, /Markdown 뷰어/);
-assert.match(markdownHtml, /11-environment\.md/);
+assert.match(markdownHtml, /11-환경-구축-기록\.md/);
 const environment = await fetch(`${base}/guide/environment`);
 assert.equal(environment.status, 200);
 const environmentHtml = await environment.text();

@@ -286,7 +286,7 @@ export default async function EnvironmentPage() {
         </ul>
         <p>
           원본 개인 작업일지는 저장소 밖에 보관합니다. 상세 설명은 Markdown
-          뷰어의 docs/11-environment.md에서 볼 수 있습니다.
+          뷰어의 docs/11-환경-구축-기록.md에서 볼 수 있습니다.
         </p>
       </section>
     </div>

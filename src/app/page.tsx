@@ -56,7 +56,7 @@ export default async function Home() {
       <section id="about" tabIndex={-1} className={s.hero}>
         <OzParticles label={messages.brandMotion.description} />
         <div className={s.copy}>
-          {/* <span className={s.heroEyebrow}>DDOZA / A WORLD IN THE MAKING</span> */}
+          {/* <span className={s.heroEyebrow}>DDOZAA / A WORLD IN THE MAKING</span> */}
           <h1>
             {copy.heroStart}
             <br />

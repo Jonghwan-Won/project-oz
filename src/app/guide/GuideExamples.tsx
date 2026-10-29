@@ -667,7 +667,7 @@ export function GuideExamples({
           <p>
             접속 비밀번호는 서버의 .env.local에만 설정합니다. 브라우저 요청에 DB
             주소나 비밀번호를 넣지 마세요. 설정 방법은
-            docs/05-local-development.md를 참고하세요.
+            docs/05-로컬-개발.md를 참고하세요.
           </p>
         </section>
       )}

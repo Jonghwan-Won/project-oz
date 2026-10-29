@@ -12,7 +12,7 @@ import './globals.css';
 export async function generateMetadata(): Promise<Metadata> {
   const { messages } = await getMessages();
   return {
-    title: { default: messages.site.title, template: '%s | ddoza' },
+    title: { default: messages.site.title, template: '%s | ddozaa' },
     description: messages.site.description,
   };
 }
@@ -46,7 +46,7 @@ export default async function RootLayout({
               <BrandLogo />
             </Link>
             <p>{messages.site.footer}</p>
-            <small>© 2026 ddoza. Made with curiosity.</small>
+            <small>© 2026 ddozaa. Made with curiosity.</small>
           </footer>
           <ScrollToTop label={messages.site.backToTop} />
         </MantineRoot>

@@ -5,9 +5,9 @@ export const en = {
     heroStart: 'Small ideas,',
     heroHighlight: 'new',
     heroEnd: 'realities',
-    greeting: 'Hello, I’m ddoza, a developer.',
+    greeting: 'Hello, I’m ddozaa, a developer.',
     intro: 'I solve everyday problems and share what I learn along the way.',
-    aboutLink: 'Get to know ddoza and OZ',
+    aboutLink: 'Get to know ddozaa and OZ',
     projectsTitle: 'Things I build and contribute to',
     projectsLink: 'More',
     boardTitle: 'Taking notes, sharing ideas',
@@ -20,7 +20,7 @@ export const en = {
     contactDescription:
       'Have a role or a project in mind? I’d love to hear from you. Get in touch by email.',
     creditsStart: 'The tools that help',
-    creditsEnd: 'build ddoza’s world of OZ',
+    creditsEnd: 'build ddozaa’s world of OZ',
     creditsIntro: 'All these tools are my glass slippers,',
     creditsDescription: 'helping me bring ideas to life, one step at a time.',
     nextTitle: 'Companions for the next journey',
@@ -62,7 +62,7 @@ export const en = {
     projects: 'Projects',
     board: 'Board',
     help: 'Contact',
-    home: 'ddoza home',
+    home: 'ddozaa home',
     main: 'Go back',
     menu: 'Main navigation',
     open: 'Open menu',
@@ -103,7 +103,7 @@ export const en = {
   },
   projectItems: {
     'project-oz': {
-      title: 'ddoza',
+      title: 'ddozaa',
       summary:
         'A personal studio connecting my story, projects, and notes. This is the space I’m currently building.',
       sections: [
@@ -113,7 +113,7 @@ export const en = {
         },
         {
           title: 'The first note · October 20, 2026',
-          body: 'The first working foundation uses Next.js and TypeScript. The ddoza identity, OZ concept, navigation, and mobile layout are taking shape.',
+          body: 'The first working foundation uses Next.js and TypeScript. The ddozaa identity, OZ concept, navigation, and mobile layout are taking shape.',
         },
         {
           title: 'What comes next',
@@ -208,7 +208,7 @@ export const en = {
   },
   site: {
     backToTop: 'Back to top',
-    title: 'ddoza - Small ideas, new realities',
+    title: 'ddozaa - Small ideas, new realities',
     description: 'A studio for building, documenting, and connecting.',
     skip: 'Skip to content',
     footer: 'From small curiosities to new possibilities.',
@@ -216,7 +216,7 @@ export const en = {
   },
   about: {
     title: 'Small ideas.\nMade real',
-    intro: 'Hello, I’m ddoza, a developer.',
+    intro: 'Hello, I’m ddozaa, a developer.',
     welcome:
       'I like noticing small everyday frustrations and building something to solve them.',
     sections: [
@@ -230,7 +230,7 @@ export const en = {
       },
       {
         title: 'A world that began with a nickname',
-        body: 'My nickname comes from “또 자”: “asleep again.” I sleep a lot and tend to drift off again quickly. Written as ddoza, the name also holds the letters oz. That became OZ, my personal studio, growing with the things I build and document.',
+        body: 'My nickname comes from “또 자”: “asleep again.” I sleep a lot and tend to drift off again quickly. Written as ddozaa, the name also holds the letters oz. That became OZ, my personal studio, growing with the things I build and document.',
       },
     ],
     notice: 'Small ideas, new realities. OZ is still taking shape.',
@@ -247,14 +247,14 @@ export const en = {
     faqLabel: 'Frequently asked questions',
     faq: [
       {
-        question: 'What is ddoza?',
+        question: 'What is ddozaa?',
         answer:
           'A personal studio for my story, projects, development notes, and other interests.',
       },
       {
         question: 'What does OZ mean?',
         answer:
-          'It began with the letters oz inside my nickname, ddoza. It is a personal world that grows as I build useful things, experiment, and keep notes.',
+          'It began with the letters oz inside my nickname, ddozaa. It is a personal world that grows as I build useful things, experiment, and keep notes.',
       },
       {
         question: 'What projects are featured?',

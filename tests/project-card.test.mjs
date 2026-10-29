@@ -66,12 +66,12 @@ test('project cards group title, period and technologies with an orbit placehold
   const fallback = render(project);
   assert.match(fallback, /class="details"/);
   assert.match(fallback, /<svg/);
-  assert.match(fallback, /<h3>ddoza<\/h3>/);
+  assert.match(fallback, /<h3>ddozaa<\/h3>/);
   assert.match(fallback, /href="\/work\/00000000-0000-0000-0000-000000000001"/);
   const image = render({ ...project, thumbnail: '/images/project.webp' });
   assert.match(image, /src="\/images\/project.webp"/);
   assert.doesNotMatch(image, /<svg/);
-  assert.match(image, /<h3>ddoza<\/h3>/);
+  assert.match(image, /<h3>ddozaa<\/h3>/);
 });
 
 test('shared public detail keeps client, content language, attachments and separates technology/topic tags', () => {

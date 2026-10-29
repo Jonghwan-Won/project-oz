@@ -75,7 +75,7 @@ for (const route of [
 ]) {
   const result = await fetch(base + route);
   assert.equal(result.status, 200, route);
-  assert.match(await result.text(), /ddoza/);
+  assert.match(await result.text(), /ddozaa/);
 }
 for (const route of [
   '/admin',
