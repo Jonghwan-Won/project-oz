@@ -18,7 +18,9 @@ jobs:
           set -euo pipefail
           image="ghcr.io/${GITHUB_REPOSITORY,,}"
           tag="$image:$GITHUB_SHA"
+          migration_image="${image}-migrate:$GITHUB_SHA"
           docker build --platform linux/amd64 -t "$tag" .
+          docker build --platform linux/amd64 --target migrate -t "$migration_image" .
           docker run -d --name oz-check -p 127.0.0.1:13000:3000 "$tag"
           trap 'docker logs oz-check; docker rm -f oz-check' EXIT
           curl --fail --retry 12 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 5 http://127.0.0.1:13000/api/health
@@ -31,4 +33,6 @@ jobs:
           done
           echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           docker push "$tag"
+          docker push "$migration_image"
           echo "Image: \`$tag\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Migration image: \`$migration_image\`" >> "$GITHUB_STEP_SUMMARY"

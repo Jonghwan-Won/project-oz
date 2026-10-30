@@ -1,10 +1,17 @@
-FROM node:24.18.0-bookworm-slim AS build
+FROM node:24.18.0-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
+
+FROM deps AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
+
+FROM deps AS migrate
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+CMD ["npm", "run", "db:migrate:deploy"]
 
 FROM node:24.18.0-bookworm-slim AS runtime
 WORKDIR /app
