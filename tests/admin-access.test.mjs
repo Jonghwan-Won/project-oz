@@ -1,3 +1,4 @@
+import { loadRequestOrigin } from './request-origin-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -19,6 +20,8 @@ function load(
   const exports = {};
   new Function('require', 'exports', 'process', output)(
     (id) => {
+      if (id === '@/server/request-origin')
+        return loadRequestOrigin('https://oz.example');
       if (id === 'server-only') return {};
       if (id in imports) return imports[id];
       throw Error(`Unexpected import: ${id}`);

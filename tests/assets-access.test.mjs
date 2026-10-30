@@ -1,3 +1,4 @@
+import { loadRequestOrigin } from './request-origin-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -22,21 +23,23 @@ function service(mode, query = async () => ({ rows: [] })) {
   const exports = {};
   new Function('require', 'exports', 'process', output)(
     (id) =>
-      id === '@/server/auth'
-        ? {
-            getAdminSession: async (headers) =>
-              mode !== 'production' &&
-              headers.get('origin') === 'http://localhost'
-                ? {}
-                : null,
-          }
-        : id === 'server-only'
-          ? {}
-          : id === '@/server/db'
-            ? { pool: { query } }
-            : id === '@/lib/files'
-              ? files
-              : require(id),
+      id === '@/server/request-origin'
+        ? loadRequestOrigin()
+        : id === '@/server/auth'
+          ? {
+              getAdminSession: async (headers) =>
+                mode !== 'production' &&
+                headers.get('origin') === 'http://localhost'
+                  ? {}
+                  : null,
+            }
+          : id === 'server-only'
+            ? {}
+            : id === '@/server/db'
+              ? { pool: { query } }
+              : id === '@/lib/files'
+                ? files
+                : require(id),
     exports,
     { env: { NODE_ENV: mode } },
   );

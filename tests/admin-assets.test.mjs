@@ -1,3 +1,4 @@
+import { loadRequestOrigin } from './request-origin-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -28,6 +29,7 @@ function service(
   const exports = {};
   new Function('require', 'exports', 'process', source)(
     (id) => {
+      if (id === '@/server/request-origin') return loadRequestOrigin();
       if (id === 'server-only') return {};
       if (id === '@/server/admin-access')
         return {

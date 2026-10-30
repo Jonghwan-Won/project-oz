@@ -1,3 +1,4 @@
+import { loadRequestOrigin } from './request-origin-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -16,7 +17,13 @@ function service(pool) {
   const exports = {};
   new Function('require', 'exports', code)(
     (id) =>
-      id === 'server-only' ? {} : id === '@/server/db' ? { pool } : require(id),
+      id === '@/server/request-origin'
+        ? loadRequestOrigin()
+        : id === 'server-only'
+          ? {}
+          : id === '@/server/db'
+            ? { pool }
+            : require(id),
     exports,
   );
   return exports.submitInquiry;
