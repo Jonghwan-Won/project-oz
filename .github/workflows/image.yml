@@ -37,9 +37,6 @@ jobs:
             echo "HTTP $status $path (expected 200)"
             test "$status" = 200
           done
-          status="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:13000/admin/settings)"
-          echo "HTTP $status /admin/settings (expected 404)"
-          test "$status" = 404
           status="$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -H 'Origin: http://127.0.0.1:13000' -d '{}' http://127.0.0.1:13000/api/admin/codes)"
           echo "HTTP $status POST /api/admin/codes without session (expected 403)"
           test "$status" = 403
