@@ -32,9 +32,19 @@ jobs:
           for path in /guide/markdown /guide/ideas; do
             test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 307
           done
-          for path in /admin /admin/projects /admin/board /admin/settings; do
-            test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 307
+          for path in /admin /admin/projects /admin/board; do
+            status="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")"
+            echo "HTTP $status $path (expected 200)"
+            test "$status" = 200
           done
+          for path in /admin/codes /admin/inquiries /admin/board/new; do
+            status="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")"
+            echo "HTTP $status $path (expected 307)"
+            test "$status" = 307
+          done
+          status="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:13000/admin/settings)"
+          echo "HTTP $status /admin/settings (expected 404)"
+          test "$status" = 404
           echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           docker push "$tag"
           docker push "$migration_image"
