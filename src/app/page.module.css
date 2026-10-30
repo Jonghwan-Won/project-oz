@@ -85,26 +85,6 @@
 :global([data-theme='light']) .nextCompanion {
   background: #eceef2;
 }
-.categories {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 22px;
-}
-.categories a {
-  border: 1px solid var(--line);
-  padding: 14px 18px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  background: var(--surface);
-}
-.categories a:hover {
-  background: var(--surface);
-  color: var(--ink);
-  border-color: var(--muted);
-}
 .helpCard {
   display: flex;
   align-items: center;
@@ -133,17 +113,6 @@
   font-size: 14px;
   line-height: 1.7;
   margin: 0;
-}
-.helpArrow {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--accent-ink);
-  font-size: 24px;
 }
 .credits {
   border-top: 1px solid var(--line);
@@ -231,6 +200,18 @@
   .copy p {
     font-size: 14px;
     max-width: 100%;
+  }
+  .previewHeading:global(.sectionHeading) {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .previewHeading > div {
+    min-width: 0;
+  }
+  .previewHeading > :global(.textLink) {
+    flex-shrink: 0;
+    transform: none;
   }
   .helpCard {
     min-height: 180px;

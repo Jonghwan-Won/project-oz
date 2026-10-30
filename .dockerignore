@@ -6,3 +6,6 @@ tests
 docs
 *.log
 *.tsbuildinfo
+
+# Local database backups and private draft material
+backups

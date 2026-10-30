@@ -6,7 +6,8 @@ import s from './OzParticles.module.css';
 
 export function OzParticles({ label }: { label: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const time = useRef(0);
+  // Start one second before the sphere morphs into OZ.
+  const time = useRef(9);
 
   useEffect(() => {
     const canvas = canvasRef.current;

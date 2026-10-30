@@ -76,7 +76,7 @@ export default async function Home() {
         </div>
       </section>
       <section id="projects" tabIndex={-1} className="section">
-        <div className="sectionHeading">
+        <div className={`sectionHeading ${s.previewHeading}`}>
           <div>
             <h2 className="accentDot">{copy.projectsTitle}</h2>
           </div>
@@ -91,7 +91,7 @@ export default async function Home() {
         </div>
       </section>
       <section id="board" tabIndex={-1} className="section">
-        <div className="sectionHeading">
+        <div className={`sectionHeading ${s.previewHeading}`}>
           <div>
             <h2 className="accentDot">{copy.boardTitle}</h2>
           </div>
@@ -106,18 +106,6 @@ export default async function Home() {
           }))}
           labels={messages.boardPreview}
         />
-        <div className={s.categories}>
-          {['AI 정보', '연예 이슈', '채용·공채', '주식·코인', '부동산'].map(
-            (category, index) => (
-              <Link
-                key={category}
-                href={'/board?category=' + encodeURIComponent(category)}
-              >
-                {copy.categories[index]}
-              </Link>
-            ),
-          )}
-        </div>
       </section>
       <section id="help" tabIndex={-1} className="section">
         <div className="sectionHeading">
@@ -131,7 +119,6 @@ export default async function Home() {
             <h3>{copy.helpCardTitle}</h3>
             <p>{copy.helpCardDescription}</p>
           </div>
-          <span className={s.helpArrow} aria-hidden="true"></span>
         </Link>
       </section>
       <section
