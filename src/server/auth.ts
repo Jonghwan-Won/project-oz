@@ -2,6 +2,7 @@ import 'server-only';
 import { betterAuth } from 'better-auth';
 import { APIError } from 'better-auth/api';
 import { pool } from '@/server/db';
+import { setLogUser } from '@/server/logging';
 
 function createInstance(
   base: URL,
@@ -102,5 +103,7 @@ export async function getAdminSession(headers: Headers) {
     'SELECT 1 FROM "AuthAccount" WHERE "userId"=$1 AND "providerId"=$2 AND "accountId"=$3 LIMIT 1',
     [session.user.id, 'github', owner],
   );
-  return result.rowCount === 1 ? session : null;
+  if (result.rowCount !== 1) return null;
+  setLogUser(session.user.id);
+  return session;
 }

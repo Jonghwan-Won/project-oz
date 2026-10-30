@@ -17,13 +17,15 @@ function service(pool) {
   const exports = {};
   new Function('require', 'exports', code)(
     (id) =>
-      id === '@/server/request-origin'
-        ? loadRequestOrigin()
-        : id === 'server-only'
-          ? {}
-          : id === '@/server/db'
-            ? { pool }
-            : require(id),
+      id === '@/server/logging'
+        ? { logError: () => {}, logEvent: () => {}, setLogUser: () => {} }
+        : id === '@/server/request-origin'
+          ? loadRequestOrigin()
+          : id === 'server-only'
+            ? {}
+            : id === '@/server/db'
+              ? { pool }
+              : require(id),
     exports,
   );
   return exports.submitInquiry;

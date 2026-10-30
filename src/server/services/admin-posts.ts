@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
@@ -81,8 +82,14 @@ export async function savePost(input: unknown) {
         [id, asset],
       );
     await client.query('COMMIT');
+    logEvent('info', 'admin.changed', {
+      operation: form.id ? 'posts.update' : 'posts.create',
+      targetId: id,
+      success: true,
+    });
     return { id };
   } catch (error) {
+    logError('admin-posts', error);
     await client.query('ROLLBACK');
     throw error;
   } finally {
@@ -135,8 +142,15 @@ export async function deletePosts(input: unknown) {
       [input.map((item) => item.id)],
     );
     await client.query('COMMIT');
+    for (const item of input)
+      logEvent('info', 'admin.changed', {
+        operation: 'posts.delete',
+        targetId: item.id,
+        success: true,
+      });
     return { deleted: input.length };
   } catch (error) {
+    logError('admin-posts', error);
     await client.query('ROLLBACK');
     throw error;
   } finally {
@@ -145,10 +159,7 @@ export async function deletePosts(input: unknown) {
 }
 export async function savePostRequest(request: Request) {
   try {
-    if (
-      !(await getAdminSession(request.headers)) ||
-      !hasSameOrigin(request)
-    )
+    if (!(await getAdminSession(request.headers)) || !hasSameOrigin(request))
       throw new PostError(
         403,
         '게시글 변경은 관리자 로그인 후에만 지원합니다.',
@@ -182,6 +193,7 @@ export async function savePostRequest(request: Request) {
       },
     );
   } catch (error) {
+    logError('admin-posts', error);
     const status =
       error instanceof PostError
         ? error.status

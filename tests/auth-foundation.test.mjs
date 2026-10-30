@@ -26,6 +26,8 @@ function service(env, session, match = true) {
   let options;
   new Function('require', 'exports', 'process', source)(
     (id) => {
+      if (id === '@/server/logging')
+        return { logError: () => {}, logEvent: () => {}, setLogUser: () => {} };
       if (id === 'server-only') return {};
       if (id === 'better-auth/api') return { APIError: class extends Error {} };
       if (id === 'better-auth')

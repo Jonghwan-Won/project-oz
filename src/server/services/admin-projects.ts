@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
@@ -299,8 +300,14 @@ export async function saveProject(input: unknown) {
         [randomUUID(), id, link.id, link.usage, position],
       );
     await client.query('COMMIT');
+    logEvent('info', 'admin.changed', {
+      operation: form.id ? 'projects.update' : 'projects.create',
+      targetId: id,
+      success: true,
+    });
     return { id, version: form.id ? form.version + 1 : 1 };
   } catch (error) {
+    logError('admin-projects', error);
     await client.query('ROLLBACK');
     throw error;
   } finally {
@@ -351,8 +358,15 @@ export async function deleteProjects(input: unknown) {
       [items.map((item) => item.id)],
     );
     await client.query('COMMIT');
+    for (const item of items)
+      logEvent('info', 'admin.changed', {
+        operation: 'projects.delete',
+        targetId: item.id,
+        success: true,
+      });
     return { deleted: items.length };
   } catch (error) {
+    logError('admin-projects', error);
     await client.query('ROLLBACK');
     throw error;
   } finally {
@@ -361,10 +375,7 @@ export async function deleteProjects(input: unknown) {
 }
 export async function saveProjectRequest(request: Request) {
   try {
-    if (
-      !(await getAdminSession(request.headers)) ||
-      !hasSameOrigin(request)
-    )
+    if (!(await getAdminSession(request.headers)) || !hasSameOrigin(request))
       throw new ProjectError(
         403,
         '프로젝트 변경은 관리자 로그인 후에만 지원합니다.',
@@ -398,6 +409,7 @@ export async function saveProjectRequest(request: Request) {
       },
     );
   } catch (error) {
+    logError('admin-projects', error);
     const status =
       error instanceof ProjectError
         ? error.status

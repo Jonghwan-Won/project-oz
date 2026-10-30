@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { mkdir, realpath, writeFile, readFile, unlink } from 'node:fs/promises';
@@ -109,9 +110,15 @@ export async function uploadAsset(request: Request) {
         [id, storageKey, name, format.mimeType, file.size],
       );
     } catch (error) {
+      logError('assets', error);
       await unlink(target);
       throw error;
     }
+    logEvent('info', 'admin.changed', {
+      operation: 'asset.upload',
+      targetId: id,
+      success: true,
+    });
     return Response.json(
       {
         id,
@@ -124,6 +131,7 @@ export async function uploadAsset(request: Request) {
       { status: 201, headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
+    logError('assets', error);
     return failure(error);
   }
 }
@@ -176,6 +184,7 @@ export async function readAsset(request: Request, id: string) {
       },
     });
   } catch (error) {
+    logError('assets', error);
     return failure(error);
   }
 }

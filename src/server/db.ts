@@ -1,5 +1,7 @@
 import 'server-only';
 import pg from 'pg';
+import { instrumentClient } from '@/server/query-logging';
+import { logError } from '@/server/logging';
 export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,
@@ -8,6 +10,5 @@ export const pool = new pg.Pool({
 });
 
 // Idle connections can close when the local SSH tunnel ends.
-pool.on('error', () =>
-  console.error('An idle database connection was closed.'),
-);
+pool.on('connect', instrumentClient);
+pool.on('error', (error) => logError('db.idle_connection', error));

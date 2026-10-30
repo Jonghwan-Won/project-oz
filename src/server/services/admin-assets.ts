@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
@@ -98,21 +99,27 @@ async function removeOne(id: string): Promise<string | null> {
     await client.query('DELETE FROM "Asset" WHERE id=$1', [id]);
     await client.query('COMMIT');
     committed = true;
+    logEvent('info', 'admin.changed', {
+      operation: 'asset.delete',
+      targetId: id,
+      success: true,
+    });
     try {
       await unlink(staged);
-    } catch {
-      console.error('Asset cleanup failed:', id, staged);
+    } catch (error) {
+      logError('asset.cleanup', error);
       return 'DB 기록은 삭제됐지만 NAS 임시 파일을 정리하지 못했습니다. 서버 로그를 확인해 주세요.';
     }
     return null;
   } catch (error) {
+    logError('admin-assets', error);
     if (!committed) {
       await client.query('ROLLBACK').catch(() => {});
       if (moved) {
         try {
           await rename(staged, original);
-        } catch {
-          console.error('Asset restore failed:', id, staged);
+        } catch (error) {
+          logError('asset.restore', error);
           return '삭제 실패 후 NAS 파일을 복구하지 못했습니다. 서버 로그를 확인해 주세요.';
         }
       }
@@ -134,10 +141,7 @@ async function removeOne(id: string): Promise<string | null> {
 export async function deleteAssetsRequest(request: Request) {
   const json = (body: object, status: number) =>
     Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-  if (
-    !(await getAdminSession(request.headers)) ||
-    !hasSameOrigin(request)
-  )
+  if (!(await getAdminSession(request.headers)) || !hasSameOrigin(request))
     return json({ message: '관리자 로그인 후에만 삭제할 수 있습니다.' }, 403);
   try {
     const reader = request.body?.getReader();

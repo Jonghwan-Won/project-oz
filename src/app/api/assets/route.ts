@@ -1,5 +1,9 @@
+import { withRequestLogging } from '@/server/logging';
 import { uploadAsset } from '@/server/services/assets';
 export const runtime = 'nodejs';
-export async function POST(request: Request) {
-  return uploadAsset(request);
-}
+export const POST = withRequestLogging(
+  '/api/assets',
+  async (request: Request) => {
+    return uploadAsset(request);
+  },
+);

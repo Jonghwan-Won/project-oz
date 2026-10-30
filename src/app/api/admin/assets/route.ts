@@ -1,4 +1,8 @@
+import { withRequestLogging } from '@/server/logging';
 import { deleteAssetsRequest } from '@/server/services/admin-assets';
-export async function DELETE(request: Request) {
-  return deleteAssetsRequest(request);
-}
+export const DELETE = withRequestLogging(
+  '/api/admin/assets',
+  async (request: Request) => {
+    return deleteAssetsRequest(request);
+  },
+);

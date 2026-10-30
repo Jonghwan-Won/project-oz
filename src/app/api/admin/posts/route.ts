@@ -1,7 +1,14 @@
+import { withRequestLogging } from '@/server/logging';
 import { savePostRequest } from '@/server/services/admin-posts';
-export async function POST(request: Request) {
-  return savePostRequest(request);
-}
-export async function DELETE(request: Request) {
-  return savePostRequest(request);
-}
+export const POST = withRequestLogging(
+  '/api/admin/posts',
+  async (request: Request) => {
+    return savePostRequest(request);
+  },
+);
+export const DELETE = withRequestLogging(
+  '/api/admin/posts',
+  async (request: Request) => {
+    return savePostRequest(request);
+  },
+);

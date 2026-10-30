@@ -22,6 +22,8 @@ export function loadPostModule(
   const exports = {};
   new Function('require', 'exports', 'process', output)(
     (id) => {
+      if (id === '@/server/logging')
+        return { logError: () => {}, logEvent: () => {}, setLogUser: () => {} };
       if (id === '@/server/request-origin') return loadRequestOrigin();
       if (id === 'server-only') return {};
       if (id === '@/server/admin-access')

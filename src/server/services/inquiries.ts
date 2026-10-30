@@ -1,3 +1,4 @@
+import { logError } from '@/server/logging';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { pool } from '@/server/db';
@@ -6,8 +7,7 @@ import { hasSameOrigin } from '@/server/request-origin';
 export async function submitInquiry(request: Request) {
   const response = (status: number) =>
     Response.json({}, { status, headers: { 'Cache-Control': 'no-store' } });
-  if (!hasSameOrigin(request))
-    return response(403);
+  if (!hasSameOrigin(request)) return response(403);
   const reader = request.body?.getReader();
   if (!reader) return response(400);
   const chunks: Uint8Array[] = [];
@@ -44,6 +44,7 @@ export async function submitInquiry(request: Request) {
       );
       await client.query('COMMIT');
     } catch (error) {
+      logError('inquiries', error);
       await client.query('ROLLBACK');
       throw error;
     } finally {
@@ -51,6 +52,7 @@ export async function submitInquiry(request: Request) {
     }
     return response(201);
   } catch (error) {
+    logError('inquiries', error);
     return response(error instanceof SyntaxError ? 400 : 503);
   }
 }

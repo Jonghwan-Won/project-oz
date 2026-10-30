@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
@@ -25,10 +26,7 @@ export async function saveCodeRequest(request: Request) {
       { message },
       { status, headers: { 'Cache-Control': 'no-store' } },
     );
-  if (
-    !(await getAdminSession(request.headers)) ||
-    !hasSameOrigin(request)
-  )
+  if (!(await getAdminSession(request.headers)) || !hasSameOrigin(request))
     return response('관리자 로그인 후에만 변경할 수 있습니다.', 403);
   try {
     const reader = request.body?.getReader();
@@ -88,8 +86,17 @@ export async function saveCodeRequest(request: Request) {
         '다른 변경이 있거나 사용 중인 기술의 한글명을 변경하려고 했습니다. 새로고침 후 확인해 주세요.',
         409,
       );
+    logEvent('info', 'admin.changed', {
+      operation: 'code.save',
+      targetId:
+        v.kind === 'group'
+          ? String(v.key)
+          : String(v.groupKey) + ':' + String(v.key),
+      success: true,
+    });
     return response('저장되었습니다.', 200);
   } catch (error) {
+    logError('admin-codes', error);
     if (
       error &&
       typeof error === 'object' &&

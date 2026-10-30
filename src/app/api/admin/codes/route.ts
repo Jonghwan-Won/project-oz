@@ -1,4 +1,8 @@
+import { withRequestLogging } from '@/server/logging';
 import { saveCodeRequest } from '@/server/services/admin-codes';
-export async function POST(request: Request) {
-  return saveCodeRequest(request);
-}
+export const POST = withRequestLogging(
+  '/api/admin/codes',
+  async (request: Request) => {
+    return saveCodeRequest(request);
+  },
+);

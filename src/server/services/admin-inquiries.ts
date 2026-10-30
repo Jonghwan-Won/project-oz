@@ -1,3 +1,4 @@
+import { logError, logEvent } from '@/server/logging';
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
@@ -48,10 +49,7 @@ export async function updateInquiryRequest(request: Request) {
       { message },
       { status, headers: { 'Cache-Control': 'no-store' } },
     );
-  if (
-    !(await getAdminSession(request.headers)) ||
-    !hasSameOrigin(request)
-  )
+  if (!(await getAdminSession(request.headers)) || !hasSameOrigin(request))
     return json('관리자 로그인 후에만 변경할 수 있습니다.', 403);
   try {
     const reader = request.body?.getReader();
@@ -80,13 +78,20 @@ export async function updateInquiryRequest(request: Request) {
       `UPDATE "Inquiry" i SET "statusCode"=$2,"updatedAt"=now() WHERE i.id=$1 AND i."updatedAt"=$3::timestamptz AND EXISTS (SELECT 1 FROM "CommonCode" c WHERE c."groupKey"='INQUIRY_STATUS' AND c.code=$2 AND (c."isActive" OR c.code=i."statusCode")) RETURNING id`,
       [input.id, input.status, input.revision],
     );
+    if (result.rowCount === 1)
+      logEvent('info', 'admin.changed', {
+        operation: 'inquiry.update',
+        targetId: input.id,
+        success: true,
+      });
     return result.rowCount === 1
       ? json('저장되었습니다.', 200)
       : json(
           '상태가 변경되었거나 사용할 수 없는 상태입니다. 새로고침 후 확인해 주세요.',
           409,
         );
-  } catch {
+  } catch (error) {
+    logError('inquiry.update', error);
     return json('상태를 저장하지 못했습니다.', 503);
   }
 }
