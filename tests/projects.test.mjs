@@ -11,7 +11,7 @@ test('only public projects and their distinct types are exposed', () => {
   const item = projects[0];
   const hidden = { ...item, isVisible: false, type: 'internal-only' };
   assert.deepEqual(getPublicProjects([hidden, item]), [item]);
-  assert.deepEqual(getUsedProjectTypes([hidden, item, item]), ['website']);
+  assert.deepEqual(getUsedProjectTypes([hidden, item, item]), ['WEB']);
   assert.deepEqual(getUsedProjectTypes([hidden]), []);
   assert.deepEqual(getPublicProjects([]), []);
 });

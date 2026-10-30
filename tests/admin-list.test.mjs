@@ -11,8 +11,8 @@ import {
 const project = {
   customerName: '검증고객사',
   slug: 'project-oz',
-  originCode: 'personal',
-  typeCode: 'website',
+  originCode: 'PERSONAL',
+  typeCode: 'WEB',
   lifecycle: 'BUILDING',
   isVisible: false,
   technologies: ['Next.js'],
@@ -38,14 +38,14 @@ test('project search combines filters, includes both languages/tags, and handles
     matchesProject(project, {
       ...emptyProjectSearch,
       keyword: 'studio',
-      originCode: 'personal',
-      typeCode: 'website',
+      originCode: 'PERSONAL',
+      typeCode: 'WEB',
       isVisible: 'false',
     }),
   );
   for (const patch of [
     { keyword: '없음' },
-    { originCode: 'company' },
+    { originCode: 'COMPANY' },
     { typeCode: 'app' },
     { isVisible: 'true' },
     { typeCode: '__unset__' },

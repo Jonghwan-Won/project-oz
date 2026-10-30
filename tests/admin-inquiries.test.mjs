@@ -67,7 +67,7 @@ test('dashboard counts only inquiries in pending status', async () => {
       : { rows: [{ count: 3 }] };
   };
   assert.equal(await service('development', query).getPendingInquiryCount(), 3);
-  assert.deepEqual(calls[0].params, ['INQUIRY_STATUS', '0']);
+  assert.deepEqual(calls[0].params, ['INQUIRY_STATUS', 'PENDING']);
 });
 test('inquiry status input validates identity, status and revision', () => {
   assert.equal(validInquiryUpdate(input), true);

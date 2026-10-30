@@ -51,6 +51,12 @@ const messages = {
   },
 };
 const modules = {
+  '@/lib/post-categories': { normalizePostCategory: (c) => c },
+  '@/server/services/post-categories': {
+    getPostCategories: async () => [
+      { code: '개발', nameKo: '개발', nameEn: 'Development', isActive: true },
+    ],
+  },
   'next/navigation': {
     notFound: () => {
       throw Error('not found');

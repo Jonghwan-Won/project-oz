@@ -1,3 +1,4 @@
+import { getPostCategories } from '@/server/services/post-categories';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPublicPost, getPublicPosts } from '@/server/services/posts';
@@ -30,6 +31,7 @@ export default async function Post({
   const post = await getPublicPost(id, locale);
   if (!post) notFound();
   const posts = await getPublicPosts(locale);
+  const categoryOptions = await getPostCategories();
   const currentIndex = posts.findIndex((item) => item.id === post.id);
   const { page } = await searchParams;
   const requestedPage =
@@ -50,7 +52,7 @@ export default async function Post({
             className={s.category}
             href={'/board?' + new URLSearchParams({ category: post.category })}
           >
-            {getCategoryLabel(post.category, messages)}
+            {getCategoryLabel(post.category, locale, categoryOptions)}
           </Link>
           <span className={s.dot} aria-hidden="true" />
           <time dateTime={post.date.replaceAll('.', '-')}>{post.date}</time>
@@ -73,7 +75,7 @@ export default async function Post({
         <section id="post-list" aria-label={messages.board.postNavigation}>
           <div className={s.listHeader}>
             <h2>
-              {getCategoryLabel('전체', messages)}{' '}
+              {getCategoryLabel('전체', locale)}{' '}
               <span>
                 {messages.board.count} {posts.length}
               </span>

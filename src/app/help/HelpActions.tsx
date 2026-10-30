@@ -56,7 +56,10 @@ export function HelpActions({ copy }: { copy: HelpCopy }) {
       const response = await fetch('/api/inquiries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: modalType === 'bug' ? '0' : '1', body }),
+        body: JSON.stringify({
+          type: modalType === 'bug' ? 'BUG_REPORT' : 'GENERAL',
+          body,
+        }),
       });
       if (!response.ok) throw new Error();
       setBody('');

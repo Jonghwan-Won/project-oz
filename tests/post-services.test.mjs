@@ -217,3 +217,33 @@ test('public post list excludes body and detail query selects one visible post',
     { message: 'Could not load public posts' },
   );
 });
+
+test('post writes enforce DB category availability and roll back invalid categories', async () => {
+  for (const allowed of [true, false]) {
+    const calls = [];
+    const api = loadPostModule('src/server/services/admin-posts.ts', {
+      connect: async () => ({
+        query: async (sql, values) => {
+          calls.push({ sql, values });
+          if (sql.includes('FROM "CommonCode"'))
+            return { rowCount: allowed ? 1 : 0, rows: [] };
+          return { rowCount: 1, rows: [] };
+        },
+        release() {},
+      }),
+    });
+    const post = form.blankPost();
+    post.translations.ko.title = 'Category check';
+    if (allowed) await api.savePost(post);
+    else
+      await assert.rejects(api.savePost(post), (error) => error.status === 400);
+    const check = calls.find((c) => c.sql.includes('FROM "CommonCode"'));
+    assert.deepEqual(check.values, ['POST_CATEGORY', 'DEV_LOG', null]);
+    assert.match(check.sql, /"isActive"/);
+    assert.equal(calls.at(-1).sql, allowed ? 'COMMIT' : 'ROLLBACK');
+    assert.equal(
+      calls.some((c) => c.sql.startsWith('INSERT INTO "Post"')),
+      allowed,
+    );
+  }
+});

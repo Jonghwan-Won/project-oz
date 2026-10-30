@@ -42,6 +42,12 @@ const posts = Array.from({ length: 22 }, (_, index) => ({
   date: '2026.10.28',
 }));
 const modules = {
+  '@/lib/post-categories': { normalizePostCategory: (c) => c },
+  '@/server/services/post-categories': {
+    getPostCategories: async () => [
+      { code: '개발', nameKo: '개발', nameEn: 'Development', isActive: true },
+    ],
+  },
   '@/components/ui/CommonInput': {
     CommonInput: (props) => require('react').createElement('input', props),
   },

@@ -18,10 +18,10 @@ export type Project = {
 export const projects: Project[] = [
   {
     slug: 'project-oz',
-    origin: 'personal',
+    origin: 'PERSONAL',
     startedOn: '2026-10-20',
     isVisible: true,
-    type: 'website',
+    type: 'WEB',
     lifecycle: 'BUILDING',
     technologies: [
       'React',
@@ -35,7 +35,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'ak-is',
-    origin: 'company',
+    origin: 'COMPANY',
     lifecycle: 'BUILDING',
     customerName: 'AK아이에스',
     startedOn: '2026-06-01',
@@ -43,7 +43,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'jeju-air',
-    origin: 'company',
+    origin: 'COMPANY',
     customerName: '제주항공',
     startedOn: '2026-02-01',
     endedOn: '2026-06-01',
@@ -51,7 +51,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'surplus-global',
-    origin: 'company',
+    origin: 'COMPANY',
     customerName: '서플러스글로벌',
     startedOn: '2024-11-01',
     endedOn: '2025-12-01',
@@ -59,8 +59,8 @@ export const projects: Project[] = [
   },
   {
     slug: 'nh-farming',
-    origin: 'company',
-    type: 'hybrid_app',
+    origin: 'COMPANY',
+    type: 'HYBRID_APP',
     customerName: '농협',
     startedOn: '2024-01-01',
     endedOn: '2024-10-01',
@@ -68,7 +68,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'nonghyup-mall',
-    origin: 'company',
+    origin: 'COMPANY',
     customerName: '농협',
     startedOn: '2023-02-01',
     endedOn: '2023-12-01',
@@ -76,14 +76,14 @@ export const projects: Project[] = [
   },
   {
     slug: 'moim',
-    origin: 'education',
+    origin: 'EDUCATION',
     startedOn: '2022-11-05',
     endedOn: '2022-12-09',
     isVisible: true,
   },
   {
     slug: 'jogong',
-    origin: 'education',
+    origin: 'EDUCATION',
     startedOn: '2022-09-18',
     endedOn: '2022-10-16',
     isVisible: true,

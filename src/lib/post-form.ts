@@ -1,6 +1,5 @@
 import { blankCopy, uuid, type ProjectCopy } from './project-form';
 import { parseRichText } from './rich-text';
-import { categories } from '../content/site';
 
 export type PostForm = {
   id: string;
@@ -22,7 +21,7 @@ export const blankPost = (): PostForm => ({
   id: '',
   version: 0,
   slug: '',
-  category: '개발 기록',
+  category: 'DEV_LOG',
   isVisible: false,
   translations: { ko: blankCopy(), en: blankCopy() },
 });
@@ -44,7 +43,7 @@ export function parsePostForm(value: unknown): PostForm {
     (slug !== '' && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) ||
     (id !== '' && !slug) ||
     typeof category !== 'string' ||
-    !categories.slice(1).includes(category) ||
+    !/^[A-Z][A-Z0-9_]{0,39}$/.test(category) ||
     typeof isVisible !== 'boolean' ||
     !record(translations)
   )

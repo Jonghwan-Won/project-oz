@@ -14,7 +14,8 @@ export const en = {
     boardLink: 'More',
     helpTitle: 'Have a question?',
     helpCardTitle: 'Questions and contact',
-    helpCardDescription: 'Find answers about the studio and OZ, or get in touch.',
+    helpCardDescription:
+      'Find answers about the studio and OZ, or get in touch.',
     contactTitle: 'Let’s talk',
     contactDescription:
       'Have a role or a project in mind? I’d love to hear from you. Get in touch by email.',
@@ -71,13 +72,14 @@ export const en = {
     lab: 'Lab',
   },
   projectTypes: {
-    website: 'Web',
-    hybrid_app: 'Hybrid App',
+    UNSPECIFIED: 'Unspecified',
+    WEB: 'Web',
+    HYBRID_APP: 'Hybrid App',
   },
   projectOrigins: {
-    personal: 'Personal',
-    education: 'Education',
-    company: 'Company',
+    PERSONAL: 'Personal',
+    EDUCATION: 'Education',
+    COMPANY: 'Company',
   },
   projectStatuses: {
     IDEA: 'Idea',
@@ -317,12 +319,17 @@ export const en = {
     missing: 'Post not found',
     categories: [
       'All',
+      'Notice',
       'Development',
       'AI',
-      'Entertainment',
+      'Technology',
+      'Current issues',
+      'Entertainment & culture',
       'Careers',
-      'Stocks & crypto',
+      'Finance',
       'Real estate',
+      'Troubleshooting',
+      'Other',
     ],
   },
   account: {

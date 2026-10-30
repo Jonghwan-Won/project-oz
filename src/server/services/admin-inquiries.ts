@@ -15,7 +15,7 @@ export async function getPendingInquiryCount() {
   await requireAdmin();
   const result = await pool.query(
     'SELECT count(*)::int AS count FROM "Inquiry" WHERE "statusGroup"=$1 AND "statusCode"=$2',
-    ['INQUIRY_STATUS', '0'],
+    ['INQUIRY_STATUS', 'PENDING'],
   );
   return Number(result.rows[0].count);
 }

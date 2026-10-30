@@ -50,7 +50,7 @@ test('public dashboard returns real aggregates without exposing records', async 
     assert.match(sql, /count\(\*\)/);
     assert.doesNotMatch(sql, /SELECT \*|i\.body|originalName|email/);
   }
-  assert.deepEqual(calls[3].params, ['INQUIRY_STATUS', '0']);
+  assert.deepEqual(calls[3].params, ['INQUIRY_STATUS', 'PENDING']);
   assert.match(
     calls[2].sql,
     /NOT EXISTS[\s\S]*"ProjectAsset"[\s\S]*"PostAsset"/,

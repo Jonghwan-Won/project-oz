@@ -1,3 +1,5 @@
+import { getMessages } from '@/i18n/server';
+import { getPostCategories } from '@/server/services/post-categories';
 import { ProjectManager } from '../ProjectManager';
 import {
   getAdminProjectCount,
@@ -68,12 +70,26 @@ export default async function Admin({
     );
   }
   if (section === 'board') {
-    if (path[1] === 'new') return <PostEditor readOnly={readOnly} />;
+    const { locale } = await getMessages();
+    const categoryOptions = await getPostCategories();
+    if (path[1] === 'new')
+      return (
+        <PostEditor
+          categoryOptions={categoryOptions}
+          displayLocale={locale}
+          readOnly={readOnly}
+        />
+      );
     if (path[1]) {
       const post = await getAdminPost(path[1], readOnly);
       if (!post) notFound();
       return (
-        <PostEditor key={post.id} initialPost={post} readOnly={readOnly} />
+        <PostEditor
+          categoryOptions={categoryOptions}
+          key={post.id}
+          initialPost={post}
+          readOnly={readOnly}
+        />
       );
     }
     const search = {
@@ -87,6 +103,7 @@ export default async function Admin({
     ]);
     return (
       <BoardManager
+        categoryOptions={categoryOptions}
         key={JSON.stringify(search)}
         readOnly={readOnly}
         posts={posts}

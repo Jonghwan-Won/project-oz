@@ -388,7 +388,6 @@ export function ProjectManager({
             onValueChange={(typeCode) => setSearch({ ...search, typeCode })}
             options={[
               { value: '', label: '전체' },
-              { value: '__unset__', label: '미지정' },
               ...options('PROJECT_TYPE').map((option) => ({
                 ...option,
                 disabled: false,
@@ -587,10 +586,7 @@ export function ProjectManager({
                       aria-label="프로젝트 유형"
                       value={draft.typeCode}
                       onValueChange={(typeCode) => change({ typeCode })}
-                      options={[
-                        { value: '', label: '미지정' },
-                        ...options('PROJECT_TYPE'),
-                      ]}
+                      options={options('PROJECT_TYPE')}
                     />
                   </label>
                   <div className={s.tagField}>

@@ -145,7 +145,9 @@ try {
     8,
   );
   const project = (
-    await client.query('SELECT id FROM "Project" ORDER BY "startedOn" DESC NULLS LAST LIMIT 1')
+    await client.query(
+      'SELECT id FROM "Project" ORDER BY "startedOn" DESC NULLS LAST LIMIT 1',
+    )
   ).rows[0];
   await client.query(
     readFileSync(
@@ -229,7 +231,7 @@ try {
   }
   await rejectsSql(
     'UPDATE "Project" SET "originGroup"=$1,"originCode"=$2 WHERE id=$3',
-    ['PROJECT_TYPE', 'website', project.id],
+    ['PROJECT_TYPE', 'WEB', project.id],
     '23514',
   );
   await rejectsSql(
@@ -249,7 +251,7 @@ try {
   );
   await rejectsSql(
     'DELETE FROM "CommonCode" WHERE "groupKey"=$1 AND code=$2',
-    ['PROJECT_ORIGIN', 'personal'],
+    ['PROJECT_ORIGIN', 'PERSONAL'],
     '23503',
   );
   await rejectsSql(

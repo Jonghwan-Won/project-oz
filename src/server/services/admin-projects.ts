@@ -39,7 +39,7 @@ export async function getAdminProjects(
  FROM "Project" p WHERE p."deletedAt" IS NULL ${publicOnly ? 'AND p."isVisible"=true' : ''}
  AND ($1 = '' OR position(lower($1) in lower(concat_ws(' ', p.slug, p."customerName", (SELECT string_agg(concat_ws(' ', title, summary), ' ') FROM "ProjectTranslation" WHERE "projectId"=p.id), (SELECT string_agg(t.name, ' ') FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id)))) > 0)
  AND ($2 = '' OR p."originCode"=$2)
- AND ($3 = '' OR ($3 = '__unset__' AND p."typeCode" IS NULL) OR p."typeCode"=$3)
+ AND ($3 = '' OR ($3 = '__unset__' AND (p."typeCode" IS NULL OR p."typeCode"='UNSPECIFIED')) OR p."typeCode"=$3)
  AND ($4 = '' OR p."isVisible"::text=$4)
  ORDER BY p."startedOn" DESC NULLS LAST,p.id`,
       [

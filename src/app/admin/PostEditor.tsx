@@ -12,14 +12,22 @@ import { CommonConfirm } from '@/components/ui/CommonConfirm';
 import { CommonLoading } from '@/components/ui/CommonLoading';
 import { CommonAlert } from '@/components/ui/CommonAlert';
 import { blankPost, parsePostForm, type PostForm } from '@/lib/post-form';
-import { categories } from '@/content/site';
+import {
+  defaultPostCategories,
+  postCategoryLabel,
+  type PostCategory,
+} from '@/lib/post-categories';
 import s from './admin.module.css';
 
 export function PostEditor({
   initialPost,
+  categoryOptions = defaultPostCategories,
+  displayLocale = 'ko',
   readOnly = true,
 }: {
   initialPost?: PostForm;
+  categoryOptions?: PostCategory[];
+  displayLocale?: 'ko' | 'en';
   readOnly?: boolean;
 }) {
   const router = useRouter();
@@ -211,7 +219,12 @@ export function PostEditor({
           <article>
             <h2>{content.title}</h2>
             <p>
-              {draft.category} · {draft.isVisible ? '노출' : '미노출'}
+              {postCategoryLabel(
+                draft.category,
+                displayLocale,
+                categoryOptions,
+              )}{' '}
+              · {draft.isVisible ? '노출' : '미노출'}
             </p>
             <p>{content.summary}</p>
             <CommonRichTextView value={content.body} />
@@ -241,9 +254,16 @@ export function PostEditor({
                   value={draft.category}
                   disabled={readOnly || busy}
                   onValueChange={(category) => change({ category })}
-                  options={categories
-                    .slice(1)
-                    .map((value) => ({ value, label: value }))}
+                  options={categoryOptions
+                    .filter((c) => c.isActive || c.code === draft.category)
+                    .map((c) => ({
+                      value: c.code,
+                      label: postCategoryLabel(
+                        c.code,
+                        displayLocale,
+                        categoryOptions,
+                      ),
+                    }))}
                 />
               </label>
             </div>

@@ -29,7 +29,7 @@ export async function submitInquiry(request: Request) {
       typeof input !== 'object' ||
       !('type' in input) ||
       !('body' in input) ||
-      (input.type !== '0' && input.type !== '1') ||
+      (input.type !== 'BUG_REPORT' && input.type !== 'GENERAL') ||
       typeof input.body !== 'string' ||
       !input.body.trim() ||
       input.body.length > 4000

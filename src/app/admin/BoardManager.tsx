@@ -13,16 +13,24 @@ import { CommonAlert } from '@/components/ui/CommonAlert';
 import { CommonLoading } from '@/components/ui/CommonLoading';
 import { emptyBoardSearch, paginate } from '@/lib/admin-list';
 import type { PostListItem } from '@/lib/post-form';
-import { categories } from '@/content/site';
+import {
+  defaultPostCategories,
+  postCategoryLabel,
+  type PostCategory,
+} from '@/lib/post-categories';
 import s from './admin.module.css';
 
 export function BoardManager({
   posts,
+  categoryOptions = defaultPostCategories,
+  displayLocale = 'ko',
   initialSearch,
   total,
   readOnly = true,
 }: {
   posts: PostListItem[];
+  categoryOptions?: PostCategory[];
+  displayLocale?: 'ko' | 'en';
   initialSearch: typeof emptyBoardSearch;
   total: number;
   readOnly?: boolean;
@@ -105,7 +113,8 @@ export function BoardManager({
     {
       key: 'category',
       header: '카테고리',
-      render: (post) => post.category,
+      render: (post) =>
+        postCategoryLabel(post.category, displayLocale, categoryOptions),
       align: 'center',
     },
     {
@@ -195,7 +204,7 @@ export function BoardManager({
             value={search.status}
             onValueChange={(status) => setSearch({ ...search, status })}
             options={[
-              { value: '', label: '전체' },
+              { value: '', label: displayLocale === 'en' ? 'All' : '전체' },
               { value: '공개', label: '노출' },
               { value: '비공개', label: '미노출' },
             ]}
@@ -207,10 +216,17 @@ export function BoardManager({
             aria-label="검색 카테고리"
             value={search.category}
             onValueChange={(category) => setSearch({ ...search, category })}
-            options={categories.map((c, i) => ({
-              value: i ? c : '',
-              label: c,
-            }))}
+            options={[
+              { value: '', label: '전체' },
+              ...categoryOptions.map((c) => ({
+                value: c.code,
+                label: postCategoryLabel(
+                  c.code,
+                  displayLocale,
+                  categoryOptions,
+                ),
+              })),
+            ]}
           />
         </label>
         <label className={s.searchKeyword}>

@@ -46,8 +46,9 @@ test('inquiries validate input and origin before accessing the database', async 
   });
   for (const input of [
     { type: '2', body: 'text' },
-    { type: '0', body: '  ' },
-    { type: '1', body: 'x'.repeat(4001) },
+    { type: '0', body: 'legacy number is rejected' },
+    { type: 'BUG_REPORT', body: '  ' },
+    { type: 'GENERAL', body: 'x'.repeat(4001) },
   ])
     assert.equal((await submit(request(JSON.stringify(input)))).status, 400);
   assert.equal((await submit(request('{'))).status, 400);
@@ -55,7 +56,7 @@ test('inquiries validate input and origin before accessing the database', async 
     (
       await submit(
         request(
-          JSON.stringify({ type: '0', body: 'x' }),
+          JSON.stringify({ type: 'BUG_REPORT', body: 'x' }),
           'https://other.example',
         ),
       )
@@ -78,11 +79,11 @@ test('inquiry writes commit or roll back and release the connection', async () =
       }),
     });
     const result = await submit(
-      request(JSON.stringify({ type: '0', body: ' report ' })),
+      request(JSON.stringify({ type: 'BUG_REPORT', body: ' report ' })),
     );
     assert.equal(result.status, fail ? 503 : 201);
     assert.equal(result.headers.get('cache-control'), 'no-store');
-    assert.deepEqual(calls[1][1].slice(1), ['0', 'report']);
+    assert.deepEqual(calls[1][1].slice(1), ['BUG_REPORT', 'report']);
     assert.equal(calls[2][0], fail ? 'ROLLBACK' : 'COMMIT');
     assert.equal(calls[3][0], 'release');
   }

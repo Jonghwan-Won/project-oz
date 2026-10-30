@@ -29,7 +29,7 @@ export function matchesProject(
     (!search.originCode || project.originCode === search.originCode) &&
     (!search.typeCode ||
       (search.typeCode === '__unset__'
-        ? !project.typeCode
+        ? !project.typeCode || project.typeCode === 'UNSPECIFIED'
         : project.typeCode === search.typeCode)) &&
     (search.isVisible === '' ||
       project.isVisible === (search.isVisible === 'true'))

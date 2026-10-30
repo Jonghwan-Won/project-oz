@@ -22,7 +22,7 @@ export async function getDashboardSummary() {
     ),
     pool.query<{ count: number }>(
       'SELECT count(*)::int AS count FROM "Inquiry" WHERE "statusGroup"=$1 AND "statusCode"=$2',
-      ['INQUIRY_STATUS', '0'],
+      ['INQUIRY_STATUS', 'PENDING'],
     ),
   ]);
   return {

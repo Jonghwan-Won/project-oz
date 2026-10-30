@@ -105,7 +105,7 @@ export async function seedDatabase(client) {
             ['SPRING_SECURITY', 'Spring Security', 'Spring Security'],
           ];
       for (const [position, [code, label, labelEn]] of values.entries()) {
-        if (key === 'PROJECT_TYPE' && code === 'website')
+        if (key === 'PROJECT_TYPE' && code === 'WEB')
           await client.query(
             'INSERT INTO "CommonCode" ("groupKey","code","nameKo","nameEn","position","updatedAt") VALUES ($1,$2,$3,$4,$5,now()) ON CONFLICT ("groupKey","code") DO UPDATE SET "nameKo"=EXCLUDED."nameKo","nameEn"=EXCLUDED."nameEn","updatedAt"=now()',
             [key, code, label, labelEn, position],

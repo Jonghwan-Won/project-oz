@@ -140,3 +140,19 @@ test('common codes validate identifiers, names, positions and revisions', () => 
     false,
   );
 });
+
+test('post category code input matches the Post storage contract', () => {
+  const base = {
+    kind: 'code',
+    isNew: true,
+    groupKey: 'POST_CATEGORY',
+    key: 'DEV_LOG',
+    nameKo: '개발일지',
+    nameEn: 'Development',
+    position: 10,
+    isActive: true,
+  };
+  assert.equal(validCodeInput(base), true);
+  for (const key of ['0', 'dev_log', 'X'.repeat(41)])
+    assert.equal(validCodeInput({ ...base, key }), false);
+});

@@ -1,3 +1,4 @@
+import { getPostCategories } from '@/server/services/post-categories';
 import { getMessages } from '@/i18n/server';
 import { OzParticles } from '@/components/OzParticles';
 import { CommonButtonLink } from '@/components/ui/CommonButton';
@@ -46,6 +47,7 @@ const tools = [
 ] as const;
 export default async function Home() {
   const { messages, locale } = await getMessages();
+  const categoryOptions = await getPostCategories();
   const projects = await getPublicProjects(locale);
   const posts = await getPublicPosts(locale);
   const copy = messages.home;
@@ -100,7 +102,7 @@ export default async function Home() {
         <BoardPreview
           posts={posts.slice(0, 6).map((post) => ({
             ...post,
-            category: getCategoryLabel(post.category, messages),
+            category: getCategoryLabel(post.category, locale, categoryOptions),
           }))}
           labels={messages.boardPreview}
         />

@@ -1,14 +1,9 @@
-import type { Messages } from '../i18n/ko';
+import {
+  defaultPostCategories,
+  normalizePostCategory,
+} from '../lib/post-categories.ts';
 // shortcut: 초기 콘텐츠는 저장소에서 관리, 관리자 발행 구현 시 DB 조회로 교체.
-export const categories = [
-  '전체',
-  '개발 기록',
-  'AI 정보',
-  '연예 이슈',
-  '채용·공채',
-  '주식·코인',
-  '부동산',
-];
+export const categories = ['전체', ...defaultPostCategories.map((c) => c.code)];
 export const posts = [
   {
     slug: 'project-oz-devlog-01',
@@ -31,12 +26,12 @@ export const posts = [
       '작업 중 테스트와 타입 검사, 린트, 빌드 및 공개 경로 검사를 진행했다. 브라우저에서는 언어·테마 유지, 검색 조건 유지, 오류 재시도와 반응형 배치를 확인했다. 다만 모든 작은 스타일 수정마다 전체 빌드를 다시 돌린 것은 아니고, 실제 모바일 기기에서의 검증도 남아 있다.',
       '오늘은 기능을 많이 늘리기보다 이 작업실이 어떤 모습이어야 할지 정한 날에 가깝다. 다음에는 프로젝트별 공개 가능한 이미지와 실제 역할·과정을 채우고, 지금의 임시 데이터를 진짜 기록으로 바꿔가려고 한다. 로그인과 권한, 게시글 관리, 비공개 문의, DB 연결도 아직 이어갈 작업이다. 프로젝트 오즈의 첫 개발일은 여기까지.',
     ],
-    category: '개발 기록',
+    category: 'DEV_LOG',
     date: '2026.10.20',
   },
   {
     slug: 'hello-oz',
-    category: '개발 기록',
+    category: 'DEV_LOG',
     title: 'ddozaa, 그 안에서 발견한 OZ',
     excerpt: '작은 별명에서 시작한 나만의 작업실 이야기.',
     date: '2026.10.20',
@@ -50,11 +45,10 @@ export const posts = [
 export function filterPosts(category: string, query: string) {
   return posts.filter(
     (post) =>
-      (category === '전체' || post.category === category) &&
+      (category === '전체' ||
+        post.category === normalizePostCategory(category)) &&
       post.title.toLowerCase().includes(query.trim().toLowerCase()),
   );
 }
 
-export function getCategoryLabel(category: string, messages: Messages) {
-  return messages.board.categories[categories.indexOf(category)] ?? category;
-}
+export { postCategoryLabel as getCategoryLabel } from '../lib/post-categories.ts';

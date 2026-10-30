@@ -34,6 +34,10 @@ function component(file, overrides = {}, state = (value) => value) {
     '@/lib/project-detail': { formatProjectPeriod: () => '' },
     '@/lib/files': { thumbnailUrl: () => false },
     '@/content/site': { categories: [] },
+    '@/lib/post-categories': {
+      defaultPostCategories: [],
+      postCategoryLabel: (code) => code,
+    },
     ...overrides,
   };
   const output = ts.transpileModule(
@@ -457,4 +461,31 @@ test('empty common grids center the message across every column', () => {
   assert.equal(cell.props.children, '검색 결과가 없습니다.');
   assert.equal(cell.props.style.textAlign, 'center');
   assert.equal(cell.props.style.verticalAlign, 'middle');
+});
+
+test('post editor category options follow the site locale rather than the authored language', async () => {
+  const categories = await import('../src/lib/post-categories.ts');
+  for (const [displayLocale, label] of [
+    ['ko', '개발일지'],
+    ['en', 'Development'],
+  ]) {
+    const { exports } = component('../src/app/admin/PostEditor.tsx', {
+      '@/lib/post-categories': categories,
+    });
+    const nodes = elements(
+      exports.PostEditor({
+        initialPost: { ...post, category: 'DEV_LOG' },
+        displayLocale,
+      }),
+    );
+    const select = nodes.find(
+      (n) =>
+        n.type === 'CommonSelectBox' &&
+        n.props['aria-label'] === '게시글 카테고리',
+    );
+    assert.equal(
+      select.props.options.find((o) => o.value === 'DEV_LOG').label,
+      label,
+    );
+  }
 });

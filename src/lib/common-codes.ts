@@ -29,6 +29,9 @@ export function validCodeInput(
     (v.kind === 'group' || v.kind === 'code') &&
     typeof v.isNew === 'boolean' &&
     key(v.key) &&
+    (v.kind !== 'code' ||
+      v.groupKey !== 'POST_CATEGORY' ||
+      (typeof v.key === 'string' && /^[A-Z][A-Z0-9_]{0,39}$/.test(v.key))) &&
     name(v.nameKo) &&
     name(v.nameEn) &&
     typeof v.isActive === 'boolean' &&

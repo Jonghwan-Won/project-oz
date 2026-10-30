@@ -59,6 +59,12 @@ export async function savePost(input: unknown) {
       if (found.rows.length !== assets.length)
         throw new PostError(400, '본문 이미지를 확인해 주세요.');
     }
+    const category = await client.query(
+      'SELECT 1 FROM "CommonCode" WHERE "groupKey"=$1 AND code=$2 AND ("isActive" OR code=(SELECT category FROM "Post" WHERE id=$3))',
+      ['POST_CATEGORY', form.category, form.id || null],
+    );
+    if (!category.rowCount)
+      throw new PostError(400, '사용 가능한 게시글 카테고리를 선택해 주세요.');
     if (form.id)
       await client.query(
         'UPDATE "Post" SET category=$2,"isVisible"=$3,"updatedAt"=now(),version=version+1 WHERE id=$1',

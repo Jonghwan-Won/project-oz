@@ -25,7 +25,7 @@ test('UI categories translate while authored content stays in its original langu
     assert.equal(messages.board.categories.length, categories.length);
     assert.equal('postItems' in messages, false);
   }
-  assert.equal(getCategoryLabel('개발 기록', en), 'Development');
+  assert.equal(getCategoryLabel('개발 기록', 'en'), 'Development');
   assert.equal(
     filterPosts('전체', '프로젝트 오즈')[0].slug,
     'project-oz-devlog-01',
@@ -42,4 +42,21 @@ test('404 and runtime error messages have complete translations', () => {
   for (const labels of Object.values(errorMessages)) {
     for (const text of Object.values(labels)) assert.ok(text.trim());
   }
+});
+
+test('post category labels use the selected locale and never expose the code as a label', () => {
+  const options = [
+    {
+      code: 'DEV_LOG',
+      nameKo: '개발일지',
+      nameEn: 'Development log',
+      isActive: true,
+    },
+  ];
+  assert.equal(getCategoryLabel('DEV_LOG', 'ko', options), '개발일지');
+  assert.equal(getCategoryLabel('DEV_LOG', 'en', options), 'Development log');
+  assert.equal(getCategoryLabel('DEV_LOG', 'ko', []), '개발일지');
+  assert.equal(getCategoryLabel('CUSTOM', 'ko', []), '기타');
+  assert.equal(getCategoryLabel('CUSTOM', 'en', []), 'Other');
+  assert.equal(getCategoryLabel('전체', 'en'), 'All');
 });

@@ -1,7 +1,9 @@
+import { getPostCategories } from '@/server/services/post-categories';
+import { normalizePostCategory } from '@/lib/post-categories';
 import { CommonInput } from '@/components/ui/CommonInput';
 import { CommonButton } from '@/components/ui/CommonButton';
 import Link from 'next/link';
-import { categories, getCategoryLabel } from '@/content/site';
+import { getCategoryLabel } from '@/content/site';
 import { getPublicPosts } from '@/server/services/posts';
 import { getMessages } from '@/i18n/server';
 import { paginate } from '@/lib/admin-list';
@@ -17,7 +19,13 @@ export default async function Board({
 }) {
   const { messages, locale } = await getMessages();
   const copy = messages.board;
+  const categoryOptions = await getPostCategories();
+  const categories = [
+    '전체',
+    ...categoryOptions.filter((c) => c.isActive).map((c) => c.code),
+  ];
   const params = await searchParams;
+  if (params.category) params.category = normalizePostCategory(params.category);
   const category =
     typeof params.category === 'string' && categories.includes(params.category)
       ? params.category
@@ -57,7 +65,7 @@ export default async function Board({
               href={'/board?' + new URLSearchParams({ category: c, q })}
               aria-current={c === category ? 'page' : undefined}
             >
-              {getCategoryLabel(c, messages)}
+              {getCategoryLabel(c, locale, categoryOptions)}
             </Link>
           ))}
         </nav>
@@ -69,7 +77,7 @@ export default async function Board({
               <div className={s.content}>
                 <div className={s.meta}>
                   <span className={s.category}>
-                    {getCategoryLabel(post.category, messages)}
+                    {getCategoryLabel(post.category, locale, categoryOptions)}
                   </span>
                   <time dateTime={post.date.replaceAll('.', '-')}>
                     {post.date}

@@ -67,7 +67,7 @@ try {
     projectId = randomUUID();
     await client.query(
       'INSERT INTO "Project" (id,slug,"originCode","isVisible","updatedAt") VALUES ($1,$2,$3,$4,now())',
-      [projectId, 'asset-test-' + projectId, 'personal', false],
+      [projectId, 'asset-test-' + projectId, 'PERSONAL', false],
     );
     await client.query(
       'INSERT INTO "ProjectAsset" (id,"projectId","assetId",usage) VALUES ($1,$2,$3,$4)',

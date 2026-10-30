@@ -117,6 +117,7 @@ model CommonCode {
   types     Project[]       @relation("ProjectType")
   inquiryTypes Inquiry[]    @relation("InquiryType")
   inquiryStatuses Inquiry[] @relation("InquiryStatus")
+  postCategories Post[] @relation("PostCategory")
 
   @@id([groupKey, code])
 }
@@ -126,7 +127,7 @@ model Inquiry {
   typeGroup String @default("INQUIRY_TYPE") @db.VarChar(60)
   typeCode String @db.VarChar(60)
   statusGroup String @default("INQUIRY_STATUS") @db.VarChar(60)
-  statusCode String @default("0") @db.VarChar(60)
+  statusCode String @default("PENDING") @db.VarChar(60)
   body String @db.VarChar(4000)
   createdById String? @db.Uuid
   updatedById String? @db.Uuid
@@ -148,7 +149,7 @@ model Project {
   originGroup  String               @default("PROJECT_ORIGIN") @db.VarChar(60)
   originCode   String               @db.VarChar(60)
   typeGroup    String               @default("PROJECT_TYPE") @db.VarChar(60)
-  typeCode     String?              @db.VarChar(60)
+  typeCode     String?              @default("UNSPECIFIED") @db.VarChar(60)
   lifecycle    Lifecycle?
   isVisible    Boolean              @default(false)
   thumbnailUrl String?              @db.VarChar(2048)
@@ -239,6 +240,8 @@ model Post {
   id           String @id @default(uuid()) @db.Uuid
   slug         String @unique @db.VarChar(80)
   category     String @db.VarChar(40)
+  categoryGroup String @default("POST_CATEGORY") @db.VarChar(60)
+  categoryCode CommonCode @relation("PostCategory", fields: [categoryGroup, category], references: [groupKey, code], onDelete: Restrict)
   isVisible    Boolean @default(false)
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
@@ -247,6 +250,7 @@ model Post {
   translations PostTranslation[]
   assets       PostAsset[]
   @@index([isVisible, createdAt])
+  @@index([categoryGroup, category])
 }
 
 model PostTranslation {
