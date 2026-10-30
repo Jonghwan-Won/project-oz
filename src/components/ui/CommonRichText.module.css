@@ -108,8 +108,9 @@
 .content.content p {
   color: var(--ink);
 }
-.editable p {
-  margin-block: 0 4px;
+.editable p,
+.content p {
+  margin-block: 0 8px;
   line-height: 1.5;
 }
 .editable a,

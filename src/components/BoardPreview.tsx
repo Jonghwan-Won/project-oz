@@ -98,7 +98,9 @@ export function BoardPreview({
             disabled={!position.previous}
             onClick={() => move(-1)}
           >
-            ←
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M20 12H4m0 0 5-5m-5 5 5 5" />
+            </svg>
           </button>
           <button
             type="button"
@@ -107,7 +109,9 @@ export function BoardPreview({
             disabled={!position.next}
             onClick={() => move(1)}
           >
-            →
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M4 12h16m0 0-5-5m5 5-5 5" />
+            </svg>
           </button>
         </div>
       )}

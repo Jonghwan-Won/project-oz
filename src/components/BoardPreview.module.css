@@ -121,13 +121,19 @@
   margin-top: 22px;
 }
 .controls button {
+  display: grid;
+  place-items: center;
   width: 48px;
   height: 48px;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   background: var(--ink);
   color: var(--bg);
-  font-size: 25px;
+}
+.controls button svg {
+  width: 24px;
+  height: 24px;
 }
 .controls button:disabled {
   opacity: 0.35;

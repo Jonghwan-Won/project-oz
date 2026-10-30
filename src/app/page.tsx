@@ -10,7 +10,6 @@ import { getCategoryLabel } from '@/content/site';
 import s from './page.module.css';
 import { getPublicPosts } from '@/server/services/posts';
 import { HomeSectionNav } from '@/components/HomeSectionNav';
-import { ContactCard } from '@/components/ContactCard';
 const tools = [
   {
     name: 'Codex',
@@ -123,21 +122,15 @@ export default async function Home() {
           <div>
             <h2>{copy.helpTitle}</h2>
           </div>
-          <Link className="textLink" href="/help">
-            {copy.helpLink}
-          </Link>
         </div>
-        <div className={s.helpGrid}>
-          <Link className="interactiveCard" href="/help#faq">
-            <h3>{copy.faqTitle}</h3>
-            <p>{copy.faqDescription}</p>
-          </Link>
-          <ContactCard
-            title={copy.contactTitle}
-            description={copy.contactDescription}
-            locale={locale}
-          />
-        </div>
+        <Link className={`interactiveCard ${s.helpCard}`} href="/help">
+          <div>
+            <span className={s.helpEyebrow}>FAQ &amp; CONTACT</span>
+            <h3>{copy.helpCardTitle}</h3>
+            <p>{copy.helpCardDescription}</p>
+          </div>
+          <span className={s.helpArrow} aria-hidden="true"></span>
+        </Link>
       </section>
       <section
         className={`section ${s.credits}`}
@@ -162,7 +155,7 @@ export default async function Home() {
             <div key={tool.name} className={s.toolCard}>
               <div className={s.toolBrand}>
                 <Image
-                  src={`/logos/${tool.logo}.svg`}
+                  src={`/logos/${tool.logo}.${'svg'}`}
                   width={tool.logo === 'synology-standard' ? 148 : 64}
                   height={64}
                   alt=""

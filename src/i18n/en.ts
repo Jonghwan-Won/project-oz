@@ -13,9 +13,8 @@ export const en = {
     boardTitle: 'Taking notes, sharing ideas',
     boardLink: 'More',
     helpTitle: 'Have a question?',
-    helpLink: 'More',
-    faqTitle: 'Frequently asked questions',
-    faqDescription: 'A few answers about this studio and OZ.',
+    helpCardTitle: 'Questions and contact',
+    helpCardDescription: 'Find answers about the studio and OZ, or get in touch.',
     contactTitle: 'Let’s talk',
     contactDescription:
       'Have a role or a project in mind? I’d love to hear from you. Get in touch by email.',
