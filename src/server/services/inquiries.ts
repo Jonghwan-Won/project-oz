@@ -1,11 +1,12 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { pool } from '@/server/db';
+import { hasSameOrigin } from '@/server/request-origin';
 
 export async function submitInquiry(request: Request) {
   const response = (status: number) =>
     Response.json({}, { status, headers: { 'Cache-Control': 'no-store' } });
-  if (request.headers.get('origin') !== new URL(request.url).origin)
+  if (!hasSameOrigin(request))
     return response(403);
   const reader = request.body?.getReader();
   if (!reader) return response(400);

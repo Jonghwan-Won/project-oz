@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
+import { hasSameOrigin } from '@/server/request-origin';
 import 'server-only';
 import { pool } from '@/server/db';
 import {
@@ -49,7 +50,7 @@ export async function updateInquiryRequest(request: Request) {
     );
   if (
     !(await getAdminSession(request.headers)) ||
-    request.headers.get('origin') !== new URL(request.url).origin
+    !hasSameOrigin(request)
   )
     return json('관리자 로그인 후에만 변경할 수 있습니다.', 403);
   try {

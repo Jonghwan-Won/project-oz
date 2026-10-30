@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
+import { hasSameOrigin } from '@/server/request-origin';
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { realpath, rename, unlink } from 'node:fs/promises';
@@ -135,7 +136,7 @@ export async function deleteAssetsRequest(request: Request) {
     Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
   if (
     !(await getAdminSession(request.headers)) ||
-    request.headers.get('origin') !== new URL(request.url).origin
+    !hasSameOrigin(request)
   )
     return json({ message: '관리자 로그인 후에만 삭제할 수 있습니다.' }, 403);
   try {

@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/server/admin-access';
 import { getAdminSession } from '@/server/auth';
+import { hasSameOrigin } from '@/server/request-origin';
 import 'server-only';
 import { randomUUID, createHash } from 'node:crypto';
 import { pool } from '@/server/db';
@@ -362,7 +363,7 @@ export async function saveProjectRequest(request: Request) {
   try {
     if (
       !(await getAdminSession(request.headers)) ||
-      request.headers.get('origin') !== new URL(request.url).origin
+      !hasSameOrigin(request)
     )
       throw new ProjectError(
         403,

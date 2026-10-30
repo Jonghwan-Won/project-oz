@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pool } from '@/server/db';
 import { fileFormat, maxUploadBytes } from '@/lib/files';
 import { getAdminSession } from '@/server/auth';
+import { hasSameOrigin } from '@/server/request-origin';
 
 class FileError extends Error {
   constructor(
@@ -43,7 +44,7 @@ export async function uploadAsset(request: Request) {
   try {
     if (!(await getAdminSession(request.headers)))
       throw new FileError(403, '관리자 로그인 후 업로드할 수 있습니다.');
-    if (request.headers.get('origin') !== new URL(request.url).origin)
+    if (!hasSameOrigin(request))
       throw new FileError(403, '허용되지 않은 요청입니다.');
     if (Date.now() - lastUpload < 1000)
       throw new FileError(429, '잠시 후 다시 업로드해 주세요.');
