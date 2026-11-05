@@ -22,15 +22,15 @@ npm run dev
 
 기본 UI는 `http://127.0.0.1:3000`에서 열립니다. DB 기능·인증을 사용하려면 아래 환경변수를 로컬 `.env.local`에 설정하고 개발 DB 연결을 준비하세요. 이 저장소에는 `.env.example`이 없습니다. 설정 절차는 [로컬 개발](docs/05-로컬-개발.md)을 따릅니다.
 
-| 변수 | 용도 |
-|---|---|
-| `DATABASE_URL` | 앱의 PostgreSQL 연결 |
-| `MIGRATION_DATABASE_URL` | Prisma migration용 연결 |
-| `STORAGE_ROOT` | 업로드 파일의 영속 저장 경로 |
-| `BETTER_AUTH_URL` | 앱의 기준 URL |
-| `BETTER_AUTH_SECRET` | 세션·인증 비밀키, 32자 이상 |
-| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub OAuth 앱 |
-| `GITHUB_ADMIN_ID` | 관리자 GitHub 숫자 ID |
+| 변수                                       | 용도                         |
+| ------------------------------------------ | ---------------------------- |
+| `DATABASE_URL`                             | 앱의 PostgreSQL 연결         |
+| `MIGRATION_DATABASE_URL`                   | Prisma migration용 연결      |
+| `STORAGE_ROOT`                             | 업로드 파일의 영속 저장 경로 |
+| `BETTER_AUTH_URL`                          | 앱의 기준 URL                |
+| `BETTER_AUTH_SECRET`                       | 세션·인증 비밀키, 32자 이상  |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub OAuth 앱              |
+| `GITHUB_ADMIN_ID`                          | 관리자 GitHub 숫자 ID        |
 
 ## 자주 쓰는 확인 명령
 
@@ -44,12 +44,13 @@ npm run build
 
 ## 운영 준비 상태
 
-2026-10-30 배포 기록 기준으로 `https://www.ddozaa.com`을 Cloudflare Tunnel로 연결했고, 운영 GitHub 로그인·DB migration·업로드·NAS 파일 로그를 확인했습니다. `dbb76b4` 이미지로 개발 콘텐츠(프로젝트 8개, 게시글 15개, 연결 파일 31개)를 이관하고 웹을 교체했습니다. 이관 이후 로그인·콘텐츠·첨부 화면 재확인과 별도 DB 백업 복원 검증은 남아 있습니다. 이는 당시 기록이며 실시간 상태를 보증하지 않습니다. `/api/health`는 앱 생존만 확인하고 DB 연결 상태를 보장하지 않습니다. 단계별 절차와 남은 확인 항목은 [배포·운영](docs/06-배포-운영.md)을 참고하세요.
+운영은 Cloudflare Tunnel을 통한 HTTPS 접속, GitHub 관리자 로그인, PostgreSQL과 영속 파일 저장소를 사용합니다. `/api/health`는 앱 생존만 확인하며 DB 연결을 보장하지 않습니다. 배포 절차와 남은 검증은 [배포·운영](docs/06-배포-운영.md)을 참고하세요.
 
 ## 문서
 
 - [요구사항](docs/01-요구사항.md) · [아키텍처](docs/02-아키텍처.md) · [데이터베이스](docs/03-데이터베이스.md)
 - [보안 기준](docs/04-보안-기준.md) · [개발 환경](docs/05-로컬-개발.md) · [배포·운영](docs/06-배포-운영.md)
 - [로드맵](docs/08-로드맵.md) · [현재 구현 상태](docs/10-현재-구현-상태.md) · [아이디어](docs/13-아이디어.md)
-- 날짜별 결정과 구축 기록은 각 문서에 기록 시점을 표시합니다. 개발 가이드(`/guide`)에서 Markdown 문서도 볼 수 있습니다.
+- 문서는 공개 가능한 구조·설정 예시·기술 결정을 다룹니다. 실제 접속 주소, 장비 세부 정보, 배포·장애·백업 기록과 데이터 스냅샷은 비공개로 관리합니다.
+- 내부 문서 뷰어는 관리자 전용입니다. 저장소를 공개하면 문서 자체는 누구나 읽을 수 있습니다.
 - 코드 작성 규칙은 [AGENTS.md](AGENTS.md)를 따릅니다.

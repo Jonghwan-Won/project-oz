@@ -32,16 +32,16 @@ export async function getAdminAssets(
     };
   const [result, totals] = await Promise.all([
     pool.query<AdminAsset>(
-      `SELECT a.id,a."originalName" AS name,a."byteSize"::float8 AS size,to_char(a."createdAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "createdAt",
+      `SELECT a.id,${publicOnly ? "'비공개 파일명'" : 'a."originalName"'} AS name,a."byteSize"::float8 AS size,to_char(a."createdAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "createdAt",
     COALESCE((SELECT jsonb_agg(u) FROM (
       SELECT 'project' AS type,${publicOnly ? 'NULL::text' : 'p.id::text'} AS id,${publicOnly ? "'프로젝트'" : 'COALESCE(t.title,p.slug)'} AS title,pa.usage::text AS usage,(p."deletedAt" IS NOT NULL) AS deleted FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" LEFT JOIN "ProjectTranslation" t ON t."projectId"=p.id AND t.locale='ko' WHERE pa."assetId"=a.id
       UNION ALL SELECT 'post',${publicOnly ? 'NULL::text' : 'p.id::text'},${publicOnly ? "'게시글'" : 'COALESCE(t.title,p.slug)'},'INLINE',(p."deletedAt" IS NOT NULL) FROM "PostAsset" pa JOIN "Post" p ON p.id=pa."postId" LEFT JOIN "PostTranslation" t ON t."postId"=p.id AND t.locale='ko' WHERE pa."assetId"=a.id
     ) u),'[]'::jsonb) AS usages FROM "Asset" a
-    WHERE position(lower($1) in lower(a."originalName")) > 0
+    WHERE ${publicOnly ? "$1::text = ''" : 'position(lower($1) in lower(a."originalName")) > 0'}
     AND ($2 = 'all' OR (EXISTS(SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) OR EXISTS(SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id)) = ($2 = 'used'))
     ORDER BY CASE WHEN $3='size' THEN a."byteSize" END DESC, CASE WHEN $3='old' THEN a."createdAt" END ASC, a."createdAt" DESC,a.id`,
       [
-        search.keyword.trim(),
+        publicOnly ? '' : search.keyword.trim(),
         ['used', 'unused'].includes(search.filter) ? search.filter : 'all',
         ['old', 'size'].includes(search.sort) ? search.sort : 'new',
       ],

@@ -210,6 +210,10 @@ test('asset preview disables downloading and source navigation', () => {
     }),
   );
   const columns = nodes.find((n) => n.type === 'CommonGrid').props.columns;
+  assert.equal(
+    nodes.find((n) => n.props['aria-label'] === '파일명 검색').props.disabled,
+    true,
+  );
   const asset = {
     id: 'id',
     name: 'image.png',

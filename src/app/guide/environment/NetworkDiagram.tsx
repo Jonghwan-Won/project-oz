@@ -32,7 +32,7 @@ export function NetworkDiagram() {
       <div className={s.mapLegend}>
         <span className={s.publicKey}>실선 · 공개 웹</span>
         <span className={s.privateKey}>실선 · 개발 전용</span>
-        <span>점선 · 운영 DB 연동 예정</span>
+        <span>점선 · 운영 DB 연결</span>
       </div>
       <div
         className={s.mapScroll}
@@ -50,10 +50,10 @@ export function NetworkDiagram() {
             OZ 공개 웹과 개발 DB의 네트워크 연결
           </title>
           <desc id="network-map-description">
-            위쪽 공개 경로는 방문자에서 HTTPS 443, 집 공유기, DSM 프록시, OZ 웹
+            위쪽 공개 경로는 방문자에서 HTTPS 진입점, 내부 전달 경로, OZ 웹
             컨테이너로 연결됩니다. 아래쪽 개발 경로는 외부 개발 PC에서
-            Tailscale과 NAS SSH를 통해 개발 DB로 연결됩니다. 운영 DB는 웹과
-            연결할 예정이며 현재 미연결입니다.
+            Tailscale과 NAS SSH를 통해 개발 DB로 연결됩니다. 운영 DB는 웹
+            컨테이너와 별도 경로로 연결됩니다.
           </desc>
           <defs>
             <marker
@@ -145,7 +145,7 @@ export function NetworkDiagram() {
           </text>
           <path d="M 1021 290 V 322" className={s.plannedLine} />
           <text x="950" y="312" className={s.mapText}>
-            연동 예정
+            DB 연결
           </text>
           <Node
             x={44}
@@ -156,14 +156,14 @@ export function NetworkDiagram() {
           <Node
             x={488}
             y={190}
-            title="SK 공유기"
-            lines={['외부 443 → NAS 443', '포트포워딩']}
+            title="HTTPS 진입점"
+            lines={['Cloudflare Tunnel', '공개 HTTPS']}
           />
           <Node
             x={724}
             y={190}
-            title="DSM 프록시"
-            lines={['인증서 · HTTPS 처리', 'HTTP 127.0.0.1:13000']}
+            title="내부 전달 경로"
+            lines={['접근이 제한된 경로', '실제 설정은 비공개']}
           />
           <Node
             x={934}
@@ -175,7 +175,7 @@ export function NetworkDiagram() {
             <Node
               x={934}
               y={330}
-              title="운영 DB · 미연결"
+              title="운영 DB"
               lines={['PostgreSQL :5432', '운영 앱 전용 계정 사용']}
             />
           </g>
@@ -195,10 +195,10 @@ export function NetworkDiagram() {
             x={934}
             y={460}
             title="개발 DB"
-            lines={['PostgreSQL :5432', '계정 oz_dev_app']}
+            lines={['PostgreSQL :5432', '개발 앱 전용 계정']}
           />
           <text x="36" y="598" className={s.mapText}>
-            집 PC는 내부망 SSH 사용
+            개발 PC는 허용된 사설 경로 사용
           </text>
           <text x="490" y="582" className={s.mapText}>
             DB 포트 외부 공개 불필요
@@ -206,9 +206,8 @@ export function NetworkDiagram() {
         </svg>
       </div>
       <figcaption>
-        위는 공개 웹, 아래는 개발 DB 경로입니다. 점선은 아직 구현하지 않은 운영
-        웹 → 운영 DB 연결입니다. 작은 화면에서는 구조도를 좌우로 움직여 볼 수
-        있습니다.
+        위는 공개 웹, 아래는 개발 DB 경로입니다. 점선은 운영 웹 → 운영 DB
+        연결입니다. 작은 화면에서는 구조도를 좌우로 움직여 볼 수 있습니다.
       </figcaption>
     </figure>
   );
