@@ -205,8 +205,9 @@ export function AssetManager({
     <section>
       {readOnly && (
         <p className={s.notice}>
-          미사용 파일을 포함한 파일 정보를 표시합니다. 파일 다운로드·출처
-          이동·삭제는 관리자만 사용할 수 있습니다.
+          미사용 파일을 포함한 파일 정보를 표시합니다. 원본 파일명과 파일명
+          검색은 관리자에게만 제공하며, 다운로드·출처 이동·삭제도 관리자만
+          사용할 수 있습니다.
         </p>
       )}
       <div className={c.stats}>
@@ -275,6 +276,7 @@ export function AssetManager({
             type="search"
             aria-label="파일명 검색"
             placeholder="원본 파일명"
+            disabled={readOnly}
             value={search.keyword}
             onChange={(e) => setSearch({ ...search, keyword: e.target.value })}
           />

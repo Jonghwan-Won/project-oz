@@ -221,6 +221,14 @@ test('public management reads enforce visibility in lists, details, totals and f
         /UNION ALL SELECT 'post',NULL::text,'게시글'/,
       );
       assert.doesNotMatch(queries[0].sql, /p\."isVisible"=true|storageKey/);
+      assert.match(queries[0].sql, /'비공개 파일명' AS name/);
+      assert.doesNotMatch(queries[0].sql, /originalName/);
+      const publicQuery = queries[0];
+      await api.getAdminAssets(
+        { keyword: 'confidential-customer.pdf', filter: 'all', sort: 'new' },
+        true,
+      );
+      assert.deepEqual(queries[2], publicQuery);
       assert.doesNotMatch(queries[1].sql, /FROM "Asset" a WHERE EXISTS/);
       continue;
     }
