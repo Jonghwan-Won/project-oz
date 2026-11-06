@@ -135,54 +135,103 @@ export async function uploadAsset(request: Request) {
     return failure(error);
   }
 }
+const assetIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type StoredAsset = {
+  storageKey: string;
+  originalName: string;
+  mimeType: string;
+};
+
+/** 저장소 경로를 검증한 뒤 파일을 응답으로 내보낸다. */
+async function sendAsset(asset: StoredAsset, download: boolean) {
+  if (
+    !/^\d{4}\/\d{2}\/[0-9a-f-]{36}\.(png|jpg|webp|pdf)$/.test(asset.storageKey)
+  )
+    throw new FileError(404, '파일을 찾을 수 없습니다.');
+  const root = await storageRoot();
+  const target = await realpath(path.join(root, asset.storageKey));
+  if (!inside(root, target))
+    throw new FileError(404, '파일을 찾을 수 없습니다.');
+  const data = await readFile(target);
+  return new Response(data, {
+    headers: {
+      'Content-Type': asset.mimeType,
+      'Content-Length': String(data.length),
+      'Content-Disposition':
+        (download ? 'attachment' : 'inline') +
+        '; filename="attachment"; filename*=UTF-8\'\'' +
+        encodeURIComponent(asset.originalName).replace(
+          /['()*]/g,
+          (char) => '%' + char.charCodeAt(0).toString(16).toUpperCase(),
+        ),
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; sandbox",
+      'Cache-Control': 'private, no-store',
+    },
+  });
+}
+
+/**
+ * 포트폴리오 페이지의 이력서·포트폴리오 PDF.
+ * 콘텐츠에 연결되지 않은 파일은 공개되지 않으므로, 서버 환경 변수에 지정한
+ * Asset ID만 이 경로로 내려준다. 브라우저가 임의의 파일 ID를 고를 수 없다.
+ */
+const portfolioFileEnv = {
+  resume: 'PORTFOLIO_RESUME_ASSET_ID',
+  portfolio: 'PORTFOLIO_DOCUMENT_ASSET_ID',
+} as const;
+export type PortfolioFileKind = keyof typeof portfolioFileEnv;
+
+function portfolioFileId(kind: string) {
+  if (!Object.prototype.hasOwnProperty.call(portfolioFileEnv, kind))
+    return null;
+  const id = process.env[portfolioFileEnv[kind as PortfolioFileKind]]?.trim();
+  return id && assetIdPattern.test(id) ? id : null;
+}
+
+/** 화면에서 버튼을 켤지 정하기 위한 등록 여부. 파일 ID 자체는 내보내지 않는다. */
+export function portfolioFileStatus(): Record<PortfolioFileKind, boolean> {
+  return {
+    resume: portfolioFileId('resume') !== null,
+    portfolio: portfolioFileId('portfolio') !== null,
+  };
+}
+
+export async function readPortfolioFile(kind: string) {
+  try {
+    const id = portfolioFileId(kind);
+    if (!id) throw new FileError(404, '등록된 파일이 없습니다.');
+    const asset = (
+      await pool.query<StoredAsset>(
+        'SELECT "storageKey","originalName","mimeType" FROM "Asset" WHERE id=$1',
+        [id],
+      )
+    ).rows[0];
+    if (!asset || asset.mimeType !== 'application/pdf')
+      throw new FileError(404, '등록된 파일이 없습니다.');
+    return await sendAsset(asset, true);
+  } catch (error) {
+    logError('assets', error);
+    return failure(error);
+  }
+}
+
 export async function readAsset(request: Request, id: string) {
   try {
-    if (
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        id,
-      )
-    )
+    if (!assetIdPattern.test(id))
       throw new FileError(404, '파일을 찾을 수 없습니다.');
-    const result = await pool.query<{
-      storageKey: string;
-      originalName: string;
-      mimeType: string;
-    }>(
+    const result = await pool.query<StoredAsset>(
       `SELECT a."storageKey",a."originalName",a."mimeType" FROM "Asset" a WHERE a.id=$1 AND ($2 OR EXISTS(SELECT 1 FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL) OR EXISTS(SELECT 1 FROM "PostAsset" pa JOIN "Post" p ON p.id=pa."postId" WHERE pa."assetId"=a.id AND p."isVisible"=true AND p."deletedAt" IS NULL))`,
       [id, !!(await getAdminSession(request.headers))],
     );
     const asset = result.rows[0];
     if (!asset) throw new FileError(404, '파일을 찾을 수 없습니다.');
-    if (
-      !/^\d{4}\/\d{2}\/[0-9a-f-]{36}\.(png|jpg|webp|pdf)$/.test(
-        asset.storageKey,
-      )
-    )
-      throw new FileError(404, '파일을 찾을 수 없습니다.');
-    const root = await storageRoot();
-    const target = await realpath(path.join(root, asset.storageKey));
-    if (!inside(root, target))
-      throw new FileError(404, '파일을 찾을 수 없습니다.');
     const download =
       new URL(request.url).searchParams.get('download') === '1' ||
       !['image/png', 'image/jpeg', 'image/webp'].includes(asset.mimeType);
-    const data = await readFile(target);
-    return new Response(data, {
-      headers: {
-        'Content-Type': asset.mimeType,
-        'Content-Length': String(data.length),
-        'Content-Disposition':
-          (download ? 'attachment' : 'inline') +
-          '; filename="attachment"; filename*=UTF-8\'\'' +
-          encodeURIComponent(asset.originalName).replace(
-            /['()*]/g,
-            (char) => '%' + char.charCodeAt(0).toString(16).toUpperCase(),
-          ),
-        'X-Content-Type-Options': 'nosniff',
-        'Content-Security-Policy': "default-src 'none'; sandbox",
-        'Cache-Control': 'private, no-store',
-      },
-    });
+    return await sendAsset(asset, download);
   } catch (error) {
     logError('assets', error);
     return failure(error);

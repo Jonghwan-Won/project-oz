@@ -12,6 +12,7 @@ export type PublicProject = {
   endedOn: string | null;
   placeholder: boolean;
   lifecycle: keyof Messages['projectStatuses'] | null;
+  originCode: string;
   originLabel: string;
   type: string | null;
   typeLabel: string | null;
@@ -32,7 +33,7 @@ export const getPublicProjects = cache(
     try {
       const result = await pool.query<PublicProject>(
         `SELECT p."customerName",to_char(p."startedOn",'YYYY-MM-DD') AS "startedOn",to_char(p."endedOn",'YYYY-MM-DD') AS "endedOn", p.placeholder, p.lifecycle,
-        p."typeCode" AS type,
+        p."originCode", p."typeCode" AS type,
         COALESCE((SELECT jsonb_agg(jsonb_build_object('name',t.name,'kind',t.kind) ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id),'[]'::jsonb) AS tags,
         CASE WHEN $1='en' THEN o."nameEn" ELSE o."nameKo" END AS "originLabel",
         CASE WHEN $1='en' THEN c."nameEn" ELSE c."nameKo" END AS "typeLabel",
@@ -70,7 +71,7 @@ export const getPublicProject = cache(
         );
       const result = await pool.query<PublicProjectDetail>(
         `SELECT p.id::text AS id,p."customerName",to_char(p."startedOn",'YYYY-MM-DD') AS "startedOn",to_char(p."endedOn",'YYYY-MM-DD') AS "endedOn",p.placeholder,p.lifecycle,
-        p."typeCode" AS type,
+        p."originCode", p."typeCode" AS type,
         COALESCE((SELECT jsonb_agg(jsonb_build_object('name',t.name,'kind',t.kind) ORDER BY pt.position,t.id) FROM "ProjectTag" pt JOIN "Tag" t ON t.id=pt."tagId" WHERE pt."projectId"=p.id),'[]'::jsonb) AS tags,
         CASE WHEN $2='en' THEN o."nameEn" ELSE o."nameKo" END AS "originLabel",
         CASE WHEN $2='en' THEN c."nameEn" ELSE c."nameKo" END AS "typeLabel",

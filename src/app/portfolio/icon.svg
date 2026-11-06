@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g fill="none" stroke="#6841cf" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path id="petal" d="M43 39C34 27 32 7 50 7C68 7 66 27 57 39"/>
+    <use href="#petal" transform="rotate(72 50 50)"/>
+    <use href="#petal" transform="rotate(144 50 50)"/>
+    <use href="#petal" transform="rotate(216 50 50)"/>
+    <use href="#petal" transform="rotate(288 50 50)"/>
+  </g>
+</svg>
