@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import ts from 'typescript';
 import * as files from '../src/lib/files.ts';
 const require = createRequire(import.meta.url);
-function service(mode, query = async () => ({ rows: [] })) {
+function service(mode, query = async () => ({ rows: [] }), env = {}) {
   const output = ts.transpileModule(
     readFileSync(
       new URL('../src/server/services/assets.ts', import.meta.url),
@@ -43,7 +43,7 @@ function service(mode, query = async () => ({ rows: [] })) {
                   ? files
                   : require(id),
     exports,
-    { env: { NODE_ENV: mode } },
+    { env: { NODE_ENV: mode, ...env } },
   );
   return exports;
 }
@@ -107,4 +107,59 @@ test('production asset reads do not use the development private-file exception',
     ).status,
     404,
   );
+});
+
+const resumeId = '00000000-0000-0000-0000-0000000000a1';
+test('portfolio PDF downloads only serve the asset IDs configured on the server', async () => {
+  let queries = 0;
+  const none = service('production', async () => {
+    queries += 1;
+    return { rows: [] };
+  });
+  assert.deepEqual(none.portfolioFileStatus(), {
+    resume: false,
+    portfolio: false,
+  });
+  for (const kind of [
+    'resume',
+    'portfolio',
+    'unknown',
+    '__proto__',
+    'constructor',
+  ])
+    assert.equal((await none.readPortfolioFile(kind)).status, 404);
+  assert.equal(queries, 0);
+
+  const invalid = service('production', undefined, {
+    PORTFOLIO_RESUME_ASSET_ID: '../secret',
+  });
+  assert.equal(invalid.portfolioFileStatus().resume, false);
+  assert.equal((await invalid.readPortfolioFile('resume')).status, 404);
+
+  const params = [];
+  const configured = service(
+    'production',
+    async (_sql, values) => {
+      params.push(values);
+      return {
+        rows: [
+          {
+            storageKey: '2026/11/00000000-0000-0000-0000-0000000000a1.png',
+            originalName: 'image.png',
+            mimeType: 'image/png',
+          },
+        ],
+      };
+    },
+    { PORTFOLIO_RESUME_ASSET_ID: resumeId },
+  );
+  assert.deepEqual(configured.portfolioFileStatus(), {
+    resume: true,
+    portfolio: false,
+  });
+  // PDF가 아닌 파일은 지정되어 있어도 내려주지 않는다.
+  assert.equal((await configured.readPortfolioFile('resume')).status, 404);
+  assert.deepEqual(params, [[resumeId]]);
+  assert.equal((await configured.readPortfolioFile('portfolio')).status, 404);
+  assert.equal(params.length, 1);
 });
