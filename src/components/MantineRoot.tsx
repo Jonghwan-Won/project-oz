@@ -20,7 +20,7 @@ const theme = createTheme({
       '#30245b',
     ],
   },
-  fontFamily: "Arial, 'Malgun Gothic', sans-serif",
+  fontFamily: "'P2 Sans', 'P2 Korean', 'Malgun Gothic', sans-serif",
   defaultRadius: 'md',
 });
 

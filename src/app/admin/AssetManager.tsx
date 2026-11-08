@@ -1,5 +1,5 @@
 'use client';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { CommonButton } from '@/components/ui/CommonButton';
 import { CommonInput } from '@/components/ui/CommonInput';
@@ -9,6 +9,9 @@ import { CommonConfirm } from '@/components/ui/CommonConfirm';
 import { CommonSearchPanel } from '@/components/ui/CommonSearchPanel';
 import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
 import { CommonLoading } from '@/components/ui/CommonLoading';
+import { CommonFilePicker } from '@/components/ui/CommonFilePicker';
+import { CommonAlert } from '@/components/ui/CommonAlert';
+import { uploadFile } from '@/lib/upload-file';
 import { paginate } from '@/lib/admin-list';
 import {
   emptyAssetSearch,
@@ -38,6 +41,27 @@ export function AssetManager({
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [copiedId, setCopiedId] = useState('');
+  async function upload(file: File) {
+    if (readOnly) return;
+    setBusy(true);
+    try {
+      await uploadFile(file, new AbortController().signal);
+      setMessage('업로드했습니다.');
+      setPage(1);
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : '업로드하지 못했습니다.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    if (!copiedId) return;
+    const timer = window.setTimeout(() => setCopiedId(''), 2000);
+    return () => window.clearTimeout(timer);
+  }, [copiedId]);
   const unused = assets.filter((a) => !a.usages.length);
   const totalSize = (items: AdminAsset[]) =>
     formatAssetSize(items.reduce((sum, a) => sum + a.size, 0));
@@ -69,11 +93,9 @@ export function AssetManager({
           `${data.deleted}개 삭제${data.failures.length ? ` · 실패 ${data.failures.length}개: ${data.failures.map((f: { id: string; message: string }) => `${assets.find((a) => a.id === f.id)?.name ?? f.id}: ${f.message}`).join(' / ')}` : ''}`,
         );
         setSelected([]);
-        router.refresh();
       }
     } catch {
       setMessage('삭제 결과를 확인하지 못했습니다. 목록을 새로고침해 주세요.');
-      router.refresh();
     } finally {
       setBusy(false);
     }
@@ -194,6 +216,30 @@ export function AssetManager({
         ),
     },
     {
+      key: 'copy',
+      header: '연결 정보',
+      align: 'center',
+      width: 120,
+      render: (a) =>
+        !readOnly && (
+          <CommonButton
+            disabled={busy || copiedId === a.id}
+            aria-live="polite"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(a.id);
+                setCopiedId(a.id);
+                setMessage('');
+              } catch {
+                setMessage(`복사하지 못했습니다. 파일 ID: ${a.id}`);
+              }
+            }}
+          >
+            {copiedId === a.id ? '✅완료' : '복사'}
+          </CommonButton>
+        ),
+    },
+    {
       key: 'date',
       header: '등록일',
       align: 'center',
@@ -288,14 +334,26 @@ export function AssetManager({
             <h2>첨부파일 목록</h2>
             <p>DB에 등록된 업로드 파일 · 검색 결과 {filtered.length}개</p>
           </div>
-          <CommonButton
-            disabled={readOnly || !chosen.length || chosen.length > 100 || busy}
-            onClick={() => setConfirm(true)}
-          >
-            삭제
-          </CommonButton>
+          <div className={s.actions}>
+            {!readOnly && (
+              <CommonFilePicker
+                label="업로드"
+                disabled={busy}
+                compact
+                accept="image/png,image/jpeg,image/webp,application/pdf"
+                onSelect={upload}
+              />
+            )}
+            <CommonButton
+              disabled={
+                readOnly || !chosen.length || chosen.length > 100 || busy
+              }
+              onClick={() => setConfirm(true)}
+            >
+              삭제
+            </CommonButton>
+          </div>
         </div>
-        {message && <p role="status">{message}</p>}
         <CommonGrid
           rows={result.items}
           columns={columns}
@@ -318,6 +376,14 @@ export function AssetManager({
           }}
         />
         <p className={c.note}>
+          {!readOnly && (
+            <>
+              이력서·포트폴리오는 PDF로 업로드한 뒤 ID를 복사해 각각
+              PORTFOLIO_RESUME_ASSET_ID·PORTFOLIO_DOCUMENT_ASSET_ID에
+              설정합니다. 일반 파일 링크는 미사용 파일을 방문자에게 공개하지
+              않습니다.{' '}
+            </>
+          )}
           미사용은 저장된 프로젝트·게시글과 연결이 없는 파일입니다. 편집 중인
           내용은 저장한 뒤 정리해 주세요. 한 번에 최대 100개까지 삭제할 수
           있습니다.
@@ -331,7 +397,16 @@ export function AssetManager({
         onConfirm={remove}
         onCancel={() => setConfirm(false)}
       />
-      <CommonLoading open={searching} />
+      <CommonAlert
+        open={!!message && !busy}
+        content={message}
+        onClose={() => {
+          setMessage('');
+          setSelected([]);
+          startSearch(() => router.refresh());
+        }}
+      />
+      <CommonLoading open={searching || busy} />
     </section>
   );
 }

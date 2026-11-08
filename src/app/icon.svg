@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1e1f22"/><text x="32" y="43" text-anchor="middle" font-family="Century Gothic,Trebuchet MS,Arial,sans-serif" font-size="43" font-weight="400" letter-spacing="-2" fill="#baacff">oz</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g fill="none" stroke="#6841cf" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path id="petal" d="M43 39C34 27 32 7 50 7C68 7 66 27 57 39"/>
+    <use href="#petal" transform="rotate(72 50 50)"/>
+    <use href="#petal" transform="rotate(144 50 50)"/>
+    <use href="#petal" transform="rotate(216 50 50)"/>
+    <use href="#petal" transform="rotate(288 50 50)"/>
+  </g>
+</svg>

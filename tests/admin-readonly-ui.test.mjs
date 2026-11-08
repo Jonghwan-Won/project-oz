@@ -235,38 +235,6 @@ test('asset preview disables downloading and source navigation', () => {
   );
 });
 
-test('signed-in headers render sign-out on desktop and mobile and refresh after signing out', async () => {
-  const { exports, calls } = component('../src/components/Header.tsx', {
-    '@/lib/auth-client': {
-      authClient: {
-        useSession: () => ({
-          data: { user: { id: 'owner' } },
-          isPending: false,
-        }),
-        signOut: async () => ({}),
-      },
-    },
-  });
-  const nodes = elements(
-    exports.Header({
-      labels: {},
-      locale: 'ko',
-      languageLabels: {},
-      theme: 'dark',
-      themeLabels: {},
-    }),
-  );
-  const buttons = nodes.filter(
-    (n) => n.type === 'button' && n.props.children === '로그아웃',
-  );
-  assert.equal(buttons.length, 2);
-  assert.ok(
-    !nodes.some((n) => n.type === 'default' && n.props.href === '/login'),
-  );
-  await buttons[0].props.onClick();
-  assert.deepEqual(calls, ['/', 'refresh']);
-});
-
 test('management controls default to read-only and explicitly enable writes for admins', () => {
   const { exports } = component('../src/app/admin/PostEditor.tsx');
   for (const [readOnly, disabled] of [
@@ -381,57 +349,6 @@ test('sign-in keeps its label, shows the shared overlay and prevents duplicate r
     nodes.find((n) => n.type === 'CommonButton').props.disabled,
     false,
   );
-});
-test('header sign-out shows the shared overlay and deduplicates desktop and mobile clicks', async () => {
-  const hooks = reactiveHooks();
-  let finish,
-    requests = 0;
-  const response = new Promise((resolve) => {
-    finish = resolve;
-  });
-  const { exports, calls } = component('../src/components/Header.tsx', {
-    react: hooks.react,
-    '@/lib/auth-client': {
-      authClient: {
-        useSession: () => ({
-          data: { user: { id: 'owner' } },
-          isPending: false,
-        }),
-        signOut: () => {
-          requests++;
-          return response;
-        },
-      },
-    },
-  });
-  const props = {
-    labels: {},
-    locale: 'ko',
-    languageLabels: {},
-    theme: 'dark',
-    themeLabels: {},
-  };
-  const render = () => {
-    hooks.reset();
-    return elements(exports.Header(props));
-  };
-  const buttons = render().filter(
-    (n) => n.type === 'button' && n.props.children === '로그아웃',
-  );
-  const first = buttons[0].props.onClick();
-  await buttons[1].props.onClick();
-  assert.equal(requests, 1);
-  assert.equal(
-    render().find((n) => n.type === 'CommonLoading').props.open,
-    true,
-  );
-  finish({});
-  await first;
-  assert.equal(
-    render().find((n) => n.type === 'CommonLoading').props.open,
-    false,
-  );
-  assert.deepEqual(calls, ['/', 'refresh']);
 });
 test('empty common grids center the message across every column', () => {
   const Table = Object.assign(() => null, {

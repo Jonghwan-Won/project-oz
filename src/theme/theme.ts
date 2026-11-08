@@ -6,5 +6,5 @@ export function isTheme(value: unknown): value is Theme {
 }
 
 export function resolveTheme(value: unknown): Theme {
-  return isTheme(value) ? value : 'dark';
+  return isTheme(value) ? value : 'light';
 }

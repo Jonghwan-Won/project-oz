@@ -11,7 +11,11 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react';
-import s from './portfolio2.module.css';
+import s from './home.module.css';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { technologyIcons } from '@/lib/technology-icons';
 
 const sections = [
   ['profile', '프로필'],
@@ -21,7 +25,7 @@ const sections = [
 
 const externalLinks = [
   ['https://github.com/Jonghwan-Won', 'GitHub'],
-  ['/board', '기록'],
+  ['/board', 'Blog'],
 ] as const;
 
 function reducedMotion() {
@@ -67,7 +71,7 @@ export function ScrollTopLink({
 }) {
   return (
     <a
-      href="#portfolio2"
+      href="#portfolio"
       className={className}
       aria-label={label}
       onClick={scrollToTop}
@@ -82,6 +86,7 @@ function externalProps(href: string) {
 }
 
 export function PortfolioHeader() {
+  const pathname = usePathname();
   const [active, setActive] = useState('');
   const [scrolled, setScrolled] = useState(false);
 
@@ -103,12 +108,19 @@ export function PortfolioHeader() {
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', update);
     };
-  }, []);
+  }, [pathname]);
 
   // 스크롤 등장 효과. JS나 모션이 꺼져 있으면 data-motion이 없어 처음부터 모두 보인다.
   useEffect(() => {
-    const root = document.getElementById('portfolio2');
+    const root = document.getElementById('portfolio');
     if (!root || reducedMotion() || !('IntersectionObserver' in window)) return;
+    root
+      .querySelectorAll('section > p, section article, section > ul > li')
+      .forEach((element, index) => {
+        element.setAttribute('data-reveal-item', '');
+        if (element instanceof HTMLElement)
+          element.style.setProperty('--reveal-delay', `${(index % 3) * 80}ms`);
+      });
     root.dataset.motion = 'on';
     const observer = new IntersectionObserver(
       (entries) => {
@@ -121,20 +133,26 @@ export function PortfolioHeader() {
       { rootMargin: '0px 0px -12% 0px' },
     );
     root
-      .querySelectorAll('[data-reveal]')
+      .querySelectorAll('[data-reveal], [data-reveal-item]')
       .forEach((el) => observer.observe(el));
     return () => {
       observer.disconnect();
       delete root.dataset.motion;
     };
-  }, []);
+  }, [pathname]);
 
   // 섹션 이동은 독(넓은 화면은 헤더 가운데, 좁은 화면은 화면 아래)이 맡는다.
   return (
     <header className={s.header} data-scrolled={scrolled || undefined}>
-      <ScrollTopLink className={s.logo} label="포트폴리오 처음으로">
-        Jonghwan Won
-      </ScrollTopLink>
+      {pathname === '/' ? (
+        <ScrollTopLink className={s.logo} label="포트폴리오 처음으로">
+          Jonghwan Won
+        </ScrollTopLink>
+      ) : (
+        <Link href="/" className={s.logo}>
+          Jonghwan Won
+        </Link>
+      )}
       <SectionDock active={active} />
       <ul className={s.headerLinks}>
         {externalLinks.map(([href, label]) => (
@@ -197,7 +215,30 @@ function SectionDock({ active }: { active: string }) {
       {sections.map(([id, label], index) => (
         <a
           key={id}
-          href={'#' + id}
+          href={'/#' + id}
+          onClick={(event) => {
+            if (window.location.pathname !== '/') return;
+            if (
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey
+            )
+              return;
+            const target = document.getElementById(id);
+            if (!target) return;
+            event.preventDefault();
+            target.focus({ preventScroll: true });
+            target.scrollIntoView({
+              behavior: reducedMotion() ? 'instant' : 'smooth',
+            });
+            if (window.location.hash)
+              window.history.replaceState(
+                window.history.state,
+                '',
+                window.location.pathname + window.location.search,
+              );
+          }}
           aria-current={active === id ? 'location' : undefined}
         >
           <sup aria-hidden="true">0{index + 1}</sup>
@@ -208,97 +249,33 @@ function SectionDock({ active }: { active: string }) {
   );
 }
 
-const clockFormat = (timeZone: string) =>
-  new Intl.DateTimeFormat('ko-KR', {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  });
-
-export function HeroClock({ className }: { className?: string }) {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    const tick = () => setNow(new Date());
-    tick();
-    const timer = window.setInterval(tick, 15_000);
-    return () => window.clearInterval(timer);
-  }, []);
-  const utc = now ? clockFormat('UTC').format(now) : '--:--';
-  const seoul = now ? clockFormat('Asia/Seoul').format(now) : '--:--';
+export function ScrollPrompt() {
   return (
-    <p className={className}>
-      <time dateTime={now?.toISOString()}>
-        UTC {utc} / Seoul {seoul}
-      </time>
-    </p>
+    <a
+      href="#profile"
+      className={s.scrollPrompt}
+      onClick={(event) => {
+        const target = document.getElementById('profile');
+        if (
+          !target ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        event.preventDefault();
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({
+          behavior: reducedMotion() ? 'instant' : 'smooth',
+        });
+      }}
+    >
+      <span>스크롤</span>
+      <span aria-hidden="true">↓</span>
+    </a>
   );
 }
-
-export function HeroPolaroid({ caption }: { caption: string }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [typed, setTyped] = useState(caption);
-
-  useEffect(() => {
-    if (reducedMotion()) return;
-    let index = 0;
-    // 지우기와 타이핑을 같은 타이머 순서로 처리해, 탭이 숨겨진 채 열려도 순서가 뒤바뀌지 않게 한다.
-    const reset = window.setTimeout(() => setTyped(''), 0);
-    const timer = window.setInterval(() => {
-      index += 1;
-      setTyped(caption.slice(0, index));
-      if (index >= caption.length) window.clearInterval(timer);
-    }, 70);
-    return () => {
-      window.clearTimeout(reset);
-      window.clearInterval(timer);
-    };
-  }, [caption]);
-
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card || reducedMotion() || !matchMedia('(hover: hover)').matches)
-      return;
-    let frame = 0;
-    const move = (event: PointerEvent) => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const x = event.clientX / window.innerWidth - 0.5;
-        const y = event.clientY / window.innerHeight - 0.5;
-        card.style.setProperty('--tilt-x', `${(-y * 10).toFixed(2)}deg`);
-        card.style.setProperty('--tilt-y', `${(x * 14).toFixed(2)}deg`);
-        card.style.setProperty('--shift-x', `${(x * 18).toFixed(1)}px`);
-        card.style.setProperty('--shift-y', `${(y * 18).toFixed(1)}px`);
-      });
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('pointermove', move);
-    };
-  }, []);
-
-  return (
-    <div className={s.polaroid} ref={cardRef}>
-      <div className={s.polaroidPhoto} aria-hidden="true">
-        <svg viewBox="0 0 100 100" className={s.petals}>
-          <g>
-            <path id="p2-petal" d="M43 39C34 27 32 7 50 7C68 7 66 27 57 39" />
-            <use href="#p2-petal" transform="rotate(72 50 50)" />
-            <use href="#p2-petal" transform="rotate(144 50 50)" />
-            <use href="#p2-petal" transform="rotate(216 50 50)" />
-            <use href="#p2-petal" transform="rotate(288 50 50)" />
-          </g>
-        </svg>
-      </div>
-      <p className={s.polaroidCaption}>
-        <span className="srOnly">{caption}</span>
-        <span aria-hidden="true">{typed}</span>
-      </p>
-    </div>
-  );
-}
-
 export type StackGroup = {
   label: string;
   items: { name: string; count: number }[];
@@ -405,12 +382,29 @@ export function StackTabs({ groups }: { groups: StackGroup[] }) {
                 data-main={item.count > 1 || undefined}
                 aria-hidden="true"
               >
-                {stackMark(item.name)}
+                {technologyIcons[item.name] ? (
+                  <Image
+                    src={technologyIcons[item.name]}
+                    alt=""
+                    width={32}
+                    height={32}
+                    unoptimized
+                    className={s.stackIcon}
+                  />
+                ) : (
+                  stackMark(item.name)
+                )}
               </span>
               <strong>{item.name}</strong>
             </li>
           ))}
         </ul>
+        <small className={s.iconCredit}>
+          일부 아이콘 제공:{' '}
+          <a href="https://icons8.com/" target="_blank" rel="noreferrer">
+            Icons8
+          </a>
+        </small>
       </div>
     </div>
   );
@@ -539,6 +533,8 @@ export function WorksRail({
           <div
             ref={railRef}
             className={s.rail}
+            data-start={edges.start}
+            data-end={edges.end}
             tabIndex={0}
             role="region"
             aria-label="실무 작업 목록, 좌우로 스크롤"
@@ -599,13 +595,10 @@ export function EmailButton({ email }: { email: string }) {
         data-state={state}
         aria-describedby="p2-email-hint"
       >
-        <span className={s.spin} aria-hidden="true">
-          {state === 'copied' ? '✓' : '*'}
-        </span>
-        {emailLabels[state]}
+        {state === 'idle' ? email : emailLabels[state]}
       </button>
-      <p id="p2-email-hint" className={s.emailHint}>
-        {email} · 눌러서 복사
+      <p id="p2-email-hint" className="srOnly">
+        이메일 주소 복사
       </p>
       <p className="srOnly" role="status" aria-live="polite">
         {state === 'copied'

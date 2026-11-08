@@ -8,9 +8,11 @@ import s from './ProjectCard.module.css';
 export function ProjectCard({
   project,
   locale = 'ko',
+  compact = false,
 }: {
   project: PublicProject;
   locale?: string;
+  compact?: boolean;
 }) {
   const en = locale === 'en';
   const technologies = project.tags.filter((tag) => tag.kind === 'TECHNOLOGY');
@@ -24,7 +26,7 @@ export function ProjectCard({
     <ProjectPreviewLink
       projectId={project.id}
       locale={locale}
-      className={`interactiveCard ${s.card}`}
+      className={`interactiveCard ${s.card} ${compact ? s.compact : ''}`}
       href={`/work/${project.id}`}
     >
       <div className={s.cover} aria-hidden="true">

@@ -7,7 +7,7 @@ const homeHeader = (await home.text()).match(
   /<header\b[\s\S]*?<\/header>/,
 )?.[0];
 assert.ok(homeHeader);
-assert.match(homeHeader, /href="\/guide"/);
+assert.match(homeHeader, /href="\/board"/);
 const page = await fetch(`${base}/guide`);
 const ideas = await fetch(`${base}/guide/ideas`);
 assert.equal(ideas.status, 200);
