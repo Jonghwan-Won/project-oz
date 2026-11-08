@@ -70,6 +70,10 @@
   color: var(--muted);
   font-size: 22px;
 }
+.compact .heading h3 {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
 .meta {
   display: flex;
   flex-direction: column;
