@@ -15,7 +15,6 @@ import {
 import {
   EmailButton,
   ScrollPrompt,
-  HeroPolaroid,
   PortfolioHeader,
   ProjectViews,
   StackTabs,
@@ -23,6 +22,7 @@ import {
   type StackGroup,
 } from './Interactive';
 import s from './home.module.css';
+import { HeroBackground } from './HeroBackground';
 
 const title = '원종환 | 풀스택 개발자 포트폴리오';
 export const metadata: Metadata = {
@@ -98,14 +98,19 @@ const career = [
     role: '"JAVA 기반 AWS 웹 개발자 양성 과정" 수료',
   },
   { period: '2018. 03 - 2022. 05', org: '비에스온', role: '인프라 운영' },
+  {
+    period: '2016. 11 - 2018. 02',
+    org: '지오유아이티',
+    role: '고객사 맞춤 그룹웨어 컨설팅',
+  },
 ];
 
 const aboutGlyphs = ['//', '{}', '=>'];
 
 /** 소개 카드 세 번째. 앞의 두 장은 사이트 소개 문구(messages.about.sections)를 쓴다. */
 const careerCard = {
-  title: '인프라에서 웹 개발로',
-  body: '인프라 운영으로 경력을 시작해 웹 개발자로 일하고 있습니다. 화면과 기능뿐 아니라 서비스가 실제로 돌아가는 환경까지 함께 생각합니다.',
+  title: '고객의 요구를 구현으로',
+  body: '고객사 맞춤 그룹웨어 컨설팅을 통해 업무 맥락과 요구사항을 파악하는 경험을 쌓았습니다. 인프라 운영과 웹 개발 경험을 더해, 고객이 필요로 하는 기능을 정확히 이해하고 구현하는 데 강점이 있습니다.',
 };
 
 /**
@@ -447,6 +452,7 @@ export default async function Home() {
       <PortfolioHeader />
 
       <section className={s.hero} id="intro" aria-labelledby="hero-title">
+        <HeroBackground />
         <h1 id="hero-title" className="srOnly">
           풀스택 개발자 원종환 포트폴리오
         </h1>
@@ -454,7 +460,6 @@ export default async function Home() {
           <p className={s.script} aria-hidden="true">
             Portfolio
           </p>
-          <HeroPolaroid caption="화면부터 서버까지, 필요한 기능을 직접 만들어 갑니다." />
         </div>
         <p className={s.greeting}>
           안녕하세요, <span className={s.name}>원종환</span>입니다.
@@ -476,16 +481,22 @@ export default async function Home() {
           </h2>
           <div className={s.intro}>
             <svg
-              className={s.profileSymbol}
-              viewBox="0 0 64 64"
+              className={`${s.profileSymbol} ${s.petals}`}
+              viewBox="0 0 100 100"
               aria-hidden="true"
               focusable="false"
             >
-              <path
-                fill="currentColor"
-                d="M27 0h10l-2 21 14-16 7 7-16 14 24-1v10l-24-1 16 14-7 7-14-16 2 25H27l2-25-14 16-7-7 16-14-24 1V25l24 1L8 12l7-7 14 16Z"
-              />
-            </svg>
+              <g>
+                <path
+                  id="profile-petal"
+                  d="M43 39C34 27 32 7 50 7C68 7 66 27 57 39"
+                />
+                <use href="#profile-petal" transform="rotate(72 50 50)" />
+                <use href="#profile-petal" transform="rotate(144 50 50)" />
+                <use href="#profile-petal" transform="rotate(216 50 50)" />
+                <use href="#profile-petal" transform="rotate(288 50 50)" />
+              </g>
+            </svg>{' '}
             <p className={s.headline}>
               작은 불편을 지나치지 않고,
               <br />

@@ -299,6 +299,7 @@
 /* ---------- 히어로 ---------- */
 .hero {
   position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -309,11 +310,23 @@
   padding: calc(var(--p2-header) + 24px) var(--p2-gutter) 96px;
   overflow: hidden;
 }
+.heroBackground {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, var(--p2-bg), transparent 24%),
+    repeating-linear-gradient(145deg, #f5f2fc 0, #fbfaff 70px, #f0ecfa 150px);
+}
 .stage {
   position: relative;
   display: grid;
   place-items: center;
   width: min(280px, 70vw);
+  aspect-ratio: 1;
 }
 .script {
   position: absolute;
@@ -331,50 +344,12 @@
   -webkit-text-fill-color: transparent;
   font-family: 'P2 Script', cursive;
   font-size: clamp(104px, 17vw, 300px);
-  line-height: 1;
+  line-height: 1.5;
+  padding: 0.1em 0.25em;
   letter-spacing: 0.04em;
   white-space: nowrap;
   transform: translate(-50%, -50%);
   pointer-events: none;
-}
-.polaroid {
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --shift-x: 0px;
-  --shift-y: 0px;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  padding: 22px 20px 16px;
-  background: #fff;
-  color: #333;
-  box-shadow:
-    0 2px 6px #0000000f,
-    0 24px 48px -16px #0000003d;
-  transform: perspective(900px) translate(var(--shift-x), var(--shift-y))
-    rotate(-3deg) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transition: transform 0.4s ease-out;
-}
-.polaroid::after {
-  content: '';
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  width: 92px;
-  height: 26px;
-  background: color-mix(in srgb, var(--p2-primary) 35%, #fff);
-  opacity: 0.75;
-  transform: translateX(-50%) rotate(2deg);
-}
-.polaroidPhoto {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 5 / 4;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 30% 25%, #ffffffb3, transparent 45%),
-    linear-gradient(135deg, #e9e5ff, #cbc2ff 45%, #d4e5ff);
 }
 .petals {
   width: 58%;
@@ -384,14 +359,6 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   animation: p2-spin 18s linear infinite;
-}
-.polaroidCaption {
-  min-height: 3em;
-  margin: 12px 0 0;
-  font-size: var(--p2-text-sm);
-  font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: -0.01em;
 }
 .greeting {
   position: relative;
@@ -405,6 +372,10 @@
 }
 .name {
   font-weight: 600;
+}
+.hero > .greeting,
+.hero > .downloads {
+  top: 36px;
 }
 .downloads {
   position: relative;
@@ -423,6 +394,8 @@
   align-items: center;
   gap: 8px;
   min-height: 44px;
+  min-width: 170px;
+  justify-content: center;
   padding: 0 16px;
   border: 1px solid color-mix(in srgb, var(--p2-primary) 45%, transparent);
   border-radius: 12px;
@@ -447,10 +420,15 @@
 .downloads a svg:last-child {
   opacity: 0.7;
 }
+.downloads a {
+  background: #fff;
+  color: #48329b;
+  border-color: #8976c9;
+}
 @media (hover: hover) {
   .downloads a:hover {
-    border-color: var(--p2-primary);
-    background: color-mix(in srgb, var(--p2-primary) 18%, transparent);
+    border-color: #6145b8;
+    background: #f0ebfc;
   }
 }
 .downloads span {
@@ -1437,7 +1415,7 @@
   min-width: 44px;
   min-height: 56px;
   color: var(--p2-muted);
-  font-size: 12px;
+  font-size: 16px;
 }
 .scrollPrompt > span:last-child {
   font-size: 22px;
