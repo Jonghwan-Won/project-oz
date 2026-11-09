@@ -1,4 +1,5 @@
 import { loadRequestOrigin } from './request-origin-helper.mjs';
+import { loadPortfolioAssets } from './portfolio-assets-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -33,6 +34,8 @@ function service(
         return { logError: () => {}, logEvent: () => {}, setLogUser: () => {} };
       if (id === '@/server/request-origin') return loadRequestOrigin();
       if (id === 'server-only') return {};
+      if (id === '@/server/portfolio-assets')
+        return loadPortfolioAssets(extra.env);
       if (id === '@/server/admin-access')
         return {
           requireAdmin: async () => {
@@ -72,8 +75,9 @@ test('dashboard excludes files referenced by projects or posts', async () => {
     await service('development', query).getUnusedAssetSummary(),
     { count: 2, size: 1024 },
   );
-  assert.match(calls[0], /NOT EXISTS \(SELECT 1 FROM "ProjectAsset"/);
-  assert.match(calls[0], /NOT EXISTS \(SELECT 1 FROM "PostAsset"/);
+  assert.match(calls[0], /WHERE NOT \(EXISTS \(SELECT 1 FROM "ProjectAsset"/);
+  assert.match(calls[0], /EXISTS \(SELECT 1 FROM "PostAsset"/);
+  assert.match(calls[0], /a\.id::text = ANY\(\$1::text\[\]\)/);
 });
 test('asset search is sent to the database while totals stay unfiltered', async () => {
   const calls = [];
@@ -92,7 +96,7 @@ test('asset search is sent to the database while totals stay unfiltered', async 
   });
   assert.deepEqual(
     calls.find((call) => call.sql.includes('position(lower')).params,
-    ['file', 'unused', 'size'],
+    ['file', 'unused', 'size', ['', '']],
   );
   assert.equal(result.totals.total, 9);
   await service('development', query).getAdminAssets({
@@ -102,8 +106,20 @@ test('asset search is sent to the database while totals stay unfiltered', async 
   });
   assert.deepEqual(
     calls.filter((call) => call.sql.includes('position(lower')).at(-1).params,
-    ['', 'all', 'new'],
+    ['', 'all', 'new', ['', '']],
   );
+});
+test('portfolio PDFs set by environment are excluded from unused files', async () => {
+  const resume = 'aaaaaaaa-1234-4234-8234-123456789abc';
+  const calls = [];
+  const query = async (sql, params) => {
+    calls.push({ sql, params });
+    return { rows: [{ count: 0, size: 0 }] };
+  };
+  await service('development', query, {
+    env: { PORTFOLIO_RESUME_ASSET_ID: ` ${resume.toUpperCase()} ` },
+  }).getUnusedAssetSummary();
+  assert.deepEqual(calls[0].params, [[resume, '']]);
 });
 test('asset selection validates identifiers, duplicates and limit', () => {
   assert.equal(assetIdsValid([id]), true);

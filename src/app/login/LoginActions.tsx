@@ -9,9 +9,12 @@ import s from './login.module.css';
 export function LoginActions({
   signedIn,
   copy,
+  next,
 }: {
   signedIn: boolean;
   copy: Messages['account'];
+  /** 로그인 성공 후 돌아갈 내부 경로. 서버에서 safeReturnPath로 검증한 값이다. */
+  next: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -27,8 +30,8 @@ export function LoginActions({
         ? await authClient.signOut()
         : await authClient.signIn.social({
             provider: 'github',
-            callbackURL: '/',
-            errorCallbackURL: '/login',
+            callbackURL: next,
+            errorCallbackURL: `/login?next=${encodeURIComponent(next)}`,
           });
       if (result.error) throw Error('Sign-in failed');
       if (signedIn) {

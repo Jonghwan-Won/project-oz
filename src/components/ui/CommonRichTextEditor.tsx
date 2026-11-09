@@ -44,6 +44,26 @@ const showTableTools: NonNullable<BubbleMenuProps['shouldShow']> = ({
   editor.isEditable &&
   editor.isActive('table') &&
   (view.hasFocus() || !!document.activeElement?.closest('[data-table-tools]'));
+/** 이미지 삽입 버튼 아이콘. 업로드(관리자)와 로컬 미리보기(UI 가이드) 모두 같은 모양을 쓴다. */
+function ImageInsertIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="3" width="16" height="14" rx="2" />
+      <circle cx="7" cy="8" r="1.5" />
+      <path d="m3 15 5-4 3 2 3-4 3 6" />
+    </svg>
+  );
+}
+
 export function CommonRichTextEditor({
   id,
   label,
@@ -366,6 +386,7 @@ export function CommonRichTextEditor({
           <div className={s.toolbarRow}>
             <CommonSelectBox
               className={s.blockStyle}
+              data-editor-control
               aria-label="문단 스타일"
               value={
                 editor.isActive('heading', { level: 2 })
@@ -391,6 +412,7 @@ export function CommonRichTextEditor({
             />
             <CommonSelectBox
               className={s.blockStyle}
+              data-editor-control
               aria-label="글꼴"
               value={textStyle.fontFamily ?? ''}
               onValueChange={(value) => updateTextStyle('fontFamily', value)}
@@ -398,6 +420,7 @@ export function CommonRichTextEditor({
             />
             <CommonSelectBox
               className={s.blockStyle}
+              data-editor-control
               aria-label="글자 크기"
               value={textStyle.fontSize ?? ''}
               onValueChange={(value) => updateTextStyle('fontSize', value)}
@@ -780,22 +803,7 @@ export function CommonRichTextEditor({
               imagesOnly
               compact
               bare
-              icon={
-                <svg
-                  viewBox="0 0 20 20"
-                  width="18"
-                  height="18"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="3" width="16" height="14" rx="2" />
-                  <circle cx="7" cy="8" r="1.5" />
-                  <path d="m3 15 5-4 3 2 3-4 3 6" />
-                </svg>
-              }
+              icon={<ImageInsertIcon />}
               onUploaded={(asset) => {
                 if (!editor.isDestroyed)
                   editor
@@ -813,6 +821,7 @@ export function CommonRichTextEditor({
             <CommonFilePicker
               label="이미지 삽입"
               compact
+              icon={<ImageInsertIcon />}
               disabled={disabled}
               accept="image/png,image/jpeg,image/webp"
               onSelect={(file) => {

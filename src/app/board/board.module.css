@@ -1,8 +1,7 @@
+/* 좌우 여백은 메인·프로젝트 목록과 같은 --site-gutter를 쓴다. */
 .page {
-  width: min(100% - 48px, 1000px);
   min-height: 65vh;
-  margin: 0 auto;
-  padding: 32px 0 96px;
+  padding: 32px var(--site-gutter) 96px;
   overflow-wrap: anywhere;
 }
 
@@ -192,8 +191,7 @@
 }
 @media (max-width: 600px) {
   .page {
-    width: calc(100% - 40px);
-    padding: 20px 0 64px;
+    padding: 20px var(--site-gutter) 64px;
   }
   .header {
     padding: 28px 0 32px;

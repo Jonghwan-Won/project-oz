@@ -84,7 +84,8 @@ export const ko = {
     description:
       '개인 작업부터 교육 과정과 회사에서 참여한 프로젝트까지. 각 작업의 역할과 과정을 기록합니다.',
     all: '전체',
-    filterLabel: '프로젝트 유형',
+    filterLabel: '작업 구분',
+    groups: { personal: '개인 프로젝트', work: '실무 프로젝트' },
     detailLink: '작업 살펴보기',
     empty: '공개할 프로젝트를 준비하고 있어요.',
     back: '← 모든 프로젝트',
@@ -323,11 +324,13 @@ export const ko = {
   },
   account: {
     metadata: '로그인',
-    title: '나의 작업실로.',
-    intro: '지정된 GitHub 계정으로 로그인하고,\n프로젝트와 기록을 관리하세요.',
+    eyebrow: 'ADMIN',
+    title: '관리자 로그인',
+    intro:
+      '지정된 GitHub 계정으로 로그인하면\n프로젝트·게시글·문의·첨부파일을 관리할 수 있습니다.',
     notice:
-      '관리자 전용 로그인입니다.\n공개 콘텐츠는 로그인 없이 둘러볼 수 있어요.',
-    home: 'OZ 둘러보기',
+      '관리자 전용 로그인입니다.\n포트폴리오와 블로그는 로그인 없이 볼 수 있어요.',
+    home: '포트폴리오로 돌아가기',
     unavailable:
       '지금은 로그인에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.',
     failed:

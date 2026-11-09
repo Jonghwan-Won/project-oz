@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
+import { loadPortfolioAssets } from './portfolio-assets-helper.mjs';
 const output = ts.transpileModule(
   readFileSync('src/server/services/dashboard.ts', 'utf8'),
   {
@@ -18,22 +19,24 @@ function service(configured) {
     (id) =>
       id === 'server-only'
         ? {}
-        : {
-            pool: {
-              query: async (sql, params) => {
-                calls.push({ sql, params });
-                return {
-                  rows: [
-                    sql.includes('FROM "Inquiry"')
-                      ? { count: 2 }
-                      : sql.includes('FROM "Asset"')
-                        ? { count: 50, size: 9000000 }
-                        : { total: 8, visible: 6 },
-                  ],
-                };
+        : id === '@/server/portfolio-assets'
+          ? loadPortfolioAssets()
+          : {
+              pool: {
+                query: async (sql, params) => {
+                  calls.push({ sql, params });
+                  return {
+                    rows: [
+                      sql.includes('FROM "Inquiry"')
+                        ? { count: 2 }
+                        : sql.includes('FROM "Asset"')
+                          ? { count: 50, size: 9000000 }
+                          : { total: 8, visible: 6 },
+                    ],
+                  };
+                },
               },
             },
-          },
     exports,
     { env: configured ? { DATABASE_URL: 'configured' } : {} },
   );
@@ -53,7 +56,7 @@ test('public dashboard returns real aggregates without exposing records', async 
   assert.deepEqual(calls[3].params, ['INQUIRY_STATUS', 'PENDING']);
   assert.match(
     calls[2].sql,
-    /NOT EXISTS[\s\S]*"ProjectAsset"[\s\S]*"PostAsset"/,
+    /WHERE NOT \(EXISTS[\s\S]*"ProjectAsset"[\s\S]*"PostAsset"[\s\S]*ANY\(\$1::text\[\]\)/,
   );
 });
 test('dashboard without DB configuration shows zero counts', async () => {

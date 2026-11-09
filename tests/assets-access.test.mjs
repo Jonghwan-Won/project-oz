@@ -1,4 +1,5 @@
 import { loadRequestOrigin } from './request-origin-helper.mjs';
+import { loadPortfolioAssets } from './portfolio-assets-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -35,13 +36,15 @@ function service(mode, query = async () => ({ rows: [] }), env = {}) {
                     ? {}
                     : null,
               }
-            : id === 'server-only'
-              ? {}
-              : id === '@/server/db'
-                ? { pool: { query } }
-                : id === '@/lib/files'
-                  ? files
-                  : require(id),
+            : id === '@/server/portfolio-assets'
+              ? loadPortfolioAssets({ ...env })
+              : id === 'server-only'
+                ? {}
+                : id === '@/server/db'
+                  ? { pool: { query } }
+                  : id === '@/lib/files'
+                    ? files
+                    : require(id),
     exports,
     { env: { NODE_ENV: mode, ...env } },
   );

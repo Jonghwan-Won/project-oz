@@ -3,6 +3,7 @@ import { getMessages } from '@/i18n/server';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAuth, getAdminSession } from '@/server/auth';
+import { returnPathFromReferer, safeReturnPath } from '@/lib/return-path';
 import { LoginActions } from './LoginActions';
 import s from './login.module.css';
 
@@ -37,18 +38,32 @@ export default async function Login({
       available = false;
     }
   }
-  if (admin) redirect('/');
   const query = await searchParams;
+  // 로그인 후 돌아갈 곳: ?next= 값, 없으면 직전 페이지(같은 사이트의 Referer), 그것도 없으면 홈.
+  const next =
+    typeof query.next === 'string'
+      ? safeReturnPath(query.next)
+      : returnPathFromReferer(
+          requestHeaders.get('referer'),
+          requestHeaders.get('host'),
+        );
+  if (admin) redirect(next);
   return (
     <div className={`page ${s.page}`}>
       <section className={s.card} aria-labelledby="login-title">
-        <div className={s.mark} aria-hidden="true">
-          OZ
+        <div className={s.brand} aria-hidden="true">
+          <span className={s.wordmark}>Jonghwan Won</span>
+          <span className={s.eyebrow}>{copy.eyebrow}</span>
         </div>
         <h1 id="login-title">{copy.title}</h1>
         <p className={s.description}>{copy.intro}</p>
         <div className={s.access}>
-          <span aria-hidden="true">◈</span>
+          <span className={s.lock} aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+              <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2" />
+            </svg>
+          </span>
           <p>{copy.notice}</p>
         </div>
         {!available ? (
@@ -56,7 +71,7 @@ export default async function Login({
             {copy.unavailable}
           </p>
         ) : (
-          <LoginActions signedIn={signedIn} copy={copy} />
+          <LoginActions signedIn={signedIn} copy={copy} next={next} />
         )}
         {query.error && (
           <p className={s.error} role="alert">

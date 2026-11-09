@@ -1,4 +1,5 @@
 import { loadRequestOrigin } from './request-origin-helper.mjs';
+import { loadPortfolioAssets } from './portfolio-assets-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -180,6 +181,7 @@ test('public management reads enforce visibility in lists, details, totals and f
               },
             },
           },
+          '@/server/portfolio-assets': loadPortfolioAssets(),
           '@/lib/project-form': { blankCopy: () => ({}), uuid: () => true },
           '@/lib/admin-assets': {
             emptyAssetSearch: { keyword: '', filter: 'all', sort: 'new' },

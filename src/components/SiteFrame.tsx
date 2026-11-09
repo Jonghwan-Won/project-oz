@@ -22,6 +22,7 @@ export function SiteFrame({ children }: { children: ReactNode }) {
             <Link href="/board">Blog</Link>
             <Link href="/lab">실험실</Link>
             <Link href="/guide">UI 가이드</Link>
+            <Link href="/admin">관리자</Link>
           </nav>
         </div>
       </footer>

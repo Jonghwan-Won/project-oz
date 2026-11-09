@@ -31,6 +31,8 @@ export function CommonSelectBox({
   'aria-label'?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  /** 관리자 화면 공통 입력 스타일에서 빼야 하는 에디터 도구 막대 입력에 붙인다. */
+  'data-editor-control'?: boolean;
 }) {
   const encode = (item: string) => (item === '' ? '__oz_empty__' : item);
 

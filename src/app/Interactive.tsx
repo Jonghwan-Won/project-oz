@@ -249,33 +249,6 @@ function SectionDock({ active }: { active: string }) {
   );
 }
 
-export function ScrollPrompt() {
-  return (
-    <a
-      href="#profile"
-      className={s.scrollPrompt}
-      onClick={(event) => {
-        const target = document.getElementById('profile');
-        if (
-          !target ||
-          event.metaKey ||
-          event.ctrlKey ||
-          event.shiftKey ||
-          event.altKey
-        )
-          return;
-        event.preventDefault();
-        target.focus({ preventScroll: true });
-        target.scrollIntoView({
-          behavior: reducedMotion() ? 'instant' : 'smooth',
-        });
-      }}
-    >
-      <span>스크롤</span>
-      <span aria-hidden="true">↓</span>
-    </a>
-  );
-}
 export type StackGroup = {
   label: string;
   items: { name: string; count: number }[];

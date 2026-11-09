@@ -7,6 +7,11 @@ import { pool } from '@/server/db';
 import { fileFormat, maxUploadBytes } from '@/lib/files';
 import { getAdminSession } from '@/server/auth';
 import { hasSameOrigin } from '@/server/request-origin';
+import {
+  portfolioFileId,
+  type PortfolioFileKind,
+} from '@/server/portfolio-assets';
+export type { PortfolioFileKind };
 
 class FileError extends Error {
   constructor(
@@ -144,8 +149,16 @@ type StoredAsset = {
   mimeType: string;
 };
 
-/** 저장소 경로를 검증한 뒤 파일을 응답으로 내보낸다. */
-async function sendAsset(asset: StoredAsset, download: boolean) {
+/**
+ * 저장소 경로를 검증한 뒤 파일을 응답으로 내보낸다.
+ * pdfViewer: 포트폴리오 PDF를 새 탭의 브라우저 PDF 뷰어로 연다. 뷰어는 sandbox CSP에서
+ * 열리지 않으므로 다른 사이트에 끼워 넣지 못하게만(frame-ancestors) 막는다. 지정된 PDF에만 쓴다.
+ */
+async function sendAsset(
+  asset: StoredAsset,
+  download: boolean,
+  pdfViewer = false,
+) {
   if (
     !/^\d{4}\/\d{2}\/[0-9a-f-]{36}\.(png|jpg|webp|pdf)$/.test(asset.storageKey)
   )
@@ -167,28 +180,12 @@ async function sendAsset(asset: StoredAsset, download: boolean) {
           (char) => '%' + char.charCodeAt(0).toString(16).toUpperCase(),
         ),
       'X-Content-Type-Options': 'nosniff',
-      'Content-Security-Policy': "default-src 'none'; sandbox",
+      'Content-Security-Policy': pdfViewer
+        ? "frame-ancestors 'none'"
+        : "default-src 'none'; sandbox",
       'Cache-Control': 'private, no-store',
     },
   });
-}
-
-/**
- * 포트폴리오 페이지의 이력서·포트폴리오 PDF.
- * 콘텐츠에 연결되지 않은 파일은 공개되지 않으므로, 서버 환경 변수에 지정한
- * Asset ID만 이 경로로 내려준다. 브라우저가 임의의 파일 ID를 고를 수 없다.
- */
-const portfolioFileEnv = {
-  resume: 'PORTFOLIO_RESUME_ASSET_ID',
-  portfolio: 'PORTFOLIO_DOCUMENT_ASSET_ID',
-} as const;
-export type PortfolioFileKind = keyof typeof portfolioFileEnv;
-
-function portfolioFileId(kind: string) {
-  if (!Object.prototype.hasOwnProperty.call(portfolioFileEnv, kind))
-    return null;
-  const id = process.env[portfolioFileEnv[kind as PortfolioFileKind]]?.trim();
-  return id && assetIdPattern.test(id) ? id : null;
 }
 
 /** 화면에서 버튼을 켤지 정하기 위한 등록 여부. 파일 ID 자체는 내보내지 않는다. */
@@ -199,7 +196,8 @@ export function portfolioFileStatus(): Record<PortfolioFileKind, boolean> {
   };
 }
 
-export async function readPortfolioFile(kind: string) {
+/** download가 false면 새 탭에서 볼 수 있게(inline), true면 저장용(attachment)으로 보낸다. */
+export async function readPortfolioFile(kind: string, download = false) {
   try {
     const id = portfolioFileId(kind);
     if (!id) throw new FileError(404, '등록된 파일이 없습니다.');
@@ -211,7 +209,7 @@ export async function readPortfolioFile(kind: string) {
     ).rows[0];
     if (!asset || asset.mimeType !== 'application/pdf')
       throw new FileError(404, '등록된 파일이 없습니다.');
-    return await sendAsset(asset, true);
+    return await sendAsset(asset, download, true);
   } catch (error) {
     logError('assets', error);
     return failure(error);

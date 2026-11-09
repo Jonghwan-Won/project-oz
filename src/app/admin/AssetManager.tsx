@@ -176,40 +176,49 @@ export function AssetManager({
       render: (a) =>
         a.usages.length ? (
           <div className={c.usages}>
-            {a.usages.map((u, i) => (
-              <span
-                key={`${u.type}-${u.id}-${u.usage}-${i}`}
-                title={`${u.type === 'project' ? '프로젝트' : '게시글'} · ${u.title}${u.deleted ? ' (삭제됨)' : ''} · ${u.usage === 'COVER' ? '대표 이미지' : u.usage === 'ATTACHMENT' ? '첨부' : '본문 이미지'}`}
-              >
-                {u.deleted ? (
-                  <>{u.type === 'project' ? '프로젝트' : '게시글'} (삭제됨)</>
-                ) : u.type === 'post' ? (
-                  <a
-                    href={readOnly ? undefined : `/admin/board/${u.id}`}
-                    aria-disabled={readOnly || undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`게시글 ${u.title} (새 탭에서 열기)`}
-                  >
-                    게시글
-                  </a>
-                ) : (
-                  <a
-                    href={
-                      readOnly
-                        ? undefined
-                        : `/admin/projects?keyword=${encodeURIComponent(u.title)}`
-                    }
-                    aria-disabled={readOnly || undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`프로젝트 ${u.title} (새 탭에서 열기)`}
-                  >
-                    프로젝트
-                  </a>
-                )}
-              </span>
-            ))}
+            {a.usages.map((u, i) =>
+              u.type === 'portfolio' ? (
+                <span
+                  key={`portfolio-${i}`}
+                  title={`메인 화면 ${u.title} (환경 변수로 지정)`}
+                >
+                  {u.title}
+                </span>
+              ) : (
+                <span
+                  key={`${u.type}-${u.id}-${u.usage}-${i}`}
+                  title={`${u.type === 'project' ? '프로젝트' : '게시글'} · ${u.title}${u.deleted ? ' (삭제됨)' : ''} · ${u.usage === 'COVER' ? '대표 이미지' : u.usage === 'ATTACHMENT' ? '첨부' : '본문 이미지'}`}
+                >
+                  {u.deleted ? (
+                    <>{u.type === 'project' ? '프로젝트' : '게시글'} (삭제됨)</>
+                  ) : u.type === 'post' ? (
+                    <a
+                      href={readOnly ? undefined : `/admin/board/${u.id}`}
+                      aria-disabled={readOnly || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`게시글 ${u.title} (새 탭에서 열기)`}
+                    >
+                      게시글
+                    </a>
+                  ) : (
+                    <a
+                      href={
+                        readOnly
+                          ? undefined
+                          : `/admin/projects?keyword=${encodeURIComponent(u.title)}`
+                      }
+                      aria-disabled={readOnly || undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`프로젝트 ${u.title} (새 탭에서 열기)`}
+                    >
+                      프로젝트
+                    </a>
+                  )}
+                </span>
+              ),
+            )}
           </div>
         ) : (
           '-'

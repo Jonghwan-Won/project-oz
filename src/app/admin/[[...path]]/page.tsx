@@ -44,7 +44,7 @@ export default async function Admin({
     (['codes', 'inquiries'].includes(section) ||
       (section === 'board' && path[1] === 'new'))
   )
-    redirect('/login');
+    redirect(`/login?next=${encodeURIComponent('/admin/' + path.join('/'))}`);
   const query = await searchParams;
   const value = (key: string) =>
     typeof query[key] === 'string' ? (query[key] as string) : '';
@@ -208,6 +208,11 @@ export default async function Admin({
           공개 콘텐츠는 누구나 조회할 수 있습니다. 등록·수정·삭제와 내부 관리
           정보는 지정된 GitHub 계정으로 로그인한 관리자만 사용할 수 있습니다.
         </p>
+        {readOnly && (
+          <CommonButtonLink href="/login?next=%2Fadmin" variant="primary">
+            관리자 로그인
+          </CommonButtonLink>
+        )}
       </div>
     </section>
   );

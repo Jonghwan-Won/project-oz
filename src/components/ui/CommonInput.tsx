@@ -7,9 +7,7 @@ export function CommonInput({
   ...props
 }: Omit<ComponentProps<'input'>, 'size'>) {
   if (type === 'hidden')
-    return (
-      <input {...props} type={type} className={className} />
-    );
+    return <input {...props} type={type} className={className} />;
   if (type === 'checkbox') return <Checkbox {...props} className={className} />;
   if (type === 'radio') return <Radio {...props} className={className} />;
   return (

@@ -20,17 +20,13 @@
   --p2-line: #0a0a0a1f;
   --p2-line-strong: #0a0a0a66;
   --p2-overlay: #ffffffeb;
-  --p2-gutter: max(
-    var(--page-gutter),
-    calc((100vw - var(--content-width)) / 2)
-  );
+  --p2-gutter: var(--site-gutter);
   --p2-header: 76px;
   --p2-radius: 12px;
   --p2-ease: cubic-bezier(0.76, 0, 0.24, 1);
-  --p2-sans:
-    'P2 Sans', 'P2 Korean', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-  --p2-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --p2-symbol: 'P2 Symbol', 'P2 Sans', sans-serif;
+  --p2-sans: var(--font-sans);
+  --p2-serif: var(--font-serif);
+  --p2-symbol: var(--font-symbol);
   --p2-text-sm: 14px;
   --p2-text-md: 16px;
   --p2-text-lg: clamp(17px, 1.4vw, 20px);
@@ -304,12 +300,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 32px;
   min-height: max(600px, 100svh);
   max-height: 1080px;
   padding: calc(var(--p2-header) + 24px) var(--p2-gutter) 96px;
   overflow: hidden;
+  text-align: center;
 }
+/* WebGL 폴백. 셰이더의 유리 홈(30도 축, 높이의 3/16 주기)과 같은 방향·간격으로 맞춘다. */
 .heroBackground {
   position: absolute;
   inset: 0;
@@ -319,37 +317,103 @@
   pointer-events: none;
   background:
     linear-gradient(to top, var(--p2-bg), transparent 24%),
-    repeating-linear-gradient(145deg, #f5f2fc 0, #fbfaff 70px, #f0ecfa 150px);
+    repeating-linear-gradient(60deg, #f5f2fc 0, #fbfaff 70px, #f0ecfa 150px);
 }
-.stage {
+.heroContent {
   position: relative;
+  z-index: 1;
   display: grid;
-  place-items: center;
-  width: min(280px, 70vw);
-  aspect-ratio: 1;
+  justify-items: center;
+  gap: 22px;
+  max-width: 920px;
 }
-.script {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+.heroEyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
   margin: 0;
-  color: var(--p2-primary);
+  color: var(--p2-primary-ink);
+  font-family: var(--p2-symbol);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.heroTitle {
+  margin: 0;
+  font-size: clamp(34px, 5.6vw, 78px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.heroTitle em {
+  font-style: normal;
   background: linear-gradient(
     100deg,
     var(--p2-secondary),
-    var(--p2-primary) 60%
+    var(--p2-primary) 70%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-family: 'P2 Script', cursive;
-  font-size: clamp(104px, 17vw, 300px);
-  line-height: 1.5;
-  padding: 0.1em 0.25em;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
+}
+.heroLead {
+  margin: 0;
+  max-width: 600px;
+  color: var(--p2-muted);
+  font-size: var(--p2-text-lg);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.heroActions .downloads {
+  margin: 0;
+}
+/* 주 버튼과 포트폴리오 버튼을 같은 폭으로 맞춘다. 좁은 화면에서는 아래 규칙이 100%로 바꾼다. */
+.heroPrimary,
+.heroActions .downloads a,
+.heroActions .downloads span {
+  width: 200px;
+}
+.heroPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  min-width: 170px;
+  padding: 0 22px;
+  border: 1px solid var(--p2-primary);
+  border-radius: 12px;
+  background: var(--p2-primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
+}
+.heroPrimary > span {
+  transition: transform 0.25s var(--p2-ease);
+}
+@media (hover: hover) {
+  .heroPrimary:hover {
+    background: var(--p2-primary-ink);
+    border-color: var(--p2-primary-ink);
+  }
+  .heroPrimary:hover > span {
+    transform: translateY(3px);
+  }
 }
 .petals {
   width: 58%;
@@ -360,23 +424,6 @@
   stroke-linejoin: round;
   animation: p2-spin 18s linear infinite;
 }
-.greeting {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  font-size: clamp(36px, 5.2vw, 88px);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.25;
-  text-align: center;
-}
-.name {
-  font-weight: 600;
-}
-.hero > .greeting,
-.hero > .downloads {
-  top: 36px;
-}
 .downloads {
   position: relative;
   z-index: 1;
@@ -384,7 +431,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  margin: -12px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -393,7 +440,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 48px;
   min-width: 170px;
   justify-content: center;
   padding: 0 16px;
@@ -421,14 +468,14 @@
   opacity: 0.7;
 }
 .downloads a {
-  background: #fff;
-  color: #48329b;
-  border-color: #8976c9;
+  background: var(--p2-surface);
+  color: var(--p2-primary-ink);
+  border-color: color-mix(in srgb, var(--p2-primary) 60%, transparent);
 }
 @media (hover: hover) {
   .downloads a:hover {
-    border-color: #6145b8;
-    background: #f0ebfc;
+    border-color: var(--p2-primary);
+    background: var(--p2-primary-soft);
   }
 }
 .downloads span {
@@ -436,10 +483,6 @@
   background: transparent;
   color: var(--p2-muted);
   cursor: default;
-}
-.downloads small {
-  font-size: 12px;
-  font-weight: 500;
 }
 .asterisk {
   display: inline-block;
@@ -568,11 +611,38 @@
   border-radius: 16px;
   background: color-mix(in srgb, var(--p2-fg) 2%, transparent);
 }
-.aboutCards span {
+/* 경력 단계 아이콘 배지: 연보라 그라디언트 위 선 아이콘 */
+.storyIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border: 1px solid color-mix(in srgb, var(--p2-primary) 18%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--p2-secondary) 16%, transparent),
+    color-mix(in srgb, var(--p2-primary) 14%, transparent)
+  );
   color: var(--p2-primary-ink);
-  font-family: var(--p2-symbol);
-  font-size: 15px;
-  font-weight: 700;
+}
+.storyIcon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.storyIconDots {
+  stroke-width: 2.6;
+}
+.aboutCards small {
+  color: var(--p2-muted);
+  font-size: 13px;
+  font-weight: 600;
 }
 .aboutCards h3 {
   margin: 0;
@@ -584,21 +654,62 @@
   font-size: 14px;
   line-height: 1.7;
 }
+/* 직무 연관 이력: 왼쪽 세로선과 점으로 잇는 타임라인. 지금 다니는 곳은 점을 채운다. */
 .career ol {
+  position: relative;
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 28px;
   list-style: none;
 }
+.career ol::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  bottom: 26px;
+  left: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    var(--p2-primary),
+    color-mix(in srgb, var(--p2-primary) 15%, var(--p2-line))
+  );
+}
 .career li {
+  position: relative;
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
   gap: 4px 32px;
   align-items: baseline;
-  padding: 14px 0;
-  border-top: 1px solid var(--p2-line);
+  padding: 16px 20px;
+  border-radius: var(--p2-radius);
+  transition: background 0.25s;
 }
-.career li:last-child {
-  border-bottom: 1px solid var(--p2-line);
+.career li + li {
+  margin-top: 4px;
+}
+.career li::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: -26px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid color-mix(in srgb, var(--p2-primary) 55%, var(--p2-bg));
+  border-radius: 50%;
+  background: var(--p2-bg);
+}
+.career li[data-current]::before {
+  border-color: var(--p2-primary);
+  background: var(--p2-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--p2-primary) 18%, transparent);
+}
+.career li[data-current] {
+  background: color-mix(in srgb, var(--p2-primary) 5%, transparent);
+}
+@media (hover: hover) {
+  .career li:hover {
+    background: var(--p2-primary-soft);
+  }
 }
 .career li > span {
   color: var(--p2-muted);
@@ -607,7 +718,7 @@
 }
 .career p {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 12px;
   margin: 0;
   color: var(--p2-muted);
@@ -615,9 +726,22 @@
   line-height: 1.5;
 }
 .career strong {
-  margin-right: 4px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   color: var(--p2-fg);
   font-weight: 700;
+}
+.careerTag {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--p2-primary) 30%, transparent);
+  border-radius: 999px;
+  background: var(--p2-surface);
+  color: var(--p2-primary-ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 .stack {
   display: flex;
@@ -1078,46 +1202,114 @@
   border-top: 1px solid var(--p2-line);
   background: color-mix(in srgb, var(--p2-fg) 2%, var(--p2-bg));
 }
-.contactHeading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+.footer > .label {
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--p2-line);
   margin-bottom: 28px;
+  border-bottom: 1px solid var(--p2-line);
 }
-.contactHeading h2 {
-  margin: 0;
-  font-size: 24px;
-}
-.contactHeading > span {
-  color: var(--p2-muted);
-  font-size: 12px;
-}
+/* 히어로와 같은 분홍·보라·파랑 빛을 카드 모서리에 은은하게 번지게 한다. */
 .closing {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: center;
-  gap: 40px;
-  padding: clamp(24px, 4vw, 48px);
-  border-radius: 12px;
-  background: var(--p2-surface);
+  gap: clamp(28px, 4vw, 56px);
+  padding: clamp(28px, 5vw, 64px);
+  border: 1px solid color-mix(in srgb, var(--p2-primary) 16%, var(--p2-line));
+  border-radius: calc(var(--p2-radius) * 2);
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in srgb, #e48ce4 22%, transparent),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      color-mix(in srgb, #565ef2 18%, transparent),
+      transparent 46%
+    ),
+    radial-gradient(
+      circle at 70% 10%,
+      color-mix(in srgb, #a46cf0 14%, transparent),
+      transparent 38%
+    ),
+    var(--p2-surface);
   color: var(--p2-fg);
   margin-bottom: 48px;
+}
+/* 카드 뒤에 깔리는 큰 인사말. 장식이라 읽지 않는다. */
+.closing::after {
+  content: 'Hello';
+  position: absolute;
+  z-index: -1;
+  right: -0.06em;
+  bottom: -0.3em;
+  color: color-mix(in srgb, var(--p2-primary) 6%, transparent);
+  font-size: clamp(120px, 22vw, 300px);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  pointer-events: none;
+}
+.closingIntro {
+  min-width: 0;
+}
+.availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--p2-primary) 22%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--p2-surface) 70%, transparent);
+  color: var(--p2-primary-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.availability > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22a06b;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #22a06b 22%, transparent);
+  animation: p2-pulse 2s ease-in-out infinite;
 }
 .closingText {
   color: var(--p2-fg);
   margin: 0;
-  font-size: clamp(24px, 2.4vw, 32px);
-  line-height: 1.5;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.35;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+.closingText em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--p2-primary), var(--p2-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .contactDescription {
-  margin: 12px 0 0;
+  max-width: 44ch;
+  margin: 16px 0 0;
   color: var(--p2-muted);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.8;
+  word-break: keep-all;
+}
+.contactPanel {
+  min-width: 0;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid var(--p2-line);
+  border-radius: calc(var(--p2-radius) * 1.5);
+  background: color-mix(in srgb, var(--p2-surface) 78%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 16px 40px -24px
+    color-mix(in srgb, var(--p2-primary) 45%, transparent);
 }
 .contactLinks {
   margin: 0;
@@ -1125,28 +1317,64 @@
 }
 .contactLinks > div {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-  min-height: 52px;
+  gap: 4px;
+  padding: 14px 0;
+}
+.contactLinks > div + div {
   border-top: 1px solid var(--p2-line);
 }
 .contactLinks dt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: var(--p2-primary-ink);
   font-family: var(--p2-symbol);
   font-size: 12px;
   letter-spacing: 0.08em;
 }
+.contactIcon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--p2-primary) 18%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--p2-secondary) 16%, transparent),
+    color-mix(in srgb, var(--p2-primary) 14%, transparent)
+  );
+}
+.contactIcon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .contactLinks dd {
   margin: 0;
+  padding-left: 42px;
   min-width: 0;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 .contactLinks a {
   display: flex;
   align-items: center;
   min-height: 44px;
+  text-underline-offset: 4px;
+}
+@media (hover: hover) {
+  .contactLinks a:hover,
+  .emailBox button:hover {
+    color: var(--p2-primary-ink);
+    text-decoration: underline;
+  }
 }
 .emailBox button {
   min-height: 44px;
@@ -1170,7 +1398,7 @@
   }
   .footer .closingText {
     color: var(--p2-fg);
-    font-size: 24px;
+    font-size: 28px;
   }
   .footer .emailBox {
     min-width: 0;
@@ -1179,10 +1407,10 @@
   .footer .emailBox button {
     min-height: 44px;
     padding: 0;
-    font-size: 14px;
+    font-size: 15px;
   }
-  .contactHeading {
-    flex-wrap: wrap;
+  .contactLinks dd {
+    padding-left: 0;
   }
 }
 .legal {
@@ -1244,7 +1472,10 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  /* 아래쪽 독과 겹치지 않도록 히어로 하단 정보를 독 위로 올린다. */
+  /* 아래쪽 독(16px + 56px)이 버튼을 가리지 않도록 자리를 비운다. */
+  .hero {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
   .logo {
     font-size: 26px;
   }
@@ -1254,17 +1485,27 @@
   }
 }
 @media (max-width: 767px) {
-  /* 2) 첫 화면 높이를 내용에 맞춰 About me까지의 빈 공간을 줄인다. */
+  /* 2) 데스크톱처럼 첫 화면을 한 화면 높이로 채운다. 내용이 길면 늘어난다. */
   .hero {
     gap: 28px;
-    min-height: auto;
-    padding-bottom: 8px;
+    min-height: 100svh;
   }
   .section {
     margin-top: 40px;
   }
+  .career ol {
+    padding-left: 22px;
+  }
+  .career ol::before {
+    left: 5px;
+  }
   .career li {
     grid-template-columns: 1fr;
+    padding: 12px 14px;
+  }
+  .career li::before {
+    top: 18px;
+    left: -22px;
   }
   .career p {
     grid-template-columns: 1fr;
@@ -1273,14 +1514,24 @@
   .career li > span {
     font-size: var(--p2-text-sm);
   }
-  .greeting {
+  .hero {
     text-align: left;
-    align-self: flex-start;
   }
-  .downloads {
-    align-self: flex-start;
+  .heroContent {
+    align-self: stretch;
+    justify-items: start;
+  }
+  .heroEyebrow,
+  .heroActions {
     justify-content: flex-start;
-    margin-top: -8px;
+  }
+  .heroActions,
+  .heroActions .downloads,
+  .heroActions .downloads li,
+  .heroActions .downloads a,
+  .heroActions .downloads span,
+  .heroPrimary {
+    width: 100%;
   }
   .feature {
     grid-template-columns: 1fr;
@@ -1394,56 +1645,21 @@
   text-decoration: underline;
 }
 
-.closing {
-  border: 1px solid var(--p2-line);
-}
+/* 연락처 패널의 PDF 두 개는 같은 폭으로 나란히, 모바일에서는 위아래로 쌓는다. */
 .closing .contactDownloads {
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 20px;
 }
-
-.scrollPrompt {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 44px;
-  min-height: 56px;
-  color: var(--p2-muted);
-  font-size: 16px;
-}
-.scrollPrompt > span:last-child {
-  font-size: 22px;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .scrollPrompt > span:last-child {
-    animation: scroll-nudge 1.8s ease-in-out infinite;
-  }
-}
-@keyframes scroll-nudge {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(6px);
-  }
+.closing .contactDownloads a,
+.closing .contactDownloads span {
+  width: 100%;
+  min-width: 0;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 @media (max-width: 767px) {
-  .scrollPrompt {
-    bottom: 16px;
-  }
-}
-
-@media (max-width: 767px) {
-  .scrollPrompt {
-    position: static;
-    transform: none;
-    margin: 16px 0 24px;
+  .closing .contactDownloads {
+    grid-template-columns: 1fr;
   }
 }

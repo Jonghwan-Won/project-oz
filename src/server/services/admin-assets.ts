@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { realpath, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { pool } from '@/server/db';
+import { assetInUseSql, portfolioAssetIds } from '@/server/portfolio-assets';
 import {
   assetIdsValid,
   emptyAssetSearch,
@@ -16,7 +17,8 @@ import {
 export async function getUnusedAssetSummary() {
   await requireAdmin();
   const result = await pool.query(
-    `SELECT count(*)::int AS count,COALESCE(sum(a."byteSize"),0)::float8 AS size FROM "Asset" a WHERE NOT EXISTS (SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) AND NOT EXISTS (SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id)`,
+    `SELECT count(*)::int AS count,COALESCE(sum(a."byteSize"),0)::float8 AS size FROM "Asset" a WHERE NOT ${assetInUseSql('a', '$1')}`,
+    [portfolioAssetIds()],
   );
   return result.rows[0] as { count: number; size: number };
 }
@@ -30,24 +32,29 @@ export async function getAdminAssets(
       assets: [],
       totals: { total: 0, size: 0, unused: 0, unusedSize: 0 },
     };
+  // [이력서 ID, 포트폴리오 ID] 순서. 지정되지 않은 값은 빈 문자열이다.
+  const portfolioIds = portfolioAssetIds();
   const [result, totals] = await Promise.all([
     pool.query<AdminAsset>(
       `SELECT a.id,${publicOnly ? "'비공개 파일명'" : 'a."originalName"'} AS name,a."byteSize"::float8 AS size,to_char(a."createdAt" AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "createdAt",
     COALESCE((SELECT jsonb_agg(u) FROM (
       SELECT 'project' AS type,${publicOnly ? 'NULL::text' : 'p.id::text'} AS id,${publicOnly ? "'프로젝트'" : 'COALESCE(t.title,p.slug)'} AS title,pa.usage::text AS usage,(p."deletedAt" IS NOT NULL) AS deleted FROM "ProjectAsset" pa JOIN "Project" p ON p.id=pa."projectId" LEFT JOIN "ProjectTranslation" t ON t."projectId"=p.id AND t.locale='ko' WHERE pa."assetId"=a.id
       UNION ALL SELECT 'post',${publicOnly ? 'NULL::text' : 'p.id::text'},${publicOnly ? "'게시글'" : 'COALESCE(t.title,p.slug)'},'INLINE',(p."deletedAt" IS NOT NULL) FROM "PostAsset" pa JOIN "Post" p ON p.id=pa."postId" LEFT JOIN "PostTranslation" t ON t."postId"=p.id AND t.locale='ko' WHERE pa."assetId"=a.id
+      UNION ALL SELECT 'portfolio',NULL::text,CASE WHEN a.id::text=($4::text[])[1] THEN '이력서 PDF' ELSE '포트폴리오 PDF' END,'PORTFOLIO',false WHERE a.id::text = ANY($4::text[])
     ) u),'[]'::jsonb) AS usages FROM "Asset" a
     WHERE ${publicOnly ? "$1::text = ''" : 'position(lower($1) in lower(a."originalName")) > 0'}
-    AND ($2 = 'all' OR (EXISTS(SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) OR EXISTS(SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id)) = ($2 = 'used'))
+    AND ($2 = 'all' OR ${assetInUseSql('a', '$4')} = ($2 = 'used'))
     ORDER BY CASE WHEN $3='size' THEN a."byteSize" END DESC, CASE WHEN $3='old' THEN a."createdAt" END ASC, a."createdAt" DESC,a.id`,
       [
         publicOnly ? '' : search.keyword.trim(),
         ['used', 'unused'].includes(search.filter) ? search.filter : 'all',
         ['old', 'size'].includes(search.sort) ? search.sort : 'new',
+        portfolioIds,
       ],
     ),
     pool.query(
-      `SELECT count(*)::int AS total,COALESCE(sum(a."byteSize"),0)::float8 AS size,count(*) FILTER (WHERE NOT EXISTS(SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) AND NOT EXISTS(SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id))::int AS unused,COALESCE(sum(a."byteSize") FILTER (WHERE NOT EXISTS(SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) AND NOT EXISTS(SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id)),0)::float8 AS "unusedSize" FROM "Asset" a`,
+      `SELECT count(*)::int AS total,COALESCE(sum(a."byteSize"),0)::float8 AS size,count(*) FILTER (WHERE NOT ${assetInUseSql('a', '$1')})::int AS unused,COALESCE(sum(a."byteSize") FILTER (WHERE NOT ${assetInUseSql('a', '$1')}),0)::float8 AS "unusedSize" FROM "Asset" a`,
+      [portfolioIds],
     ),
   ]);
   return {
@@ -77,8 +84,8 @@ async function removeOne(id: string): Promise<string | null> {
     ).rows[0];
     if (!row) throw Error('파일이 이미 삭제되었습니다.');
     const refs = await client.query(
-      'SELECT EXISTS(SELECT 1 FROM "ProjectAsset" WHERE "assetId"=$1) OR EXISTS(SELECT 1 FROM "PostAsset" WHERE "assetId"=$1) AS used',
-      [id],
+      `SELECT ${assetInUseSql('a', '$2')} AS used FROM "Asset" a WHERE a.id=$1`,
+      [id, portfolioAssetIds()],
     );
     if (refs.rows[0].used) throw Error('사용 중인 파일은 삭제할 수 없습니다.');
     if (
