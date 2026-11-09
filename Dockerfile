@@ -22,6 +22,8 @@ ENV LOG_ROOT=/app/logs
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/README.md ./README.md
+COPY --from=build --chown=node:node /app/docs ./docs
 RUN mkdir -p /app/logs && chown node:node /app/logs
 USER node
 EXPOSE 3000

@@ -8,7 +8,13 @@ export async function getGuideDocuments() {
   if (!(await getAdminSession(await headers()))) return [];
   const entries = await readdir(path.join(process.cwd(), 'docs'), {
     withFileTypes: true,
+  }).catch((error: unknown) => {
+    // Optional server documents must not break the local-file Markdown viewer.
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT')
+      return [];
+    throw error;
   });
+  if (entries.length === 0) return [];
   const files = entries
     .filter(
       (entry) =>

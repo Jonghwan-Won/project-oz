@@ -7,7 +7,7 @@ import { SiteFrame } from '@/components/SiteFrame';
 import { NavigationScroll } from '@/components/NavigationScroll';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { MantineRoot } from '@/components/MantineRoot';
-import '@mantine/core/styles.css';
+import '@mantine/core/styles.layer.css';
 import './globals.css';
 export async function generateMetadata(): Promise<Metadata> {
   const { messages } = await getMessages();

@@ -3,7 +3,8 @@ node_modules
 .git
 .env*
 tests
-docs
+docs/*
+!docs/[0-9][0-9]-*.md
 *.log
 *.tsbuildinfo
 
