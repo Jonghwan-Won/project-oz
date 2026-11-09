@@ -6,6 +6,18 @@ import { CommonLoading } from './CommonLoading';
 import s from './CommonFileUpload.module.css';
 import { maxUploadBytes, type UploadedAsset } from '@/lib/files';
 import { uploadFile } from '@/lib/upload-file';
+
+export const defaultFileUploadLabels = {
+  uploading: '업로드 중…',
+  duplicate: '같은 이름의 파일이 이미 첨부되어 있습니다.',
+  tooLarge: '파일은 10MB 이하여야 합니다.',
+  imagesOnly: 'PNG·JPEG·WebP 이미지를 선택해 주세요.',
+  uploadingStatus: 'NAS에 업로드하고 있어요.',
+  failed: '업로드에 실패했습니다.',
+  hint: '최대 10MB · PNG, JPEG, WebP',
+  hintPdf: ' · PDF',
+};
+export type FileUploadLabels = typeof defaultFileUploadLabels;
 export function CommonFileUpload({
   label,
   disabled = false,
@@ -19,6 +31,7 @@ export function CommonFileUpload({
   children,
   onUploaded,
   onBusyChange,
+  labels = defaultFileUploadLabels,
 }: {
   label: string;
   disabled?: boolean;
@@ -32,6 +45,7 @@ export function CommonFileUpload({
   children?: ReactNode;
   onUploaded: (asset: UploadedAsset) => void;
   onBusyChange?: (busy: boolean) => void;
+  labels?: FileUploadLabels;
 }) {
   const id = useId();
   const controller = useRef<AbortController | null>(null);
@@ -41,7 +55,7 @@ export function CommonFileUpload({
   return (
     <div className={compact && !bare ? s.withFiles : bare ? s.bare : undefined}>
       <CommonFilePicker
-        label={busy ? '업로드 중…' : label}
+        label={busy ? labels.uploading : label}
         compact={compact}
         native={native}
         icon={icon}
@@ -61,23 +75,23 @@ export function CommonFileUpload({
               (name) => normalize(name) === normalize(file.name),
             )
           ) {
-            setMessage('같은 이름의 파일이 이미 첨부되어 있습니다.');
+            setMessage(labels.duplicate);
             return;
           }
           if (file.size > maxUploadBytes) {
-            setMessage('파일은 10MB 이하여야 합니다.');
+            setMessage(labels.tooLarge);
             return;
           }
           if (
             imagesOnly &&
             !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
           ) {
-            setMessage('PNG·JPEG·WebP 이미지를 선택해 주세요.');
+            setMessage(labels.imagesOnly);
             return;
           }
           setBusy(true);
           onBusyChange?.(true);
-          setMessage('NAS에 업로드하고 있어요.');
+          setMessage(labels.uploadingStatus);
           controller.current = new AbortController();
           const signal = controller.current.signal;
           try {
@@ -88,9 +102,7 @@ export function CommonFileUpload({
           } catch (error) {
             if (!signal.aborted)
               setMessage(
-                error instanceof Error
-                  ? error.message
-                  : '업로드에 실패했습니다.',
+                error instanceof Error ? error.message : labels.failed,
               );
           } finally {
             setBusy(false);
@@ -104,8 +116,7 @@ export function CommonFileUpload({
         role="status"
         className={(compact || hideHint) && !message ? 'srOnly' : undefined}
       >
-        {message ||
-          '최대 10MB · PNG, JPEG, WebP' + (imagesOnly ? '' : ' · PDF')}
+        {message || labels.hint + (imagesOnly ? '' : labels.hintPdf)}
       </small>
       <CommonLoading open={busy} />
     </div>

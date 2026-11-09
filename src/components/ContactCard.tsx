@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sharedCopy } from '@/i18n/shared-copy';
 import s from './ContactCard.module.css';
 
 export function ContactCard({
@@ -13,7 +14,7 @@ export function ContactCard({
   locale: string;
 }) {
   const [status, setStatus] = useState('');
-  const en = locale === 'en';
+  const copy = sharedCopy(locale).contactCard;
   useEffect(() => {
     if (status !== 'copied') return;
     const timer = setTimeout(() => setStatus(''), 2000);
@@ -24,11 +25,7 @@ export function ContactCard({
       await navigator.clipboard.writeText('anarose4815@naver.com');
       setStatus('copied');
     } catch {
-      setStatus(
-        en
-          ? 'Copy failed. Please copy the address manually.'
-          : '복사하지 못했습니다. 주소를 직접 복사해 주세요.',
-      );
+      setStatus(copy.copyFailed);
     }
   }
   return (
@@ -45,8 +42,8 @@ export function ContactCard({
           <button
             type="button"
             onClick={copyEmail}
-            aria-label={en ? 'Copy email address' : '이메일 주소 복사'}
-            title={en ? 'Copy email address' : '이메일 주소 복사'}
+            aria-label={copy.copy}
+            title={copy.copy}
           >
             <svg
               width="20"
@@ -72,7 +69,7 @@ export function ContactCard({
         </div>
         <span className={s.status} role="status">
           {status === 'copied' ? (
-            <span className={s.srOnly}>{en ? 'Copied' : '복사 완료'}</span>
+            <span className={s.srOnly}>{copy.copied}</span>
           ) : (
             status
           )}
@@ -81,9 +78,7 @@ export function ContactCard({
           href="https://github.com/Jonghwan-Won"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={
-            en ? 'GitHub (opens in a new tab)' : 'GitHub (새 탭에서 열기)'
-          }
+          aria-label={copy.github}
         >
           <span>
             <small>GITHUB</small>

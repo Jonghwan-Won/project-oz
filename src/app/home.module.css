@@ -1,6 +1,7 @@
 /* 사이트 공통 헤더·푸터는 이 페이지 전용 헤더·푸터로 대체한다. */
+/* body는 .page 바깥이라 --p2-bg를 못 읽는다. 같은 값인 전역 --bg(라이트 #f8f8f8, 다크 #000)를 쓴다. */
 :global(body):has(.page) {
-  background: var(--p2-bg, #f8f8f8);
+  background: var(--bg);
 }
 :global(body):has(.page) :global(.siteHeader),
 :global(body):has(.page) > footer {
@@ -15,6 +16,8 @@
   --p2-primary: #6a4fd6;
   --p2-primary-ink: #5940ad;
   --p2-primary-soft: #6a4fd614;
+  --p2-primary-hover: #5940ad;
+  --p2-on-primary: #fff;
   --p2-secondary: #3f7fe6;
   --p2-muted: #0a0a0aa3;
   --p2-line: #0a0a0a1f;
@@ -37,6 +40,24 @@
   font-family: var(--p2-sans);
   word-break: keep-all;
   overflow-wrap: anywhere;
+}
+/* 다크 테마. 배경·카드·선은 globals.css의 다크 값(--bg #000, --surface #141414)과 맞춰
+   메인과 내부 화면(SiteFrame 안)의 색이 이어지게 한다. */
+:global(html[data-theme='dark']) .page {
+  --p2-bg: #000;
+  --p2-fg: #f5f5f5;
+  --p2-surface: #141414;
+  --p2-primary: #9a86f2;
+  --p2-primary-ink: #c2b6fb;
+  --p2-primary-soft: #baacff1f;
+  --p2-primary-hover: #b3a4f7;
+  --p2-on-primary: #14102a;
+  --p2-secondary: #86baff;
+  --p2-muted: #f5f5f5a3;
+  --p2-line: #f5f5f524;
+  --p2-line-strong: #f5f5f566;
+  --p2-overlay: #000000eb;
+  color-scheme: dark;
 }
 
 .page a:focus-visible,
@@ -202,6 +223,318 @@
   align-items: center;
   min-height: 44px;
 }
+/* 오른쪽 끝: 이동 링크 │ 언어 · 테마 버튼. 성격이 다른 두 묶음을 구분선으로 나눈다. */
+.headerEnd {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: clamp(14px, 1.6vw, 22px);
+}
+.headerDivider {
+  width: 1px;
+  height: 18px;
+  background: var(--p2-line-strong);
+  opacity: 0.6;
+}
+.headerSettings {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: -10px; /* 아이콘 글리프의 오른쪽 끝을 거터에 맞춘다. */
+}
+.settingButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--p2-fg);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.settingButton:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+@media (hover: hover) {
+  .settingButton:hover {
+    background: var(--p2-primary-soft);
+    color: var(--p2-primary-ink);
+  }
+}
+/* ---------- 모바일 메뉴 (1023px 이하에서만 보인다) ---------- */
+.mobileBar,
+.sideNav,
+.sideNavBackdrop {
+  display: none;
+}
+.page {
+  --side-nav-ease: cubic-bezier(0.715, 0.055, 0.225, 1);
+  --side-nav-curve: 8vw;
+  --side-nav-bg: var(--p2-bg);
+  --side-nav-fg: var(--p2-fg);
+  --side-nav-muted: var(--p2-muted);
+  --side-nav-line: var(--p2-line);
+  --side-nav-num: var(--p2-primary);
+  --side-nav-active: var(--p2-primary-ink);
+  --side-nav-hover-bg: var(--p2-primary-soft);
+  --side-nav-shadow: #24203d29;
+  --side-nav-dim: #0a0a0a2e;
+}
+/* 메인 본문은 아직 라이트 전용이라, 다크 테마에서는 메뉴 패널만 어둡게 바꾼다. */
+:global(html[data-theme='dark']) .page {
+  --side-nav-bg: #0a0a0a;
+  --side-nav-fg: #f8f8f8;
+  --side-nav-muted: #f8f8f8b8;
+  --side-nav-line: #f8f8f82e;
+  --side-nav-num: #a99bf0;
+  --side-nav-active: #c9bffa;
+  --side-nav-hover-bg: #f8f8f824;
+  --side-nav-shadow: #00000066;
+  --side-nav-dim: #0a0a0a59;
+}
+.mobileBar {
+  position: relative;
+  z-index: 2;
+  align-items: center;
+  gap: 2px;
+  margin-right: -10px; /* 아이콘 글리프의 오른쪽 끝을 거터에 맞춘다. */
+  transition: color 0.4s;
+}
+.mobileSettings {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(12px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s,
+    visibility 0s 0.3s;
+}
+.header[data-menu-open] .mobileSettings {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.3s 0.15s,
+    transform 0.3s 0.15s,
+    visibility 0s;
+}
+.header[data-menu-open] .mobileBar {
+  color: var(--side-nav-fg);
+}
+.header[data-menu-open] .settingButton {
+  color: inherit;
+}
+@media (hover: hover) {
+  .header[data-menu-open] .settingButton:hover {
+    background: var(--side-nav-hover-bg);
+    color: var(--side-nav-active);
+  }
+}
+/* 세 줄 → X */
+.menuButton {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.menuButton span {
+  position: absolute;
+  left: 10px;
+  width: 24px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transition:
+    top 0.3s ease-in-out,
+    transform 0.3s ease-in-out,
+    opacity 0.2s;
+}
+.menuButton span:nth-child(1) {
+  top: 14px;
+}
+.menuButton span:nth-child(2) {
+  top: 21px;
+}
+.menuButton span:nth-child(3) {
+  top: 28px;
+}
+.menuButton[aria-expanded='true'] span:nth-child(1) {
+  top: 21px;
+  transform: rotate(45deg);
+}
+.menuButton[aria-expanded='true'] span:nth-child(2) {
+  opacity: 0;
+}
+.menuButton[aria-expanded='true'] span:nth-child(3) {
+  top: 21px;
+  transform: rotate(-45deg);
+}
+/* 오른쪽에서 들어오는 패널. 왼쪽 가장자리가 곡선으로 부풀었다가 펴진다. */
+.sideNav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: min(450px, 100vw);
+  height: 100dvh;
+  background: var(--side-nav-bg);
+  color: var(--side-nav-fg);
+  /* 곡선 가장자리까지 따라가는 그림자. 밝은 패널이 밝은 본문과 구분된다. */
+  filter: drop-shadow(-12px 0 32px var(--side-nav-shadow));
+  transform: translateX(calc(100% + var(--side-nav-curve)));
+  transition: transform 0.5s var(--side-nav-ease);
+}
+.header[data-menu-open] .sideNav {
+  transform: none;
+}
+.sideNavCurve {
+  position: absolute;
+  top: 0;
+  left: 1px;
+  width: var(--side-nav-curve);
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(-100%);
+  transition: width 0.55s var(--side-nav-ease);
+}
+.sideNavCurve span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 775%;
+  height: 150%;
+  border-radius: 50%;
+  background: var(--side-nav-bg);
+  transform: translate(-6.5%, -50%);
+}
+.header[data-menu-open] .sideNavCurve {
+  width: 0;
+}
+.sideNavInner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 40px;
+  height: 100%;
+  padding: calc(var(--p2-header) + 36px) 48px
+    calc(40px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  transform: translateX(10%);
+  transition: transform 0.5s var(--side-nav-ease);
+}
+.header[data-menu-open] .sideNavInner {
+  transform: none;
+}
+.sideNavInner ol,
+.sideNavInner ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sideNavInner li {
+  transform: translateX(80%);
+  transition: transform 0.5s var(--side-nav-ease);
+}
+.sideNavInner li:nth-child(2) {
+  transition-delay: 30ms;
+}
+.sideNavInner li:nth-child(3) {
+  transition-delay: 60ms;
+}
+.header[data-menu-open] .sideNavInner li {
+  transform: none;
+}
+.sideNavInner a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+}
+.page .sideNavInner a:focus-visible {
+  outline-color: var(--side-nav-active);
+}
+.sideNavSections {
+  display: grid;
+  gap: 12px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.sideNavSections a {
+  gap: 8px;
+}
+.sideNavSections a span {
+  color: var(--side-nav-num);
+  font-family: var(--p2-symbol);
+  font-size: 14px;
+  font-weight: 600;
+}
+.sideNavSections a[aria-current] {
+  color: var(--side-nav-active);
+}
+.sideNavInner .sideNavPages {
+  display: grid;
+  gap: 2px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--side-nav-line);
+  font-size: 18px;
+  font-weight: 600;
+}
+.sideNavPages a {
+  color: var(--side-nav-muted);
+}
+.sideNavPages a[aria-current] {
+  color: var(--side-nav-fg);
+}
+.sideNavLinks {
+  display: flex;
+  gap: 40px;
+  font-size: 15px;
+  font-weight: 700;
+}
+@media (hover: hover) {
+  .sideNavPages a:hover,
+  .sideNavLinks a:hover {
+    color: var(--side-nav-fg);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .sideNavSections a:hover {
+    color: var(--side-nav-active);
+  }
+}
+/* 패널이 화면 전체를 덮지 않는 폭(태블릿)에서 바깥을 어둡게 하고, 누르면 닫는다. */
+.sideNavBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--side-nav-dim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+.header[data-menu-open] .sideNavBackdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* 섹션 독: 홈 화면의 유리 pill 목차와 같은 모양에 아이콘 대신 글자를 넣었다. */
 .dock {
   --dock-bg: #ffffffb8;
@@ -220,6 +553,16 @@
     0 8px 28px #24203d14,
     inset 0 1px 0 #ffffff99;
   font-size: 15px;
+}
+:global(html[data-theme='dark']) .dock {
+  --dock-bg: #141414b8;
+  --dock-border: #f5f5f524;
+  --dock-ink: #bdbac9;
+  --dock-active: #c2b6fb;
+  --dock-drop: linear-gradient(145deg, #baacff3d, #8971df1f);
+  box-shadow:
+    0 8px 28px #00000066,
+    inset 0 1px 0 #ffffff14;
 }
 
 @supports (backdrop-filter: blur(20px)) {
@@ -319,6 +662,11 @@
     linear-gradient(to top, var(--p2-bg), transparent 24%),
     repeating-linear-gradient(60deg, #f5f2fc 0, #fbfaff 70px, #f0ecfa 150px);
 }
+:global(html[data-theme='dark']) .heroBackground {
+  background:
+    linear-gradient(to top, var(--p2-bg), transparent 24%),
+    repeating-linear-gradient(60deg, #0d0b14 0, #14111f 70px, #0a0910 150px);
+}
 .heroContent {
   position: relative;
   z-index: 1;
@@ -396,7 +744,7 @@
   border: 1px solid var(--p2-primary);
   border-radius: 12px;
   background: var(--p2-primary);
-  color: #fff;
+  color: var(--p2-on-primary);
   font-size: 15px;
   font-weight: 600;
   transition:
@@ -408,8 +756,8 @@
 }
 @media (hover: hover) {
   .heroPrimary:hover {
-    background: var(--p2-primary-ink);
-    border-color: var(--p2-primary-ink);
+    background: var(--p2-primary-hover);
+    border-color: var(--p2-primary-hover);
   }
   .heroPrimary:hover > span {
     transform: translateY(3px);
@@ -418,7 +766,7 @@
 .petals {
   width: 58%;
   fill: none;
-  stroke: #5940ad;
+  stroke: var(--p2-primary-ink);
   stroke-width: 5;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1407,7 +1755,6 @@
   .footer .emailBox button {
     min-height: 44px;
     padding: 0;
-    font-size: 15px;
   }
   .contactLinks dd {
     padding-left: 0;
@@ -1455,33 +1802,42 @@
     background: var(--p2-bg);
     border-bottom-color: var(--p2-line);
   }
-  /* 좁은 화면에서는 홈처럼 화면 아래 가운데에 떠 있는 독이 된다. */
-  .dock {
-    position: fixed;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    left: 50%;
-    z-index: 0;
-    transform: translateX(-50%);
+  /* 섹션 독과 오른쪽 링크·설정은 메뉴 패널로 옮긴다. */
+  .dock,
+  .headerEnd {
+    display: none;
   }
-  .dock a {
-    padding: 0 14px;
-    font-size: 14px;
+  .mobileBar {
+    display: flex;
   }
-  /* backdrop-filter가 있으면 고정 위치 자식(독)의 기준이 헤더로 바뀌므로 끈다. */
+  .sideNav,
+  .sideNavBackdrop {
+    display: block;
+  }
+  /* backdrop-filter가 있으면 고정 위치 자식(메뉴 패널)의 기준이 헤더로 바뀌므로 끈다. */
   .header[data-scrolled] {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  /* 아래쪽 독(16px + 56px)이 버튼을 가리지 않도록 자리를 비운다. */
-  .hero {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
-  }
   .logo {
+    position: relative;
+    z-index: 2;
     font-size: 26px;
+    transition: color 0.4s;
   }
-  .headerLinks {
-    gap: 16px;
-    font-size: 14px;
+}
+@media (max-width: 479px) {
+  .logo {
+    font-size: 22px;
+  }
+  .sideNavInner {
+    padding-inline: 32px;
+  }
+}
+/* 패널이 화면 전체 폭(450px 이하)이면 로고도 패널 위에 놓이므로 패널 글자색을 따른다. */
+@media (max-width: 450px) {
+  .header[data-menu-open] .logo {
+    color: var(--side-nav-fg);
   }
 }
 @media (max-width: 767px) {
@@ -1591,16 +1947,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-}
-/* 아주 좁은 화면: 독을 줄여 우하단 '맨 위로' 버튼과 겹치지 않게 한다. */
-@media (max-width: 479px) {
-  .dock a {
-    padding: 0 12px;
-    font-size: 13px;
-  }
-  .dock sup {
-    display: none;
   }
 }
 

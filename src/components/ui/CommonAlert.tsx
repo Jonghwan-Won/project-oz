@@ -5,6 +5,9 @@ import { Modal } from '@mantine/core';
 import { CommonButton } from './CommonButton';
 import s from './CommonAlert.module.css';
 
+export const defaultAlertLabels = { alert: '알림', errorAlert: '오류 알림' };
+export type AlertLabels = typeof defaultAlertLabels;
+
 export function CommonAlert({
   open,
   onClose,
@@ -12,6 +15,7 @@ export function CommonAlert({
   confirmLabel = '확인',
   variant = 'default',
   width = 360,
+  labels = defaultAlertLabels,
 }: {
   open: boolean;
   onClose: () => void;
@@ -19,6 +23,7 @@ export function CommonAlert({
   confirmLabel?: string;
   variant?: 'default' | 'error';
   width?: number;
+  labels?: AlertLabels;
 }) {
   const id = useId();
   return (
@@ -33,7 +38,7 @@ export function CommonAlert({
       withCloseButton={false}
       closeOnClickOutside={false}
       role="alertdialog"
-      aria-label={variant === 'error' ? '오류 알림' : '알림'}
+      aria-label={variant === 'error' ? labels.errorAlert : labels.alert}
       aria-describedby={`${id}-content`}
       classNames={{
         content: `${s.alert} ${variant === 'error' ? s.error : ''}`,

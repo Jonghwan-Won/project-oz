@@ -8,9 +8,11 @@ import type { Messages } from '@/i18n/ko';
 export function ThemeToggle({
   theme,
   labels,
+  className = 'headerIcon',
 }: {
   theme: Theme;
   labels: Messages['theme'];
+  className?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
@@ -19,7 +21,7 @@ export function ThemeToggle({
     <>
       <div className="headerControl">
         <button
-          className="headerIcon"
+          className={className}
           type="button"
           aria-label={label}
           title={label}
@@ -37,8 +39,8 @@ export function ThemeToggle({
           }}
         >
           <svg
-            width="21"
-            height="21"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

@@ -2,35 +2,42 @@
 
 import Link from 'next/link';
 import { useState, type KeyboardEvent } from 'react';
+import type { GuideMessages } from '@/i18n/guide-ko';
 import { GuideExamples } from './GuideExamples';
 import s from './guide.module.css';
 
-const tabs = [
-  ['ui', '공통 UI'],
-  ['feedback', '알림 · 확인'],
-  ['loading', '로딩'],
-  ['api', 'API'],
-  ['environment', '개발 · 환경'],
-] as const;
+const tabs = ['ui', 'feedback', 'loading', 'api', 'environment'] as const;
 
 const colors = [
-  ['--accent', '주 강조색 · #BAACFF'],
-  ['--accent-blue', '블루 보조색 · #86BAFF'],
-  ['--on-accent', '강조 배경 위 글자'],
-  ['--accent-ink', '강조 글자 · 포커스'],
-  ['--bg', '페이지 배경'],
-  ['--surface', '입력 · 메뉴 표면'],
-  ['--ink', '본문 글자'],
-  ['--muted', '보조 글자'],
-  ['--secondary', '보조색 · 중립 회색'],
-  ['--line', '테두리'],
-];
+  '--accent',
+  '--accent-blue',
+  '--on-accent',
+  '--accent-ink',
+  '--bg',
+  '--surface',
+  '--ink',
+  '--muted',
+  '--secondary',
+  '--line',
+] as const;
 
-export function GuideTabs({ admin = false }: { admin?: boolean }) {
+export type GuideTabsMessages = Pick<
+  GuideMessages,
+  'guide' | 'examples' | 'components'
+>;
+
+export function GuideTabs({
+  admin = false,
+  messages,
+}: {
+  admin?: boolean;
+  messages: GuideTabsMessages;
+}) {
+  const copy = messages.guide;
   const visibleTabs = tabs.filter(
-    ([id]) => admin || !['api', 'environment'].includes(id),
+    (id) => admin || !['api', 'environment'].includes(id),
   );
-  const [active, setActive] = useState<(typeof tabs)[number][0]>('ui');
+  const [active, setActive] = useState<(typeof tabs)[number]>('ui');
   function moveTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const next =
       event.key === 'ArrowRight'
@@ -44,18 +51,25 @@ export function GuideTabs({ admin = false }: { admin?: boolean }) {
               : -1;
     if (next < 0) return;
     event.preventDefault();
-    setActive(visibleTabs[next][0]);
-    document.getElementById(`tab-${visibleTabs[next][0]}`)?.focus();
+    setActive(visibleTabs[next]);
+    document.getElementById(`tab-${visibleTabs[next]}`)?.focus();
   }
+  const examples = (tab: 'ui' | 'feedback' | 'loading' | 'api') => (
+    <GuideExamples
+      tab={tab}
+      messages={messages.examples}
+      components={messages.components}
+    />
+  );
   return (
     <div className={`page ${s.guide}`}>
       <h1>
-        개발 가이드
+        {copy.title}
         <span className="accentDot" />
       </h1>
-      <p>공통 UI와 화면 동작을 주제별 탭으로 확인합니다.</p>
-      <div className={s.tabs} role="tablist" aria-label="가이드 항목">
-        {visibleTabs.map(([id, label], index) => (
+      <p>{copy.description}</p>
+      <div className={s.tabs} role="tablist" aria-label={copy.tablist}>
+        {visibleTabs.map((id, index) => (
           <button
             key={id}
             id={`tab-${id}`}
@@ -66,11 +80,11 @@ export function GuideTabs({ admin = false }: { admin?: boolean }) {
             onKeyDown={(event) => moveTab(event, index)}
             onClick={() => setActive(id)}
           >
-            {label}
+            {copy.tabs[id]}
           </button>
         ))}
       </div>
-      {visibleTabs.map(([id]) => (
+      {visibleTabs.map((id) => (
         <section
           key={id}
           id={`panel-${id}`}
@@ -81,13 +95,10 @@ export function GuideTabs({ admin = false }: { admin?: boolean }) {
           {id === 'ui' && (
             <>
               <section className={s.section}>
-                <h2>색상과 테마</h2>
-                <p>
-                  헤더의 테마 버튼으로 다크·라이트를 비교하세요. 실제 UI에서는
-                  색상값 대신 CSS 변수를 사용합니다.
-                </p>
+                <h2>{copy.colorsTitle}</h2>
+                <p>{copy.colorsDescription}</p>
                 <div className={s.colors}>
-                  {colors.map(([token, label]) => (
+                  {colors.map((token) => (
                     <div className={s.swatch} key={token}>
                       <span
                         className={s.chip}
@@ -95,70 +106,50 @@ export function GuideTabs({ admin = false }: { admin?: boolean }) {
                       />
                       <div>
                         <code>{token}</code>
-                        <p>{label}</p>
+                        <p>{copy.colors[token]}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-                <pre className={s.code}>
-                  {
-                    'background: var(--accent);\ncolor: var(--on-accent);\n/* 작은 강조 글자와 포커스에는 var(--accent-ink) */'
-                  }
-                </pre>
+                <pre className={s.code}>{copy.colorCode}</pre>
               </section>
-              <GuideExamples tab="ui" />
+              {examples('ui')}
             </>
           )}
-          {id === 'feedback' && <GuideExamples tab="feedback" />}
-          {id === 'loading' && <GuideExamples tab="loading" />}
-          {id === 'api' && <GuideExamples tab="api" />}
+          {id === 'feedback' && examples('feedback')}
+          {id === 'loading' && examples('loading')}
+          {id === 'api' && examples('api')}
           {id === 'environment' && (
             <>
               <section className={s.section}>
-                <h2>개발 환경에서 확인할 수 있는 것</h2>
-                <p>
-                  진단 API는 개발 환경의 관리자에게만 열립니다. 브라우저는 DB에
-                  직접 연결하지 않고, 서버가 필요한 검사만 수행합니다.
-                </p>
+                <h2>{copy.environmentTitle}</h2>
+                <p>{copy.environmentDescription}</p>
                 <div className={s.tableWrap}>
                   <table>
-                    <caption>개발 가이드에서 제공하는 검사 범위</caption>
+                    <caption>{copy.environmentCaption}</caption>
                     <thead>
                       <tr>
-                        <th>검사</th>
-                        <th>실제 동작</th>
-                        <th>검사하지 않는 것</th>
+                        {copy.environmentHeaders.map((header) => (
+                          <th key={header}>{header}</th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <th>API 응답</th>
-                        <td>
-                          /api/guide에서 서버 시각과 성공 응답을 반환합니다.
-                        </td>
-                        <td>DB 연결 여부</td>
-                      </tr>
-                      <tr>
-                        <th>DB 연결</th>
-                        <td>서버의 DATABASE_URL로 SELECT 1을 실행합니다.</td>
-                        <td>테이블 생성·migration·데이터 변경</td>
-                      </tr>
-                      <tr>
-                        <th>운영 환경</th>
-                        <td>
-                          공통 UI 가이드는 공개하고 진단 API는 404를 반환합니다.
-                        </td>
-                        <td>개발 검사 API 사용</td>
-                      </tr>
+                      {copy.environmentRows.map(
+                        ([check, behavior, skipped]) => (
+                          <tr key={check}>
+                            <th>{check}</th>
+                            <td>{behavior}</td>
+                            <td>{skipped}</td>
+                          </tr>
+                        ),
+                      )}
                     </tbody>
                   </table>
                 </div>
-                <p>
-                  관리자 여부는 GitHub 고유 계정과 유효한 서버 세션으로
-                  확인합니다.
-                </p>
+                <p>{copy.environmentAdminNote}</p>
                 <Link className="textLink" href="/guide/environment">
-                  개발·운영 환경 구조도 열기 →
+                  {copy.environmentLink}
                 </Link>
               </section>
             </>

@@ -16,11 +16,33 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { technologyIcons } from '@/lib/technology-icons';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import type { Locale } from '@/i18n/locale';
+import type { Messages } from '@/i18n/ko';
+import type { PortfolioMessages } from '@/i18n/portfolio-ko';
+import type { Theme } from '@/theme/theme';
 
-const sections = [
-  ['profile', '프로필'],
-  ['projects', '프로젝트'],
-  ['works', '작업'],
+/** 헤더 오른쪽 언어·테마 버튼에 필요한 현재 값과 문구. 서버에서 쿠키로 정해 넘긴다. */
+export type HeaderSettings = {
+  locale: Locale;
+  theme: Theme;
+  labels: {
+    language: Messages['language'];
+    theme: Messages['theme'];
+    header: PortfolioMessages['header'];
+    footerNav: PortfolioMessages['footerNav'];
+  };
+};
+type HeaderLabels = PortfolioMessages['header'];
+
+const sections = ['profile', 'projects', 'works'] as const;
+
+/** 모바일 메뉴에서 섹션 목록 아래 구분선 다음에 보여주는 페이지. */
+const menuPages = [
+  ['/lab', 'lab'],
+  ['/admin', 'admin'],
+  ['/guide', 'guide'],
 ] as const;
 
 const externalLinks = [
@@ -41,9 +63,9 @@ function RollText({ text }: { text: string }) {
   );
 }
 
-function ExternalHint({ href }: { href: string }) {
+function ExternalHint({ href, label }: { href: string; label: string }) {
   return href.startsWith('http') ? (
-    <span className="srOnly"> (새 창)</span>
+    <span className="srOnly">{label}</span>
   ) : null;
 }
 
@@ -81,19 +103,82 @@ export function ScrollTopLink({
   );
 }
 
+/** 홈에서는 해당 섹션으로 부드럽게 이동하고, 다른 페이지에서는 링크(/#id)를 그대로 따른다. */
+function goToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
+  if (window.location.pathname !== '/') return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const target = document.getElementById(id);
+  if (!target) return;
+  event.preventDefault();
+  target.focus({ preventScroll: true });
+  target.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth' });
+  // 부드러운 스크롤 도중 위쪽 이미지가 로드되어 높이가 바뀌면 목표에서 어긋난다.
+  // 스크롤이 끝났을 때 구분선이 헤더 바로 아래에 오지 않았으면 한 번 더 맞춘다.
+  const align = () => {
+    window.clearTimeout(giveUp);
+    const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+    if (Math.abs(target.getBoundingClientRect().top - margin) > 2)
+      target.scrollIntoView({ behavior: 'instant' });
+  };
+  window.addEventListener('scrollend', align, { once: true });
+  const giveUp = window.setTimeout(
+    () => window.removeEventListener('scrollend', align),
+    2000,
+  );
+  if (window.location.hash)
+    window.history.replaceState(
+      window.history.state,
+      '',
+      window.location.pathname + window.location.search,
+    );
+}
+
 function externalProps(href: string) {
   return href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {};
 }
 
-export function PortfolioHeader() {
+export function PortfolioHeader({ settings }: { settings: HeaderSettings }) {
+  const text = settings.labels.header;
   const pathname = usePathname();
   const [active, setActive] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 메뉴가 열린 동안 뒤 화면 스크롤을 막고, Esc나 넓은 화면 전환 시 닫는다.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    const previousGutter = root.style.scrollbarGutter;
+    // 스크롤바가 사라지며 폭이 넓어지면 글줄이 다시 감겨 본문이 위아래로 밀린다.
+    // 스크롤바 자리를 그대로 남겨 폭을 고정한다(겹쳐 그리는 모바일 스크롤바에는 영향 없음).
+    root.style.scrollbarGutter = 'stable';
+    root.style.overflow = 'hidden';
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    const wide = window.matchMedia('(min-width: 1024px)');
+    const onWide = () => {
+      if (wide.matches) setMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    wide.addEventListener('change', onWide);
+    return () => {
+      root.style.overflow = previous;
+      root.style.scrollbarGutter = previousGutter;
+      window.removeEventListener('keydown', onKey);
+      wide.removeEventListener('change', onWide);
+    };
+  }, [menuOpen]);
+  const closeMenu = () => setMenuOpen(false);
 
   useEffect(() => {
     const update = () => {
       let current = '';
-      for (const [id] of sections) {
+      for (const id of sections) {
         const top =
           document.getElementById(id)?.getBoundingClientRect().top ?? Infinity;
         if (top <= window.innerHeight * 0.35) current = id;
@@ -141,11 +226,15 @@ export function PortfolioHeader() {
     };
   }, [pathname]);
 
-  // 섹션 이동은 독(넓은 화면은 헤더 가운데, 좁은 화면은 화면 아래)이 맡는다.
+  // 넓은 화면은 헤더 가운데 독과 오른쪽 링크·설정, 좁은 화면(1023px 이하)은 오른쪽 메뉴 버튼이 맡는다.
   return (
-    <header className={s.header} data-scrolled={scrolled || undefined}>
+    <header
+      className={s.header}
+      data-scrolled={scrolled || undefined}
+      data-menu-open={menuOpen || undefined}
+    >
       {pathname === '/' ? (
-        <ScrollTopLink className={s.logo} label="포트폴리오 처음으로">
+        <ScrollTopLink className={s.logo} label={text.logoLabel}>
           Jonghwan Won
         </ScrollTopLink>
       ) : (
@@ -153,26 +242,137 @@ export function PortfolioHeader() {
           Jonghwan Won
         </Link>
       )}
-      <SectionDock active={active} />
-      <ul className={s.headerLinks}>
-        {externalLinks.map(([href, label]) => (
-          <li key={href}>
-            <a href={href} {...externalProps(href)}>
-              <RollText text={label} />
-              <ExternalHint href={href} />
-            </a>
-          </li>
-        ))}
-      </ul>
+      <SectionDock active={active} labels={text} />
+      <div className={s.headerEnd}>
+        <ul className={s.headerLinks}>
+          {externalLinks.map(([href, label]) => (
+            <li key={href}>
+              <a href={href} {...externalProps(href)}>
+                <RollText text={label} />
+                <ExternalHint href={href} label={text.newWindow} />
+              </a>
+            </li>
+          ))}
+        </ul>
+        <span className={s.headerDivider} aria-hidden="true" />
+        <div className={s.headerSettings}>
+          <LanguageSwitcher
+            className={s.settingButton}
+            locale={settings.locale}
+            labels={settings.labels.language}
+          />
+          <ThemeToggle
+            className={s.settingButton}
+            theme={settings.theme}
+            labels={settings.labels.theme}
+          />
+        </div>
+      </div>
+      <div className={s.mobileBar}>
+        <div className={s.mobileSettings}>
+          <ThemeToggle
+            className={s.settingButton}
+            theme={settings.theme}
+            labels={settings.labels.theme}
+          />
+          <LanguageSwitcher
+            className={s.settingButton}
+            locale={settings.locale}
+            labels={settings.labels.language}
+          />
+        </div>
+        <button
+          ref={menuButtonRef}
+          type="button"
+          className={s.menuButton}
+          aria-expanded={menuOpen}
+          aria-controls="p2-side-nav"
+          aria-label={menuOpen ? text.menuClose : text.menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
+      </div>
+      <div
+        className={s.sideNavBackdrop}
+        aria-hidden="true"
+        onClick={closeMenu}
+      />
+      <aside
+        id="p2-side-nav"
+        className={s.sideNav}
+        aria-label={text.menu}
+        inert={!menuOpen}
+      >
+        <div className={s.sideNavCurve} aria-hidden="true">
+          <span />
+        </div>
+        <div className={s.sideNavInner}>
+          <div>
+            <nav aria-label={text.sectionNav}>
+              <ol className={s.sideNavSections}>
+                {sections.map((id, index) => (
+                  <li key={id}>
+                    <a
+                      href={'/#' + id}
+                      aria-current={active === id ? 'location' : undefined}
+                      onClick={(event) => {
+                        // 스크롤 잠금(overflow: hidden)을 먼저 풀어야 이동 도중 끊기지 않는다.
+                        document.documentElement.style.overflow = '';
+                        closeMenu();
+                        goToSection(event, id);
+                      }}
+                    >
+                      {text.sections[id]}
+                      <span aria-hidden="true">0{index + 1}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+            <ul className={s.sideNavPages}>
+              {menuPages.map(([href, key]) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={pathname === href ? 'page' : undefined}
+                    onClick={closeMenu}
+                  >
+                    {text.pages[key]}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <ul className={s.sideNavLinks}>
+            {externalLinks.map(([href, label]) => (
+              <li key={href}>
+                <a href={href} {...externalProps(href)} onClick={closeMenu}>
+                  {label}
+                  <ExternalHint href={href} label={text.newWindow} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
     </header>
   );
 }
 
 /**
  * 홈 화면의 섹션 독을 글자 버전으로 옮긴 목차.
- * 넓은 화면에서는 헤더 가운데, 좁은 화면에서는 화면 아래 가운데에 떠 있다.
+ * 넓은 화면에서만 헤더 가운데에 보이고, 좁은 화면에서는 메뉴 패널이 대신한다.
  */
-function SectionDock({ active }: { active: string }) {
+function SectionDock({
+  active,
+  labels,
+}: {
+  active: string;
+  labels: HeaderLabels;
+}) {
   const navRef = useRef<HTMLElement>(null);
   const [indicator, setIndicator] = useState<{ x: number; w: number } | null>(
     null,
@@ -195,7 +395,7 @@ function SectionDock({ active }: { active: string }) {
     <nav
       ref={navRef}
       className={s.dock}
-      aria-label="포트폴리오 섹션"
+      aria-label={labels.sectionNav}
       style={
         indicator
           ? ({
@@ -212,37 +412,15 @@ function SectionDock({ active }: { active: string }) {
       >
         <span key={active} />
       </span>
-      {sections.map(([id, label], index) => (
+      {sections.map((id, index) => (
         <a
           key={id}
           href={'/#' + id}
-          onClick={(event) => {
-            if (window.location.pathname !== '/') return;
-            if (
-              event.metaKey ||
-              event.ctrlKey ||
-              event.shiftKey ||
-              event.altKey
-            )
-              return;
-            const target = document.getElementById(id);
-            if (!target) return;
-            event.preventDefault();
-            target.focus({ preventScroll: true });
-            target.scrollIntoView({
-              behavior: reducedMotion() ? 'instant' : 'smooth',
-            });
-            if (window.location.hash)
-              window.history.replaceState(
-                window.history.state,
-                '',
-                window.location.pathname + window.location.search,
-              );
-          }}
+          onClick={(event) => goToSection(event, id)}
           aria-current={active === id ? 'location' : undefined}
         >
           <sup aria-hidden="true">0{index + 1}</sup>
-          {label}
+          {labels.sections[id]}
         </a>
       ))}
     </nav>
@@ -276,7 +454,13 @@ function stackMark(name: string) {
   return word[0].toUpperCase() + word.slice(1, 2).toLowerCase();
 }
 
-export function StackTabs({ groups }: { groups: StackGroup[] }) {
+export function StackTabs({
+  groups,
+  labels,
+}: {
+  groups: StackGroup[];
+  labels: PortfolioMessages['stackTabs'];
+}) {
   const [selected, setSelected] = useState(0);
   const baseId = useId();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -309,7 +493,7 @@ export function StackTabs({ groups }: { groups: StackGroup[] }) {
     <div className={s.stackTabs}>
       <div
         role="tablist"
-        aria-label="기술 분야"
+        aria-label={labels.label}
         className={s.tabs}
         onKeyDown={onKeyDown}
       >
@@ -339,7 +523,7 @@ export function StackTabs({ groups }: { groups: StackGroup[] }) {
       >
         {current.notes.length > 0 && (
           <div className={s.stackMain}>
-            <strong>이렇게 사용했어요</strong>
+            <strong>{labels.usage}</strong>
             <ul>
               {current.notes.map((note) => (
                 <li key={note}>{note}</li>
@@ -373,7 +557,7 @@ export function StackTabs({ groups }: { groups: StackGroup[] }) {
           ))}
         </ul>
         <small className={s.iconCredit}>
-          일부 아이콘 제공:{' '}
+          {labels.iconCredit}{' '}
           <a href="https://icons8.com/" target="_blank" rel="noreferrer">
             Icons8
           </a>
@@ -383,12 +567,8 @@ export function StackTabs({ groups }: { groups: StackGroup[] }) {
   );
 }
 
-const views = [
-  ['large', '크게 보기'],
-  ['small', '작게 보기'],
-  ['list', '리스트 보기'],
-] as const;
-type View = (typeof views)[number][0];
+const views = ['large', 'small', 'list'] as const;
+type View = (typeof views)[number];
 
 const viewIcons: Record<View, ReactNode> = {
   large: <rect x="3" y="3" width="18" height="18" rx="2" />,
@@ -408,34 +588,32 @@ export function ProjectViews({
   large,
   small,
   list,
+  labels,
 }: {
   intro: ReactNode;
   large: ReactNode;
   small: ReactNode;
   list: ReactNode;
+  labels: PortfolioMessages['views'];
 }) {
   const [view, setView] = useState<View>('large');
   return (
     <>
       <div className={s.viewBar}>
         {intro}
-        <div
-          className={s.viewSwitch}
-          role="group"
-          aria-label="프로젝트 보기 방식"
-        >
-          {views.map(([id, label]) => (
+        <div className={s.viewSwitch} role="group" aria-label={labels.label}>
+          {views.map((id) => (
             <button
               key={id}
               type="button"
               aria-pressed={view === id}
-              aria-label={label}
+              aria-label={labels[id]}
               onClick={() => setView(id)}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 {viewIcons[id]}
               </svg>
-              <span>{label}</span>
+              <span>{labels[id]}</span>
             </button>
           ))}
         </div>
@@ -451,10 +629,12 @@ export function WorksRail({
   intro,
   cards,
   list,
+  labels,
 }: {
   intro: ReactNode;
   cards: ReactNode;
   list: ReactNode;
+  labels: PortfolioMessages['works'];
 }) {
   const [showList, setShowList] = useState(false);
   const [edges, setEdges] = useState({ start: true, end: false });
@@ -496,7 +676,7 @@ export function WorksRail({
           aria-pressed={showList}
           onClick={() => setShowList((value) => !value)}
         >
-          <RollText text={showList ? '카드로 보기' : '전체 리스트 보기'} />
+          <RollText text={showList ? labels.showCards : labels.showList} />
         </button>
       </div>
       {showList ? (
@@ -510,7 +690,7 @@ export function WorksRail({
             data-end={edges.end}
             tabIndex={0}
             role="region"
-            aria-label="실무 작업 목록, 좌우로 스크롤"
+            aria-label={labels.rail}
           >
             {cards}
           </div>
@@ -519,7 +699,7 @@ export function WorksRail({
               type="button"
               onClick={() => scroll(-1)}
               disabled={edges.start}
-              aria-label="이전 작업"
+              aria-label={labels.previous}
             >
               ←
             </button>
@@ -527,7 +707,7 @@ export function WorksRail({
               type="button"
               onClick={() => scroll(1)}
               disabled={edges.end}
-              aria-label="다음 작업"
+              aria-label={labels.next}
             >
               →
             </button>
@@ -538,15 +718,15 @@ export function WorksRail({
   );
 }
 
-const emailLabels = {
-  idle: 'Email',
-  copied: '복사했습니다',
-  failed: '복사하지 못했어요',
-} as const;
-
 /** 누르면 주소를 복사하고, 버튼 문구로 결과를 잠깐 보여 준 뒤 원래대로 돌아간다. */
-export function EmailButton({ email }: { email: string }) {
-  const [state, setState] = useState<keyof typeof emailLabels>('idle');
+export function EmailButton({
+  email,
+  labels,
+}: {
+  email: string;
+  labels: PortfolioMessages['email'];
+}) {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
   useEffect(() => {
     if (state === 'idle') return;
     const timer = window.setTimeout(() => setState('idle'), 2000);
@@ -568,16 +748,16 @@ export function EmailButton({ email }: { email: string }) {
         data-state={state}
         aria-describedby="p2-email-hint"
       >
-        {state === 'idle' ? email : emailLabels[state]}
+        {state === 'idle' ? email : labels[state]}
       </button>
       <p id="p2-email-hint" className="srOnly">
-        이메일 주소 복사
+        {labels.hint}
       </p>
       <p className="srOnly" role="status" aria-live="polite">
         {state === 'copied'
-          ? `${email} 주소를 복사했습니다.`
+          ? labels.copiedStatus.replace('{email}', email)
           : state === 'failed'
-            ? `복사하지 못했습니다. ${email} 주소를 직접 입력해 주세요.`
+            ? labels.failedStatus.replace('{email}', email)
             : ''}
       </p>
     </div>
