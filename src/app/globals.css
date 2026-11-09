@@ -13,11 +13,6 @@
   font-display: swap;
 }
 @font-face {
-  font-family: 'P2 Script';
-  src: url('/fonts/portfolio/hurricane/font.ttf') format('truetype');
-  font-display: swap;
-}
-@font-face {
   font-family: 'P2 Symbol';
   src: url('/fonts/portfolio/spacegrotesk/font.ttf') format('truetype');
   font-weight: 300 700;
@@ -25,8 +20,18 @@
 }
 
 :root {
+  /* 사이트 전체 글꼴 규칙. 화면별 CSS는 이 세 변수만 쓴다. */
+  --font-sans:
+    'P2 Sans', 'P2 Korean', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --font-symbol: 'P2 Symbol', 'P2 Sans', 'P2 Korean', sans-serif;
+  --font-serif: Georgia, 'P2 Korean', serif;
   --content-width: 1280px;
   --page-gutter: clamp(20px, 4vw, 48px);
+  /* 메인·목록 화면이 함께 쓰는 좌우 여백: 넓은 화면에서는 본문을 1280px로 가운데 둔다. */
+  --site-gutter: max(
+    var(--page-gutter),
+    calc((100vw - var(--content-width)) / 2)
+  );
   color-scheme: dark;
   --bg: #000;
   --ink: #f5f5f5;
@@ -79,7 +84,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'P2 Sans', 'P2 Korean', 'Malgun Gothic', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 a {
@@ -367,6 +372,8 @@ footer small {
   grid-column: 1/-1;
   margin-top: 22px;
 }
+/* max-width + margin:auto로 가운데 둔다. 화면별로 max-width만 줄여 쓰는 곳(가이드·실험실·도움말·관리자)이
+   있으므로 패딩만으로 가운데 맞추면 그 화면들이 왼쪽으로 쏠린다. 1280px 화면에서는 --site-gutter와 같은 위치다. */
 .page {
   max-width: calc(var(--content-width) + var(--page-gutter) * 2);
   margin: auto;
@@ -738,7 +745,7 @@ a.interactiveCard:is(:hover, :focus-visible) {
 /* 포트폴리오와 공개·관리 화면에서 공유하는 기본 타이포와 셸. */
 .siteHeader .wordmark,
 body > footer .wordmark {
-  font-family: Georgia, 'P2 Korean', serif;
+  font-family: var(--font-serif);
   font-size: clamp(22px, 2vw, 32px);
   letter-spacing: -0.04em;
 }
@@ -762,6 +769,6 @@ body > footer {
     max(var(--page-gutter), calc((100vw - var(--content-width)) / 2));
 }
 body > footer small {
-  font-family: 'P2 Symbol', 'P2 Sans', sans-serif;
+  font-family: var(--font-symbol);
   font-size: 12px;
 }

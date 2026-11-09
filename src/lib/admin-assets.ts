@@ -1,5 +1,6 @@
 export type AssetUsage = {
-  type: 'project' | 'post';
+  /** portfolio: 환경 변수로 지정된 이력서·포트폴리오 PDF */
+  type: 'project' | 'post' | 'portfolio';
   id: string;
   title: string;
   usage: string;

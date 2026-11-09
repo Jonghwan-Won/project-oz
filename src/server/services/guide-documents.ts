@@ -10,7 +10,10 @@ export async function getGuideDocuments() {
     withFileTypes: true,
   });
   const files = entries
-    .filter((entry) => entry.isFile() && /^\d{2}-[\p{L}\p{N}-]+\.md$/u.test(entry.name))
+    .filter(
+      (entry) =>
+        entry.isFile() && /^\d{2}-[\p{L}\p{N}-]+\.md$/u.test(entry.name),
+    )
     .map((entry) => entry.name)
     .sort();
   return [

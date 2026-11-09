@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ProjectCard } from '@/components/ProjectCard';
 import { getPublicProjects } from '@/server/services/projects';
 import { getMessages } from '@/i18n/server';
+import { projectGroupOf, projectGroups } from '@/lib/project-origin';
 
 export async function generateMetadata() {
   const { messages } = await getMessages();
@@ -16,12 +17,13 @@ export default async function Projects({
   const { messages, locale } = await getMessages();
   const allProjects = await getPublicProjects(locale);
   const { category } = await searchParams;
-  const types = [
-    ...new Set(allProjects.flatMap((p) => (p.type ? [p.type] : []))),
-  ];
-  const selected = types.find((type) => type === category);
+  // 메인 화면처럼 개인(개인·교육) 작업과 실무 작업으로 나눠 거른다.
+  const groups = projectGroups.filter((group) =>
+    allProjects.some((p) => projectGroupOf(p.originCode) === group),
+  );
+  const selected = groups.find((group) => group === category);
   const projects = allProjects.filter(
-    (project) => !selected || project.type === selected,
+    (project) => !selected || projectGroupOf(project.originCode) === selected,
   );
   const copy = messages.projects;
   return (
@@ -29,18 +31,18 @@ export default async function Projects({
       {/* <MainPageLink href="/#projects" label={messages.navigation.main} /> */}
       <h1 className="accentDot">{copy.title}</h1>
       <p className="lead">{copy.description}</p>
-      {types.length > 1 && (
+      {groups.length > 1 && (
         <div className="filter" aria-label={copy.filterLabel}>
           <Link href="/projects" aria-current={!selected ? 'page' : undefined}>
             {copy.all}
           </Link>
-          {types.map((type) => (
+          {groups.map((group) => (
             <Link
-              key={type}
-              href={`/projects?category=${encodeURIComponent(type)}`}
-              aria-current={selected === type ? 'page' : undefined}
+              key={group}
+              href={`/projects?category=${group}`}
+              aria-current={selected === group ? 'page' : undefined}
             >
-              {allProjects.find((p) => p.type === type)?.typeLabel}
+              {copy.groups[group]}
             </Link>
           ))}
         </div>

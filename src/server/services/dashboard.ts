@@ -1,5 +1,6 @@
 import 'server-only';
 import { pool } from '@/server/db';
+import { assetInUseSql, portfolioAssetIds } from '@/server/portfolio-assets';
 
 // The public dashboard exposes aggregate counts only, never inquiry or private content records.
 export async function getDashboardSummary() {
@@ -18,7 +19,8 @@ export async function getDashboardSummary() {
       'SELECT count(*)::int AS total, count(*) FILTER (WHERE "isVisible")::int AS visible FROM "Post" WHERE "deletedAt" IS NULL',
     ),
     pool.query<{ count: number; size: number }>(
-      'SELECT count(*)::int AS count,COALESCE(sum(a."byteSize"),0)::float8 AS size FROM "Asset" a WHERE NOT EXISTS (SELECT 1 FROM "ProjectAsset" WHERE "assetId"=a.id) AND NOT EXISTS (SELECT 1 FROM "PostAsset" WHERE "assetId"=a.id)',
+      `SELECT count(*)::int AS count,COALESCE(sum(a."byteSize"),0)::float8 AS size FROM "Asset" a WHERE NOT ${assetInUseSql('a', '$1')}`,
+      [portfolioAssetIds()],
     ),
     pool.query<{ count: number }>(
       'SELECT count(*)::int AS count FROM "Inquiry" WHERE "statusGroup"=$1 AND "statusCode"=$2',

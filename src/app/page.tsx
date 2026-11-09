@@ -7,6 +7,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { getMessages } from '@/i18n/server';
 import { formatProjectPeriod } from '@/lib/project-detail';
+import { projectGroupOf } from '@/lib/project-origin';
 import { portfolioFileStatus } from '@/server/services/assets';
 import {
   getPublicProjects,
@@ -14,7 +15,6 @@ import {
 } from '@/server/services/projects';
 import {
   EmailButton,
-  ScrollPrompt,
   PortfolioHeader,
   ProjectViews,
   StackTabs,
@@ -34,28 +34,40 @@ export const metadata: Metadata = {
   },
 };
 
-/** 히어로의 PDF 내려받기 버튼. 실제 파일은 서버 환경 변수로 지정한다. */
+/** PDF 내려받기 버튼. 실제 파일은 서버 환경 변수로 지정한다. */
 const downloads = [
   { kind: 'resume', label: '이력서.pdf' },
   { kind: 'portfolio', label: '포트폴리오.pdf' },
 ] as const;
 
+/** PDF는 새 탭의 브라우저 PDF 뷰어로 연다. 저장은 뷰어의 저장 버튼으로 한다. */
 function PortfolioDownloads({
   files,
   className = '',
+  kinds,
 }: {
   files: ReturnType<typeof portfolioFileStatus>;
   className?: string;
+  /** 일부 파일만 보여줄 때. 히어로는 포트폴리오만, 마무리 섹션은 둘 다 보여준다. */
+  kinds?: readonly (typeof downloads)[number]['kind'][];
 }) {
+  const visible = kinds
+    ? downloads.filter((file) => kinds.includes(file.kind))
+    : downloads;
   return (
     <ul
       className={`${s.downloads} ${className}`}
-      aria-label="이력서·포트폴리오 내려받기"
+      aria-label="이력서·포트폴리오 PDF"
     >
-      {downloads.map((file) => (
+      {visible.map((file) => (
         <li key={file.kind}>
           {files[file.kind] ? (
-            <a href={`/api/portfolio-files/${file.kind}`} download>
+            <a
+              href={`/api/portfolio-files/${file.kind}`}
+              target="_blank"
+              rel="noopener"
+              aria-label={`${file.label} 새 탭에서 열기`}
+            >
               <FileIcon />
               {file.label}
               <DownloadIcon />
@@ -64,7 +76,6 @@ function PortfolioDownloads({
             <span aria-disabled="true">
               <FileIcon />
               {file.label}
-              <small>준비 중</small>
             </span>
           )}
         </li>
@@ -91,13 +102,23 @@ function DownloadIcon() {
 
 /** 직무 연관 이력(최신순). */
 const career = [
-  { period: '2023. 01 - 현재', org: '엠투엠글로벌', role: '풀스택 웹 개발자' },
+  {
+    period: '2023. 01 - 현재',
+    org: '엠투엠글로벌',
+    role: 'SI 프로젝트 풀스택 웹 개발',
+    tag: '재직 중',
+  },
   {
     period: '2022. 07 - 2022. 12',
     org: '비트캠프 강남본원',
+    tag: '교육',
     role: '"JAVA 기반 AWS 웹 개발자 양성 과정" 수료',
   },
-  { period: '2018. 03 - 2022. 05', org: '비에스온', role: '인프라 운영' },
+  {
+    period: '2018. 03 - 2022. 05',
+    org: '비에스온',
+    role: 'IT지원팀 · 서버·네트워크 인프라 운영',
+  },
   {
     period: '2016. 11 - 2018. 02',
     org: '지오유아이티',
@@ -105,13 +126,52 @@ const career = [
   },
 ];
 
-const aboutGlyphs = ['//', '{}', '=>'];
-
-/** 소개 카드 세 번째. 앞의 두 장은 사이트 소개 문구(messages.about.sections)를 쓴다. */
-const careerCard = {
-  title: '고객의 요구를 구현으로',
-  body: '고객사 맞춤 그룹웨어 컨설팅을 통해 업무 맥락과 요구사항을 파악하는 경험을 쌓았습니다. 인프라 운영과 웹 개발 경험을 더해, 고객이 필요로 하는 기능을 정확히 이해하고 구현하는 데 강점이 있습니다.',
+/** 프로필 카드 아이콘. 이모지는 OS마다 모양이 달라 직접 그린 선 아이콘을 쓴다. */
+const storyIcons = {
+  // 말풍선: 듣고 제안하기
+  listen: (
+    <>
+      <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9.5L5 20v-4h-.5A.5.5 0 0 1 4 15.5Z" />
+      <path className={s.storyIconDots} d="M8.5 10h.01M12 10h.01M15.5 10h.01" />
+    </>
+  ),
+  // 서버 두 대: 운영하기
+  operate: (
+    <>
+      <rect x="4" y="4" width="16" height="6.5" rx="2" />
+      <rect x="4" y="13.5" width="16" height="6.5" rx="2" />
+      <path className={s.storyIconDots} d="M8 7.25h.01M8 16.75h.01" />
+      <path d="M12 7.25h4M12 16.75h4" />
+    </>
+  ),
+  // 코드 괄호: 직접 만들기
+  build: <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14" />,
 };
+
+/**
+ * 프로필 카드: 경력의 세 단계를 오래된 순으로 잇는다.
+ * 사실관계는 위 career 목록과 맞춘다. 근거 없는 성과·수치는 넣지 않는다.
+ */
+const storyCards = [
+  {
+    icon: storyIcons.listen,
+    step: '그룹웨어 컨설팅',
+    title: '듣고, 방향을 제안했습니다',
+    body: '고객사 담당자에게 지금의 업무 방식을 듣고 요구사항을 정리해, 그룹웨어를 업무에 맞게 구성하는 방향을 제안했습니다. 요청 뒤에 있는 실제 필요를 묻는 습관이 여기서 생겼습니다.',
+  },
+  {
+    icon: storyIcons.operate,
+    step: 'IT지원 · 인프라 운영',
+    title: '멈추지 않게 운영했습니다',
+    body: 'IT지원팀에서 서버와 네트워크 등 인프라를 운영했습니다. 만든 것이 실제 환경에서 어떻게 돌아가고, 문제가 생기면 어디부터 살펴야 하는지 몸으로 익혔습니다.',
+  },
+  {
+    icon: storyIcons.build,
+    step: '풀스택 웹 개발',
+    title: '이제 직접 만듭니다',
+    body: 'SI 업체에서 Java·Spring 서버와 Vue·React 화면, 데이터베이스까지 고객사가 요청한 기능을 처음부터 끝까지 개발하고 있습니다. 앞의 두 경험이 기능을 설계하는 기준이 됩니다.',
+  },
+];
 
 /**
  * 분야별로 어떤 기술을 어디에 썼는지 정리한 문장.
@@ -242,20 +302,6 @@ function period(project: PublicProject) {
         '. ',
       )
     : '';
-}
-
-function yearRange(items: PublicProject[]) {
-  const thisYear = Number(seoulYear());
-  const years = items.flatMap((p) => {
-    if (!p.startedOn) return [];
-    const start = Number(p.startedOn.slice(0, 4));
-    const end = p.endedOn ? Number(p.endedOn.slice(0, 4)) : thisYear;
-    return [start, end];
-  });
-  if (!years.length) return 'archive';
-  const min = Math.min(...years);
-  const max = Math.max(...years);
-  return min === max ? String(min) : `${min}-${max}`;
 }
 
 function stackOf(items: PublicProject[]) {
@@ -432,10 +478,10 @@ export default async function Home() {
     getMessages(),
     getPublicProjects('ko'),
   ]);
-  const projects = all.filter((p) =>
-    ['PERSONAL', 'EDUCATION'].includes(p.originCode),
+  const projects = all.filter(
+    (p) => projectGroupOf(p.originCode) === 'personal',
   );
-  const works = all.filter((p) => p.originCode === 'COMPANY');
+  const works = all.filter((p) => projectGroupOf(p.originCode) === 'work');
   const statusOf = (p: PublicProject) =>
     p.endedOn
       ? '개발 완료'
@@ -444,7 +490,6 @@ export default async function Home() {
         : null;
   const stack = stackOf(all);
   const stackGroups = groupStack(stack);
-  const about = messages.about;
   const files = portfolioFileStatus();
 
   return (
@@ -453,19 +498,27 @@ export default async function Home() {
 
       <section className={s.hero} id="intro" aria-labelledby="hero-title">
         <HeroBackground />
-        <h1 id="hero-title" className="srOnly">
-          풀스택 개발자 원종환 포트폴리오
-        </h1>
-        <div className={s.stage}>
-          <p className={s.script} aria-hidden="true">
+        <div className={s.heroContent}>
+          <p className={s.heroEyebrow} aria-hidden="true">
             Portfolio
           </p>
+          <h1 id="hero-title" className={s.heroTitle}>
+            요구를 듣고, 운영을 알고,
+            <br />
+            <em>직접 만듭니다.</em>
+          </h1>
+          <p className={s.heroLead}>
+            그룹웨어 컨설팅과 인프라 운영을 거쳐 지금은 서버부터 화면까지 만드는
+            9년 차 풀스택 개발자, 원종환입니다.
+          </p>
+          <div className={s.heroActions}>
+            <a href="#profile" className={s.heroPrimary}>
+              프로필 보기
+              <span aria-hidden="true">↓</span>
+            </a>
+            <PortfolioDownloads files={files} kinds={['portfolio']} />
+          </div>
         </div>
-        <p className={s.greeting}>
-          안녕하세요, <span className={s.name}>원종환</span>입니다.
-        </p>
-        <PortfolioDownloads files={files} />
-        <ScrollPrompt />
       </section>
 
       <div className={s.contents}>
@@ -498,41 +551,50 @@ export default async function Home() {
               </g>
             </svg>{' '}
             <p className={s.headline}>
-              작은 불편을 지나치지 않고,
+              듣는 일에서 시작해
               <br />
-              <em>직접 만들어 풀어보는</em> 개발자 원종환입니다.
+              <em>만드는 일</em>까지 왔습니다.
             </p>
           </div>
           <div className={s.profileText}>
             <p className={s.body}>
-              인프라 운영으로 시작해 지금은 <strong>풀스택 웹 개발자</strong>로
-              일하고 있습니다. Java·Spring 기반 서버부터 Vue·React 화면까지,
-              실무 프로젝트에서 필요한 기능을 직접 만들어 왔습니다. “이런 게
-              있으면 편하겠다”는 생각을 쓸 수 있는 기능으로 완성하는 과정을
-              좋아합니다.
+              9년 동안 세 자리에서 일했습니다. 고객의 이야기를 듣고 방향을
+              제안하던 컨설턴트에서, 서버와 네트워크를 지키던 운영자를 거쳐,
+              지금은 <strong>풀스택 웹 개발자</strong>로 일하고 있습니다. 그래서
+              기능을 만들 때 고객이 실제로 원하는 것인지, 운영에서 문제없이
+              돌아갈지를 함께 봅니다.
             </p>
-            <ul className={s.aboutCards}>
-              {[...about.sections.slice(0, 2), careerCard].map(
-                (item, index) => (
-                  <li key={item.title}>
-                    <span aria-hidden="true">
-                      {aboutGlyphs[index % aboutGlyphs.length]}
-                    </span>
-                    <h3>{item.title}</h3>
-                    <p>{item.body}</p>
-                  </li>
-                ),
-              )}
-            </ul>
+            <ol className={s.aboutCards}>
+              {storyCards.map((item) => (
+                <li key={item.step}>
+                  <span className={s.storyIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      {item.icon}
+                    </svg>
+                  </span>
+                  <small>{item.step}</small>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
           <div className={s.career}>
             <h3 className={s.subTitle}>직무 연관 이력</h3>
             <ol>
               {career.map((item) => (
-                <li key={item.org}>
+                <li
+                  key={item.org}
+                  data-current={item.tag === '재직 중' || undefined}
+                >
                   <span>{item.period}</span>
                   <p>
-                    <strong>{item.org}</strong>
+                    <strong>
+                      {item.org}
+                      {item.tag && (
+                        <small className={s.careerTag}>{item.tag}</small>
+                      )}
+                    </strong>
                     <span>{item.role}</span>
                   </p>
                 </li>
@@ -555,7 +617,7 @@ export default async function Home() {
           tabIndex={-1}
           aria-labelledby="projects-title"
         >
-          <SectionLabel index="02" name="projects" meta={yearRange(projects)} />
+          <SectionLabel index="02" name="built by me" meta="projects" />
           <h2 id="projects-title" className={s.display} data-reveal>
             <span>Projects</span>
           </h2>
@@ -585,7 +647,7 @@ export default async function Home() {
           tabIndex={-1}
           aria-labelledby="works-title"
         >
-          <SectionLabel index="03" name="works" meta={yearRange(works)} />
+          <SectionLabel index="03" name="on the job" meta="works" />
           <h2 id="works-title" className={s.display} data-reveal>
             <span>Works</span>
           </h2>
@@ -610,34 +672,56 @@ export default async function Home() {
         </section>
       </div>
 
-      <footer className={s.footer}>
-        <div className={s.contactHeading}>
-          <h2>연락하기</h2>
-          <span>함께할 이야기를 기다립니다</span>
-        </div>
+      <footer className={s.footer} aria-labelledby="contact-title">
+        <SectionLabel index="04" name="say hello" meta="contact" />
+        <h2 id="contact-title" className="srOnly">
+          연락하기
+        </h2>
         <div className={s.closing}>
-          <div>
+          <div className={s.closingIntro}>
+            <p className={s.availability}>
+              <span aria-hidden="true" />
+              새로운 협업 제안을 기다립니다
+            </p>
             <p className={s.closingText}>
               함께 좋은 서비스를
               <br />
-              만들고 싶은 분께.
+              <em>만들고 싶은 분께.</em>
             </p>
             <p className={s.contactDescription}>
-              화면부터 서버까지, 필요한 기능을 직접 만들어 갑니다.
-              <br />
-              프로젝트와 협업에 관한 이야기를 편하게 전해 주세요.
+              요구를 듣는 일부터 운영까지 겪어 본 개발자로서, 화면부터 서버까지
+              필요한 기능을 직접 만들어 갑니다. 프로젝트와 협업에 관한 이야기를
+              편하게 전해 주세요.
             </p>
           </div>
-          <div>
+          <div className={s.contactPanel}>
             <dl className={s.contactLinks}>
               <div>
-                <dt>EMAIL</dt>
+                <dt>
+                  <span className={s.contactIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <rect x="3" y="5" width="18" height="14" rx="3" />
+                      <path d="m4 7.5 8 5.5 8-5.5" />
+                    </svg>
+                  </span>
+                  EMAIL
+                </dt>
                 <dd>
                   <EmailButton email="anarose4815@naver.com" />
                 </dd>
               </div>
               <div>
-                <dt>GITHUB</dt>
+                <dt>
+                  <span className={s.contactIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <circle cx="6.5" cy="6" r="2.25" />
+                      <circle cx="6.5" cy="18" r="2.25" />
+                      <circle cx="17.5" cy="8" r="2.25" />
+                      <path d="M6.5 8.25v7.5M17.5 10.25c0 4-4.5 3.5-9.5 6" />
+                    </svg>
+                  </span>
+                  GITHUB
+                </dt>
                 <dd>
                   <a
                     href="https://github.com/Jonghwan-Won"
@@ -660,6 +744,7 @@ export default async function Home() {
             <Link href="/board">Blog</Link>
             <Link href="/lab">실험실</Link>
             <Link href="/guide">UI 가이드</Link>
+            <Link href="/admin">관리자</Link>
           </nav>
         </div>
       </footer>

@@ -1,8 +1,9 @@
 .shell {
   max-width: 1600px;
-  --admin-accent: var(--mantine-color-violet-6);
-  --admin-accent-hover: var(--mantine-color-violet-7);
-  --admin-on-accent: #fff;
+  /* 메인 화면과 같은 주 색. 다크 테마에서는 globals.css의 --accent가 밝은 보라로 바뀐다. */
+  --admin-accent: var(--accent);
+  --admin-accent-hover: var(--accent-hover);
+  --admin-on-accent: var(--on-accent);
   --mantine-primary-color-filled: var(--admin-accent);
   --mantine-primary-color-filled-hover: var(--admin-accent-hover);
   --mantine-primary-color-light: color-mix(
@@ -224,7 +225,8 @@
   background: var(--admin-accent);
   color: var(--admin-on-accent);
 }
-.panel input:not([data-editor-color-input]),
+/* 에디터 도구 막대의 입력(색 선택·문단/글꼴/크기 선택)은 에디터 자체 크기를 쓰도록 뺀다. */
+.panel input:not([data-editor-color-input]):not([data-editor-control]),
 .panel select,
 .panel textarea {
   width: 100%;
@@ -424,7 +426,7 @@
   :global(
     input:not([type='radio']):not([type='checkbox']):not(
         [data-editor-color-input]
-      )
+      ):not([data-editor-control])
   ) {
   min-height: 40px;
   padding: 8px 10px;

@@ -33,14 +33,14 @@ button.button:hover {
   color: #c5b8ff;
   background: #343042d9;
 }
+/* 라이트 테마에서는 메인 하단 독(.dock)과 같은 유리 배경·테두리·그림자를 쓴다. */
 :global([data-theme='light']) button.button {
   color: #555361;
-  background: #f1f2f5df;
+  background: #ffffffb8;
   border-color: #bcbccc99;
   box-shadow:
     0 8px 28px #24203d14,
-    inset 0 1px 0 #ffffff99,
-    inset 0 -1px 0 #62508a12;
+    inset 0 1px 0 #ffffff99;
 }
 :global([data-theme='light']) .button::before {
   background: linear-gradient(135deg, #ffffff38, transparent 42%, #baacff10);
@@ -56,7 +56,7 @@ button.button:hover {
     -webkit-backdrop-filter: blur(24px) saturate(150%);
   }
   :global([data-theme='light']) button.button {
-    background: #e8e9f080;
+    background: #ffffffb8;
   }
   button.button:hover {
     background: #34304299;
@@ -69,6 +69,12 @@ button.button:hover {
   button.button {
     width: 56px;
     height: 56px;
+  }
+}
+/* 1023px 이하에서는 메인의 하단 독(높이 56px, 아래 16px + safe-area)과 같은 줄에 놓는다. */
+@media (max-width: 1023px) {
+  button.button {
+    bottom: calc(16px + env(safe-area-inset-bottom));
   }
 }
 @media (max-width: 380px) {

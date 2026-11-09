@@ -93,7 +93,8 @@ export const en = {
     description:
       'Personal work, coursework, and team projects. A record of my role and the process behind each one.',
     all: 'All',
-    filterLabel: 'Project type',
+    filterLabel: 'Project origin',
+    groups: { personal: 'Personal', work: 'Work' },
     detailLink: 'Explore the project',
     empty: 'Projects are on their way.',
     back: '← All projects',
@@ -334,12 +335,13 @@ export const en = {
   },
   account: {
     metadata: 'Sign in',
-    title: 'Back to your workspace.',
+    eyebrow: 'ADMIN',
+    title: 'Administrator sign-in',
     intro:
-      'Sign in with your designated GitHub account to manage projects and stories.',
+      'Sign in with the designated GitHub account to manage projects, posts, inquiries and files.',
     notice:
-      'Administrator sign-in only. You can explore public content without signing in.',
-    home: 'Explore OZ',
+      'Administrators only. The portfolio and blog are open without signing in.',
+    home: 'Back to portfolio',
     unavailable: 'Sign-in is temporarily unavailable.',
     failed:
       'Sign-in failed. Check your designated GitHub account and try again.',

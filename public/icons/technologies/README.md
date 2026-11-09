@@ -17,3 +17,9 @@
 - Vuetify: 사용자 지정 공식 브랜드 이미지 https://cdn.vuetifyjs.com/docs/images/brand-kit/v-logo-atom.svg
 - Vuex: 사용자 지정 이미지 URL https://i.namu.wiki/i/zJNaE19eY-AkwlV7gqW8dZTTgtx1lYPMSdNeqKSPiku11FzLyIlxvWxCpDJk6CowiFtmQ876hkJWFli-wYdloQ.webp
 - 위 이미지의 개별 사용 조건은 추가 확인이 필요하다.
+
+## 기호만 잘라 낸 아이콘
+
+- jpa-mark.png, jsp-mark.png, mssql-mark.png: 같은 폴더의 사용자 제공 원본(jpa.png, jsp.png, mssql.png)에서 글자를 빼고 기호 부분만 잘라 256px 투명 배경으로 만든 파일이다. 32px 타일에서 글자 위주 로고가 읽히지 않아서다.
+- svn-mark.svg: 사용자 지정 svn.svg에서 "Subversion" 글자 경로를 빼고 기호(사각형+곡선)만 남겼다.
+- 원본은 그대로 보관한다. 되돌리려면 src/lib/technology-icons.ts의 경로만 바꾸면 된다.

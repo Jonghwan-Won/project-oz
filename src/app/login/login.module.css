@@ -5,34 +5,50 @@
   padding-top: 48px;
   padding-bottom: 64px;
 }
+/* 메인 연락하기 카드처럼 히어로 색(분홍·보라·파랑)을 모서리에 옅게 번지게 한다. */
 .card {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   width: min(100%, 520px);
   padding: clamp(28px, 6vw, 52px);
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent) 9%, var(--surface)),
-    var(--surface) 55%,
-    color-mix(in srgb, var(--accent-blue) 5%, var(--surface))
-  );
-  box-shadow: 0 24px 80px #00000012;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      color-mix(in srgb, #e48ce4 18%, transparent),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      color-mix(in srgb, #565ef2 14%, transparent),
+      transparent 50%
+    ),
+    var(--surface);
+  box-shadow: 0 24px 80px #24203d14;
 }
-.mark {
+.brand {
   display: flex;
-  align-items: start;
-  gap: 8px;
-  margin: 0 0 24px;
-  font-size: 46px;
-  font-weight: 800;
-  letter-spacing: -0.08em;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 28px;
 }
-.mark span {
-  font-size: 20px;
+.wordmark {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  letter-spacing: -0.03em;
+}
+.eyebrow {
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 999px;
   color: var(--accent-ink);
+  font-family: var(--font-symbol);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 .card h1 {
   margin: 0 0 20px;
@@ -48,15 +64,31 @@
 }
 .access {
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 12px;
   padding: 20px 0;
   margin-top: 24px;
   border-top: 1px solid var(--line);
   color: var(--muted);
 }
-.access > span {
+.lock {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent-ink);
+}
+.lock svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .access p {
   margin: 0;

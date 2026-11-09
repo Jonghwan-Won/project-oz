@@ -14,13 +14,16 @@ const theme = createTheme({
       '#baacff',
       '#a08df5',
       '#8068d8',
-      '#674db8',
-      '#513b99',
+      // 6·7은 메인 화면의 주 색(--p2-primary, --p2-primary-ink)과 같다.
+      '#6a4fd6',
+      '#5940ad',
       '#403078',
       '#30245b',
     ],
   },
-  fontFamily: "'P2 Sans', 'P2 Korean', 'Malgun Gothic', sans-serif",
+  // globals.css의 --font-sans와 같은 규칙을 Mantine 컴포넌트에도 쓴다.
+  fontFamily: 'var(--font-sans)',
+  headings: { fontFamily: 'var(--font-sans)' },
   defaultRadius: 'md',
 });
 

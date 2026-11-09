@@ -51,8 +51,8 @@ assert.equal(projectDetail.status, 200);
 assert.ok((await projectDetail.json()).body);
 assert.match(projectsPage, /개발 중/);
 assert.ok(
-  !projectsPage.includes('aria-label="프로젝트 유형"'),
-  'one type needs no filter',
+  !projectsPage.includes('aria-label="작업 구분"'),
+  'one origin group needs no filter',
 );
 assert.match(
   await (await fetch(base + '/projects?category=unknown')).text(),
