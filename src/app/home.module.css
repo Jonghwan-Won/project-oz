@@ -62,7 +62,7 @@
 
 .page a:focus-visible,
 .page button:focus-visible,
-.page [tabindex]:focus-visible {
+.page [tabindex]:not([contenteditable]):focus-visible {
   outline: 3px solid var(--p2-primary);
   outline-offset: 4px;
 }

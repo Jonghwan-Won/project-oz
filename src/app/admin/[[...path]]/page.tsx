@@ -12,6 +12,8 @@ import {
   getAdminPosts,
 } from '@/server/services/posts';
 import { BoardManager } from '../BoardManager';
+import { LoginActions } from '@/app/login/LoginActions';
+import { ko } from '@/i18n/ko';
 import { PostEditor } from '../PostEditor';
 import { CodeManager } from '../CodeManager';
 import { getAdminCodes } from '@/server/services/admin-codes';
@@ -208,10 +210,12 @@ export default async function Admin({
           공개 콘텐츠는 누구나 조회할 수 있습니다. 등록·수정·삭제와 내부 관리
           정보는 지정된 GitHub 계정으로 로그인한 관리자만 사용할 수 있습니다.
         </p>
-        {readOnly && (
+        {readOnly ? (
           <CommonButtonLink href="/login?next=%2Fadmin" variant="primary">
             관리자 로그인
           </CommonButtonLink>
+        ) : (
+          <LoginActions signedIn copy={ko.account} next="/admin" compact />
         )}
       </div>
     </section>

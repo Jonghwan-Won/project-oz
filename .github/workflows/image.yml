@@ -23,9 +23,11 @@ jobs:
           docker build --platform linux/amd64 --target migrate -t "$migration_image" .
           docker run -d --name oz-check -p 127.0.0.1:13000:3000 "$tag"
           trap 'docker logs oz-check; docker rm -f oz-check' EXIT
+          docker exec oz-check node -e 'const fs = require("node:fs"); fs.accessSync("README.md"); if (!fs.readdirSync("docs").some(name => /^\d{2}-.+\.md$/.test(name))) process.exit(1);'
           curl --fail --retry 12 --retry-all-errors --retry-delay 2 --connect-timeout 3 --max-time 5 http://127.0.0.1:13000/api/health
           curl --fail http://127.0.0.1:13000/ > /dev/null
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:13000/guide)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:13000/lab/markdown)" = 200
           for path in /guide/environment /guide/alert-designs '/api/guide?check=api' '/api/guide?check=database'; do
             test "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:13000$path")" = 404
           done
