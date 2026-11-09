@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import ts from 'typescript';
 import { projects } from '../src/content/projects.ts';
 import { ko } from '../src/i18n/ko.ts';
+import { sharedCopy } from '../src/i18n/shared-copy.ts';
 import {
   formatProjectPeriod,
   publicProjectDetail,
@@ -39,6 +40,7 @@ new Function('require', 'exports', outputText)((id) => {
     };
   if (id === '@/lib/project-detail')
     return { formatProjectPeriod, publicProjectDetail };
+  if (id === '@/i18n/shared-copy') return { sharedCopy };
   if (id === 'next/link')
     return {
       default: ({ children, ...props }) => createElement('a', props, children),

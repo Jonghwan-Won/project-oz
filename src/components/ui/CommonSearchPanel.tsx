@@ -4,19 +4,29 @@ import type { ReactNode } from 'react';
 import { CommonButton } from './CommonButton';
 import s from './CommonSearchPanel.module.css';
 
+export const defaultSearchPanelLabels = {
+  form: '검색 조건',
+  reset: '검색 조건 초기화',
+  resetTitle: '초기화',
+  search: '검색',
+};
+export type SearchPanelLabels = typeof defaultSearchPanelLabels;
+
 export function CommonSearchPanel({
   children,
   onSearch,
   onReset,
+  labels = defaultSearchPanelLabels,
 }: {
   children: ReactNode;
   onSearch: () => void;
   onReset: () => void;
+  labels?: SearchPanelLabels;
 }) {
   return (
     <form
       className={s.panel}
-      aria-label="검색 조건"
+      aria-label={labels.form}
       onSubmit={(event) => {
         event.preventDefault();
         onSearch();
@@ -29,11 +39,11 @@ export function CommonSearchPanel({
       <div className={s.fields}>{children}</div>
       <div className={s.actions}>
         <CommonButton
-          aria-label="검색 조건 초기화"
+          aria-label={labels.reset}
           className={s.iconButton}
           size="sm"
           type="reset"
-          title="초기화"
+          title={labels.resetTitle}
         >
           <svg
             viewBox="0 0 24 24"
@@ -51,12 +61,12 @@ export function CommonSearchPanel({
           </svg>
         </CommonButton>
         <CommonButton
-          aria-label="검색"
+          aria-label={labels.search}
           className={s.iconButton}
           size="sm"
           type="submit"
           variant="primary"
-          title="검색"
+          title={labels.search}
         >
           <svg
             viewBox="0 0 24 24"

@@ -1,17 +1,24 @@
 import { withRequestLogging } from '@/server/logging';
 import { checkGuideDatabase } from '@/server/services/guide';
 import { getAdminSession } from '@/server/auth';
+import { cookies } from 'next/headers';
+import { guideMessagesFor } from '@/i18n/guide-server';
+import { localeCookie, resolveLocale } from '@/i18n/locale';
 
 export const GET = withRequestLogging(
   '/api/guide',
   async (request: Request) => {
     const headers = { 'Cache-Control': 'no-store' };
+    // 응답 문구만 locale을 따르고 접근·입력 검증은 그대로 유지한다.
+    const copy = guideMessagesFor(
+      resolveLocale((await cookies()).get(localeCookie)?.value),
+    ).api;
     if (
       process.env.NODE_ENV !== 'development' ||
       !(await getAdminSession(request.headers))
     ) {
       return Response.json(
-        { ok: false, message: '찾을 수 없습니다.' },
+        { ok: false, message: copy.notFound },
         { status: 404, headers },
       );
     }
@@ -20,18 +27,18 @@ export const GET = withRequestLogging(
       return Response.json(
         {
           ok: true,
-          message: 'API 호출 성공',
+          message: copy.apiSuccess,
           serverTime: new Date().toISOString(),
         },
         { headers },
       );
     }
     if (check === 'database') {
-      const result = await checkGuideDatabase();
+      const result = await checkGuideDatabase(copy);
       return Response.json(result.body, { status: result.status, headers });
     }
     return Response.json(
-      { ok: false, message: 'check는 api 또는 database여야 합니다.' },
+      { ok: false, message: copy.invalidCheck },
       { status: 400, headers },
     );
   },

@@ -1,4 +1,7 @@
+import { portfolioKo } from './portfolio-ko.ts';
+
 export const ko = {
+  portfolio: portfolioKo,
   home: {
     heroStart: '작은 생각이',
     heroHighlight: '새로운',

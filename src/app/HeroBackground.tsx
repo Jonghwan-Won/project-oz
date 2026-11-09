@@ -34,6 +34,7 @@ const FRAGMENT = `
   #endif
   uniform vec2 size;
   uniform float time;
+  uniform float dark;
   uniform sampler2D flowField;
 
   // Like tiptap's "subtle" intensity: the color layers sit at 55% over white.
@@ -126,20 +127,27 @@ const FRAGMENT = `
       green.g + swirl.g * (1.0 - green.a),
       blue.b + swirl.b * (1.0 - blue.a)
     );
-    vec3 under = mix(vec3(1.0), layered, OPACITY);
+    // Dark theme: the same layers sit faintly over near-black instead of over white.
+    vec3 under = mix(
+      mix(vec3(1.0), layered, OPACITY),
+      mix(vec3(0.02, 0.02, 0.03), layered, 0.2),
+      dark
+    );
 
     float normalZ = sqrt(max(0.0, 1.0 - slope * slope));
     float reflection = pow(max(0.0, normalZ * 0.92 + slope * 0.39), 32.0);
     float seam = pow(abs(groove), 20.0);
-    vec3 glass = under * (0.97 - seam * 0.10) + reflection * 0.075 + seam * 0.065;
+    float shine = mix(1.0, 0.45, dark);
+    vec3 glass = under * (0.97 - seam * 0.10) + (reflection * 0.075 + seam * 0.065) * shine;
     float edge = smoothstep(0.0, 0.16, gl_FragCoord.y / size.y);
-    vec3 base = vec3(0.972549);
+    // Fades into the page background: light #f8f8f8, dark #000.
+    vec3 base = vec3(0.972549 * (1.0 - dark));
     gl_FragColor = vec4(clamp(mix(base, glass, edge), 0.0, 1.0), 1.0);
   }
 `;
 
 /** Decorative fluted-glass surface; CSS remains visible when WebGL is unavailable. */
-export function HeroBackground() {
+export function HeroBackground({ dark = false }: { dark?: boolean } = {}) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -212,6 +220,7 @@ export function HeroBackground() {
       flow.bytes,
     );
     gl.uniform1i(gl.getUniformLocation(program, 'flowField'), 0);
+    gl.uniform1f(gl.getUniformLocation(program, 'dark'), dark ? 1 : 0);
     const upload = () =>
       gl.texSubImage2D(
         gl.TEXTURE_2D,
@@ -308,7 +317,7 @@ export function HeroBackground() {
       document.removeEventListener('visibilitychange', reset);
       dispose();
     };
-  }, []);
+  }, [dark]);
 
   return <canvas ref={ref} className={s.heroBackground} aria-hidden="true" />;
 }

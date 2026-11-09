@@ -22,6 +22,7 @@ export function CommonGrid<Row>({
   emptyCellClassName,
   fixedLayout = false,
   onRowDoubleClick,
+  emptyLabel = '검색 결과가 없습니다.',
 }: {
   rows: Row[];
   columns: CommonGridColumn<Row>[];
@@ -33,6 +34,7 @@ export function CommonGrid<Row>({
   emptyCellClassName?: string;
   fixedLayout?: boolean;
   onRowDoubleClick?: (row: Row, event: MouseEvent<HTMLTableRowElement>) => void;
+  emptyLabel?: string;
 }) {
   return (
     <div className={wrapClassName}>
@@ -65,7 +67,7 @@ export function CommonGrid<Row>({
                   height: 120,
                 }}
               >
-                검색 결과가 없습니다.
+                {emptyLabel}
               </Table.Td>
             </Table.Tr>
           ) : (

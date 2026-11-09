@@ -7,6 +7,7 @@ import { CommonLoading } from './ui/CommonLoading';
 import { ProjectDetailContent } from './ProjectDetailContent';
 import s from './ProjectDetailContent.module.css';
 import type { ProjectDetailData } from '@/lib/project-detail';
+import { sharedCopy } from '@/i18n/shared-copy';
 export function ProjectPreviewLink({
   href,
   className,
@@ -24,6 +25,7 @@ export function ProjectPreviewLink({
   const [project, setProject] = useState<ProjectDetailData | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const copy = sharedCopy(locale).projectPreview;
   async function openDetails() {
     setLoading(true);
     setProject(null);
@@ -32,15 +34,11 @@ export function ProjectPreviewLink({
       const response = await fetch(`/api/projects/${projectId}`, {
         cache: 'no-store',
       });
-      if (!response.ok) throw new Error('프로젝트 상세를 불러오지 못했습니다.');
+      if (!response.ok) throw new Error(copy.loadFailed);
       setProject(await response.json());
       setOpen(true);
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : '프로젝트 상세를 불러오지 못했습니다.',
-      );
+      setError(cause instanceof Error ? cause.message : copy.loadFailed);
       setOpen(true);
     } finally {
       setLoading(false);
@@ -71,11 +69,11 @@ export function ProjectPreviewLink({
         <CommonModal
           open
           fillHeight
-          title={locale === 'en' ? 'Project details' : '프로젝트 상세'}
+          title={copy.title}
           onClose={() => setOpen(false)}
           actions={
             <CommonButton size="sm" onClick={() => setOpen(false)}>
-              {locale === 'en' ? 'Close' : '닫기'}
+              {copy.close}
             </CommonButton>
           }
         >

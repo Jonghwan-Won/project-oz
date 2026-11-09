@@ -3,6 +3,7 @@ import { ProjectTag } from './ProjectTag';
 import { formatProjectPeriod } from '@/lib/project-detail';
 import Image from 'next/image';
 import type { PublicProject } from '@/server/services/projects';
+import { sharedCopy } from '@/i18n/shared-copy';
 import s from './ProjectCard.module.css';
 
 export function ProjectCard({
@@ -14,7 +15,7 @@ export function ProjectCard({
   locale?: string;
   compact?: boolean;
 }) {
-  const en = locale === 'en';
+  const copy = sharedCopy(locale).projectCard;
   const technologies = project.tags.filter((tag) => tag.kind === 'TECHNOLOGY');
   const context = [
     project.customerName || project.originLabel,
@@ -85,7 +86,7 @@ export function ProjectCard({
             <div
               className={s.technologies}
               role="list"
-              aria-label={en ? 'Representative technologies' : '대표 기술'}
+              aria-label={copy.technologies}
             >
               {technologies.slice(0, 3).map((tag) => (
                 <ProjectTag

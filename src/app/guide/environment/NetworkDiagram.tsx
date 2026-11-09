@@ -1,3 +1,4 @@
+import type { GuideMessages } from '@/i18n/guide-ko';
 import s from './environment.module.css';
 
 function Node({
@@ -26,19 +27,24 @@ function Node({
   );
 }
 
-export function NetworkDiagram() {
+export function NetworkDiagram({
+  messages: copy,
+}: {
+  messages: GuideMessages['diagram'];
+}) {
+  const { nodes } = copy;
   return (
     <figure className={s.diagram}>
       <div className={s.mapLegend}>
-        <span className={s.publicKey}>실선 · 공개 웹</span>
-        <span className={s.privateKey}>실선 · 개발 전용</span>
-        <span>점선 · 운영 DB 연결</span>
+        <span className={s.publicKey}>{copy.legendPublic}</span>
+        <span className={s.privateKey}>{copy.legendPrivate}</span>
+        <span>{copy.legendDatabase}</span>
       </div>
       <div
         className={s.mapScroll}
         tabIndex={0}
         role="region"
-        aria-label="네트워크 구조도 - 작은 화면에서는 좌우로 스크롤"
+        aria-label={copy.region}
       >
         <svg
           viewBox="0 0 1160 650"
@@ -46,15 +52,8 @@ export function NetworkDiagram() {
           role="img"
           aria-labelledby="network-map-title network-map-description"
         >
-          <title id="network-map-title">
-            OZ 공개 웹과 개발 DB의 네트워크 연결
-          </title>
-          <desc id="network-map-description">
-            위쪽 공개 경로는 방문자에서 HTTPS 진입점, 내부 전달 경로, OZ 웹
-            컨테이너로 연결됩니다. 아래쪽 개발 경로는 외부 개발 PC에서
-            Tailscale과 NAS SSH를 통해 개발 DB로 연결됩니다. 운영 DB는 웹
-            컨테이너와 별도 경로로 연결됩니다.
-          </desc>
+          <title id="network-map-title">{copy.title}</title>
+          <desc id="network-map-description">{copy.description}</desc>
           <defs>
             <marker
               id="public-arrow"
@@ -88,7 +87,7 @@ export function NetworkDiagram() {
             className={s.mapZone}
           />
           <text x="36" y="90" className={s.zoneTitle}>
-            집 밖 · 사용자 장치
+            {copy.outsideZone}
           </text>
           <rect
             x="470"
@@ -99,7 +98,7 @@ export function NetworkDiagram() {
             className={s.mapZone}
           />
           <text x="490" y="90" className={s.zoneTitle}>
-            집 내부 네트워크
+            {copy.homeZone}
           </text>
           <rect
             x="704"
@@ -116,13 +115,13 @@ export function NetworkDiagram() {
             PUBLIC WEB
           </text>
           <text x="260" y="163" className={s.mapText}>
-            누구나 도메인으로 접속
+            {copy.publicHint}
           </text>
           <text x="260" y="405" className={s.privateLabel}>
             PRIVATE DEVELOPMENT
           </text>
           <text x="260" y="428" className={s.mapText}>
-            개발자만 NAS에 연결
+            {copy.privateHint}
           </text>
           <path
             d="M 218 240 H 488 M 662 240 H 724 M 898 240 H 934"
@@ -141,74 +140,71 @@ export function NetworkDiagram() {
             markerEnd="url(#private-arrow)"
           />
           <text x="274" y="488" className={s.privateLabel}>
-            Tailscale → SSH 터널 →
+            {copy.tunnel}
           </text>
           <path d="M 1021 290 V 322" className={s.plannedLine} />
           <text x="950" y="312" className={s.mapText}>
-            DB 연결
+            {copy.databaseLink}
           </text>
           <Node
             x={44}
             y={190}
-            title="방문자 · 휴대폰"
-            lines={['사이트 도메인 HTTPS', 'Tailscale 불필요']}
+            title={nodes.visitor.title}
+            lines={nodes.visitor.lines}
           />
           <Node
             x={488}
             y={190}
-            title="HTTPS 진입점"
-            lines={['Cloudflare Tunnel', '공개 HTTPS']}
+            title={nodes.entry.title}
+            lines={nodes.entry.lines}
           />
           <Node
             x={724}
             y={190}
-            title="내부 전달 경로"
-            lines={['접근이 제한된 경로', '실제 설정은 비공개']}
+            title={nodes.internal.title}
+            lines={nodes.internal.lines}
           />
           <Node
             x={934}
             y={190}
-            title="OZ 웹 컨테이너"
-            lines={['Next.js 화면 + API', '컨테이너 :3000']}
+            title={nodes.web.title}
+            lines={nodes.web.lines}
           />
           <g className={s.plannedNode}>
             <Node
               x={934}
               y={330}
-              title="운영 DB"
-              lines={['PostgreSQL :5432', '운영 앱 전용 계정 사용']}
+              title={nodes.productionDatabase.title}
+              lines={nodes.productionDatabase.lines}
             />
           </g>
           <Node
             x={44}
             y={460}
-            title="외부 개발 PC"
-            lines={['로컬 Next.js :3000', 'DB 접속점 :15432']}
+            title={nodes.devPc.title}
+            lines={nodes.devPc.lines}
           />
           <Node
             x={724}
             y={460}
-            title="NAS SSH 접속점"
-            lines={['Tailscale로 도달', 'DB 터널 허용 대상 제한']}
+            title={nodes.nasSsh.title}
+            lines={nodes.nasSsh.lines}
           />
           <Node
             x={934}
             y={460}
-            title="개발 DB"
-            lines={['PostgreSQL :5432', '개발 앱 전용 계정']}
+            title={nodes.devDatabase.title}
+            lines={nodes.devDatabase.lines}
           />
           <text x="36" y="598" className={s.mapText}>
-            개발 PC는 허용된 사설 경로 사용
+            {copy.devPcNote}
           </text>
           <text x="490" y="582" className={s.mapText}>
-            DB 포트 외부 공개 불필요
+            {copy.databasePortNote}
           </text>
         </svg>
       </div>
-      <figcaption>
-        위는 공개 웹, 아래는 개발 DB 경로입니다. 점선은 운영 웹 → 운영 DB
-        연결입니다. 작은 화면에서는 구조도를 좌우로 움직여 볼 수 있습니다.
-      </figcaption>
+      <figcaption>{copy.caption}</figcaption>
     </figure>
   );
 }

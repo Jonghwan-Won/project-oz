@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { getMessages } from '@/i18n/server';
 import { getTheme } from '@/theme/server';
+import { getHeaderSettings } from '@/server/header-settings';
 import { SiteFrame } from '@/components/SiteFrame';
 import { NavigationScroll } from '@/components/NavigationScroll';
 import { ScrollToTop } from '@/components/ScrollToTop';
@@ -19,7 +20,10 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const { locale, messages } = await getMessages();
-  const theme = await getTheme();
+  const [theme, headerSettings] = await Promise.all([
+    getTheme(),
+    getHeaderSettings(),
+  ]);
   return (
     <html lang={locale} data-theme={theme} data-mantine-color-scheme={theme}>
       <body>
@@ -28,7 +32,7 @@ export default async function RootLayout({
             {messages.site.skip}
           </a>
           <NavigationScroll />
-          <SiteFrame>
+          <SiteFrame headerSettings={headerSettings}>
             <main id="main">{children}</main>
           </SiteFrame>
           <ScrollToTop label={messages.site.backToTop} />

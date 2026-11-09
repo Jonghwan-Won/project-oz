@@ -26,9 +26,163 @@ import { CommonFileUpload } from './CommonFileUpload';
 import { CommonFilePicker } from './CommonFilePicker';
 import { CommonButton } from './CommonButton';
 import { CommonLoading } from './CommonLoading';
+import type { ColorPickerLabels } from './EditorColorPicker';
 import { maxUploadBytes } from '@/lib/files';
 import { uploadFile } from '@/lib/upload-file';
 import s from './CommonRichText.module.css';
+
+const defaultColorPickerLabels: ColorPickerLabels = {
+  noColor: '색상 없음',
+  recent: '최근 사용한 색',
+  custom: '다른 색',
+  apply: '적용',
+};
+
+/**
+ * 에디터 도구 문구. 관리자 화면은 기본 한국어를 쓰고, UI 가이드는 locale에 맞는
+ * 문구를 넘긴다. 테스트가 이 파일만 변환해 실행하므로 기본값을 이 파일에 둔다.
+ */
+export const defaultRichTextEditorLabels = {
+  loading: '에디터를 준비하고 있어요.',
+  formatting: '{label} 서식',
+  blockStyle: '문단 스타일',
+  paragraph: '본문',
+  heading2: '제목 2',
+  heading3: '제목 3',
+  fontFamily: '글꼴',
+  fontFamilies: { '': '기본', system: '고딕', serif: '명조', mono: '고정폭' },
+  fontSize: '글자 크기',
+  fontSizePlaceholder: '크기',
+  alignLeft: '왼쪽 정렬',
+  alignCenter: '가운데 정렬',
+  alignRight: '오른쪽 정렬',
+  alignJustify: '양쪽 정렬',
+  bold: '굵게',
+  italic: '기울임',
+  underline: '밑줄',
+  strike: '취소선',
+  bulletList: '글머리 목록',
+  orderedList: '번호 목록',
+  blockquote: '인용',
+  quotation: '따옴표 인용',
+  codeBlock: '코드 블록',
+  horizontalRule: '구분선',
+  textColor: '글자 색상',
+  textBackground: '글자 배경색',
+  outdent: '내어쓰기',
+  indent: '들여쓰기',
+  link: '링크',
+  linkUrl: '링크 주소',
+  linkInvalid: 'http://, https:// 또는 사이트 내부 경로를 입력해 주세요.',
+  linkNoSelection: '링크를 적용할 텍스트를 먼저 선택해 주세요.',
+  removeLink: '링크 제거',
+  apply: '적용',
+  confirm: '확인',
+  cancel: '취소',
+  undo: '되돌리기',
+  redo: '다시 실행',
+  insertTable: '표 삽입',
+  tableSizePicker: '표 크기 선택',
+  tableSize: '{columns}열 × {rows}행',
+  insertTableSize: '{columns}열 {rows}행 표 삽입',
+  insertImage: '이미지 삽입',
+  uploadHint: 'PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입',
+  localImageHint: 'PNG · JPEG · WebP / 최대 10MB · 브라우저에서만 표시',
+  pasteImageType: 'PNG·JPEG·WebP 이미지를 붙여넣어 주세요.',
+  selectImageType: 'PNG·JPEG·WebP 이미지를 선택해 주세요.',
+  imageTooLarge: '파일은 10MB 이하여야 합니다.',
+  uploadFailed: '업로드에 실패했습니다.',
+  expandTableTools: '표 도구 펼치기',
+  collapseTableTools: '표 도구 접기',
+  tableStyle: '표 스타일',
+  backgroundColor: '배경색',
+  borders: '테두리',
+  borderColor: '테두리색',
+  borderWidth: '테두리 두께',
+  borderStyle: '테두리 종류',
+  fitWidth: '폭 맞춤',
+  rowsAndColumns: '행과 열 편집',
+  addRowBefore: '위에 행 추가',
+  addRowAfter: '아래에 행 추가',
+  addColumnBefore: '왼쪽 열 추가',
+  addColumnAfter: '오른쪽 열 추가',
+  deleteRow: '행 삭제',
+  deleteColumn: '열 삭제',
+  deleteTable: '표 삭제',
+  cellEditing: '셀 편집',
+  cellAlign: '정렬',
+  verticalAlign: '세로 정렬',
+  cellSize: '셀 크기',
+  mergeCells: '셀 병합',
+  splitCell: '셀 나누기',
+  cellProperties: '셀 속성',
+  tableProperties: '표 속성',
+  equalWidth: '열 너비 같게',
+  equalHeight: '행 높이 같게',
+  equalSize: '셀 크기 같게',
+  borderStyles: {
+    none: '없음',
+    solid: '실선',
+    dotted: '점선',
+    dashed: '파선',
+    double: '이중선',
+  },
+  alignTop: '위쪽 정렬',
+  alignMiddle: '가운데 정렬',
+  alignBottom: '아래쪽 정렬',
+  borderPresets: {
+    all: '모든 테두리',
+    none: '테두리 없음',
+    outer: '바깥 테두리',
+    inner: '안쪽 테두리',
+    top: '위 테두리',
+    bottom: '아래 테두리',
+    left: '왼쪽 테두리',
+    right: '오른쪽 테두리',
+    horizontal: '안쪽 가로 테두리',
+    vertical: '안쪽 세로 테두리',
+  },
+  splitColumns: '열 개수',
+  splitRows: '행 개수',
+  splitColumnsLabel: '나눌 열 개수',
+  splitRowsLabel: '나눌 행 개수',
+  splitError:
+    '행·열은 1~10으로 입력해 주세요. 표는 최대 10,000칸까지 나눌 수 있습니다.',
+  back: '뒤로가기',
+  toggleHeaderCell: '제목 셀 전환',
+  defaultOption: '기본',
+  cellBorderWidth: '셀 테두리 두께',
+  cellBorderStyle: '셀 테두리 종류',
+  cellVerticalAlign: '셀 세로 정렬',
+  top: '위',
+  middle: '가운데',
+  bottom: '아래',
+  horizontalAlign: '가로 정렬',
+  left: '왼쪽',
+  center: '가운데',
+  right: '오른쪽',
+  justify: '양쪽',
+  cellPadding: '안쪽 여백',
+  cellWrap: '줄바꿈',
+  wrapAllowed: '허용',
+  wrapDisabled: '금지',
+  resetCellStyle: '셀 스타일 초기화',
+  toggleHeaderRow: '제목 행 전환',
+  toggleHeaderColumn: '제목 열 전환',
+  tableWidth: '표 너비',
+  auto: '자동',
+  fixed: '고정',
+  tableLayout: '표 레이아웃',
+  tableAlign: '표 배치',
+  draggedWidth: '{width} (드래그)',
+  colorPicker: defaultColorPickerLabels,
+};
+export type RichTextEditorLabels = typeof defaultRichTextEditorLabels;
+
+const optionLabel = (
+  names: Record<string, string>,
+  option: { value: string; label: string },
+) => ({ ...option, label: names[option.value] ?? option.label });
 const tableMenuOptions: BubbleMenuProps['options'] = {
   strategy: 'fixed',
   placement: 'bottom',
@@ -75,6 +229,7 @@ export function CommonRichTextEditor({
   localImages,
   onLocalImage,
   onUploadBusyChange,
+  labels = defaultRichTextEditorLabels,
 }: {
   id: string;
   label: string;
@@ -86,6 +241,7 @@ export function CommonRichTextEditor({
   localImages?: ReadonlySet<string>;
   onLocalImage?: (file: File) => string;
   onUploadBusyChange?: (busy: boolean) => void;
+  labels?: RichTextEditorLabels;
 }) {
   const [tablePanel, setTablePanel] = useState('');
   const [splitSize, setSplitSize] = useState({ columns: 2, rows: 1 });
@@ -161,11 +317,11 @@ export function CommonRichTextEditor({
                 ? 'webp'
                 : null;
         if (!file || !extension) {
-          setPasteMessage('PNG·JPEG·WebP 이미지를 붙여넣어 주세요.');
+          setPasteMessage(labels.pasteImageType);
           return true;
         }
         if (file.size > maxUploadBytes) {
-          setPasteMessage('파일은 10MB 이하여야 합니다.');
+          setPasteMessage(labels.imageTooLarge);
           return true;
         }
         if (!uploadsEnabled && onLocalImage) {
@@ -198,9 +354,7 @@ export function CommonRichTextEditor({
           .catch((error: unknown) => {
             if (!controller.signal.aborted)
               setPasteMessage(
-                error instanceof Error
-                  ? error.message
-                  : '업로드에 실패했습니다.',
+                error instanceof Error ? error.message : labels.uploadFailed,
               );
           })
           .finally(() => {
@@ -261,40 +415,47 @@ export function CommonRichTextEditor({
       editor?.view.dom.closest<HTMLElement>('[role="dialog"]') ?? document.body,
     [editor],
   );
-  if (!editor) return <p role="status">에디터를 준비하고 있어요.</p>;
+  if (!editor) return <p role="status">{labels.loading}</p>;
   const tools = [
     {
-      label: '굵게',
+      key: 'bold',
+      label: labels.bold,
       active: editor.isActive('bold'),
       run: () => editor.chain().focus().toggleBold().run(),
     },
     {
-      label: '기울임',
+      key: 'italic',
+      label: labels.italic,
       active: editor.isActive('italic'),
       run: () => editor.chain().focus().toggleItalic().run(),
     },
     {
-      label: '밑줄',
+      key: 'underline',
+      label: labels.underline,
       active: editor.isActive('underline'),
       run: () => editor.chain().focus().toggleUnderline().run(),
     },
     {
-      label: '취소선',
+      key: 'strike',
+      label: labels.strike,
       active: editor.isActive('strike'),
       run: () => editor.chain().focus().toggleStrike().run(),
     },
     {
-      label: '글머리 목록',
+      key: 'bulletList',
+      label: labels.bulletList,
       active: editor.isActive('bulletList'),
       run: () => editor.chain().focus().toggleBulletList().run(),
     },
     {
-      label: '번호 목록',
+      key: 'orderedList',
+      label: labels.orderedList,
       active: editor.isActive('orderedList'),
       run: () => editor.chain().focus().toggleOrderedList().run(),
     },
     {
-      label: '인용',
+      key: 'blockquote',
+      label: labels.blockquote,
       active:
         editor.isActive('blockquote') &&
         !editor.isActive('blockquote', { quoteStyle: 'quotation' }),
@@ -309,7 +470,8 @@ export function CommonRichTextEditor({
       },
     },
     {
-      label: '따옴표 인용',
+      key: 'quotation',
+      label: labels.quotation,
       active: editor.isActive('blockquote', { quoteStyle: 'quotation' }),
       run: () => {
         if (editor.isActive('blockquote', { quoteStyle: 'quotation' }))
@@ -330,12 +492,14 @@ export function CommonRichTextEditor({
       },
     },
     {
-      label: '코드 블록',
+      key: 'codeBlock',
+      label: labels.codeBlock,
       active: editor.isActive('codeBlock'),
       run: () => editor.chain().focus().toggleCodeBlock().run(),
     },
     {
-      label: '구분선',
+      key: 'horizontalRule',
+      label: labels.horizontalRule,
       active: false,
       run: () => editor.chain().focus().setHorizontalRule().run(),
     },
@@ -354,9 +518,9 @@ export function CommonRichTextEditor({
     editor.getAttributes(blockType).textAlign ??
     'left';
   const alignments = [
-    { value: 'left', label: '왼쪽 정렬' },
-    { value: 'center', label: '가운데 정렬' },
-    { value: 'right', label: '오른쪽 정렬' },
+    { value: 'left', label: labels.alignLeft },
+    { value: 'center', label: labels.alignCenter },
+    { value: 'right', label: labels.alignRight },
   ] as const;
   const updateTextStyle = (
     attribute: 'fontFamily' | 'fontSize' | 'color' | 'backgroundColor',
@@ -382,12 +546,16 @@ export function CommonRichTextEditor({
   return (
     <div className={s.editor}>
       <fieldset disabled={disabled} className={s.controls}>
-        <div className={s.toolbar} role="group" aria-label={label + ' 서식'}>
+        <div
+          className={s.toolbar}
+          role="group"
+          aria-label={labels.formatting.replace('{label}', label)}
+        >
           <div className={s.toolbarRow}>
             <CommonSelectBox
               className={s.blockStyle}
               data-editor-control
-              aria-label="문단 스타일"
+              aria-label={labels.blockStyle}
               value={
                 editor.isActive('heading', { level: 2 })
                   ? '2'
@@ -405,26 +573,30 @@ export function CommonRichTextEditor({
                     .run();
               }}
               options={[
-                { value: 'p', label: '본문' },
-                { value: '2', label: '제목 2' },
-                { value: '3', label: '제목 3' },
+                { value: 'p', label: labels.paragraph },
+                { value: '2', label: labels.heading2 },
+                { value: '3', label: labels.heading3 },
               ]}
             />
             <CommonSelectBox
               className={s.blockStyle}
               data-editor-control
-              aria-label="글꼴"
+              aria-label={labels.fontFamily}
               value={textStyle.fontFamily ?? ''}
               onValueChange={(value) => updateTextStyle('fontFamily', value)}
-              options={textStyleFontOptions}
+              options={textStyleFontOptions.map((option) =>
+                optionLabel(labels.fontFamilies, option),
+              )}
             />
             <CommonSelectBox
               className={s.blockStyle}
               data-editor-control
-              aria-label="글자 크기"
+              aria-label={labels.fontSize}
               value={textStyle.fontSize ?? ''}
               onValueChange={(value) => updateTextStyle('fontSize', value)}
-              options={textStyleSizeOptions}
+              options={textStyleSizeOptions.map((option) =>
+                optionLabel({ '': labels.fontSizePlaceholder }, option),
+              )}
             />
             {alignments.map(({ value: alignment, label: alignmentLabel }) => (
               <CommonButton
@@ -470,7 +642,7 @@ export function CommonRichTextEditor({
             ))}
             {tools.slice(0, 4).map((tool) => (
               <CommonButton
-                key={tool.label}
+                key={tool.key}
                 size="sm"
                 variant="ghost"
                 className={s.tool}
@@ -483,29 +655,33 @@ export function CommonRichTextEditor({
                 <span className={s.glyph}>
                   {
                     {
-                      굵게: <b>B</b>,
-                      기울임: <i>I</i>,
-                      밑줄: <u>U</u>,
-                      취소선: <s>S</s>,
-                      제목: <b>H₂</b>,
-                      '글머리 목록': '• ≡',
-                      '번호 목록': '1. ≡',
-                      인용: '❝',
-                      '따옴표 인용': '“ ”',
-                      '코드 블록': '</>',
-                      구분선: '―',
-                    }[tool.label]
+                      bold: <b>B</b>,
+                      italic: <i>I</i>,
+                      underline: <u>U</u>,
+                      strike: <s>S</s>,
+                      heading: <b>H₂</b>,
+                      bulletList: '• ≡',
+                      orderedList: '1. ≡',
+                      blockquote: '❝',
+                      quotation: '“ ”',
+                      codeBlock: '</>',
+                      horizontalRule: '―',
+                    }[tool.key]
                   }
                 </span>
               </CommonButton>
             ))}
             <EditorColorPicker
-              label="글자 색상"
+              label={labels.textColor}
+              glyph="A"
+              labels={labels.colorPicker}
               value={textStyle.color}
               onChange={(color) => updateTextStyle('color', color)}
             />
             <EditorColorPicker
-              label="글자 배경색"
+              label={labels.textBackground}
+              glyph="▣"
+              labels={labels.colorPicker}
               value={textStyle.backgroundColor}
               onChange={(color) => updateTextStyle('backgroundColor', color)}
             />
@@ -513,7 +689,7 @@ export function CommonRichTextEditor({
           <div className={s.toolbarRow}>
             {tools.slice(4).map((tool) => (
               <CommonButton
-                key={tool.label}
+                key={tool.key}
                 size="sm"
                 variant="ghost"
                 className={s.tool}
@@ -526,18 +702,18 @@ export function CommonRichTextEditor({
                 <span className={s.glyph}>
                   {
                     {
-                      굵게: <b>B</b>,
-                      기울임: <i>I</i>,
-                      밑줄: <u>U</u>,
-                      취소선: <s>S</s>,
-                      제목: <b>H₂</b>,
-                      '글머리 목록': '• ≡',
-                      '번호 목록': '1. ≡',
-                      인용: '❝',
-                      '따옴표 인용': '“ ”',
-                      '코드 블록': '</>',
-                      구분선: '―',
-                    }[tool.label]
+                      bold: <b>B</b>,
+                      italic: <i>I</i>,
+                      underline: <u>U</u>,
+                      strike: <s>S</s>,
+                      heading: <b>H₂</b>,
+                      bulletList: '• ≡',
+                      orderedList: '1. ≡',
+                      blockquote: '❝',
+                      quotation: '“ ”',
+                      codeBlock: '</>',
+                      horizontalRule: '―',
+                    }[tool.key]
                   }
                 </span>
               </CommonButton>
@@ -546,8 +722,8 @@ export function CommonRichTextEditor({
               size="sm"
               variant="ghost"
               className={s.tool}
-              title="내어쓰기"
-              aria-label="내어쓰기"
+              title={labels.outdent}
+              aria-label={labels.outdent}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
                 if (editor.isActive('listItem'))
@@ -571,8 +747,8 @@ export function CommonRichTextEditor({
               size="sm"
               variant="ghost"
               className={s.tool}
-              title="들여쓰기"
-              aria-label="들여쓰기"
+              title={labels.indent}
+              aria-label={labels.indent}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
                 if (editor.isActive('listItem'))
@@ -597,8 +773,8 @@ export function CommonRichTextEditor({
                 size="sm"
                 variant="ghost"
                 className={s.tool}
-                title="링크"
-                aria-label="링크"
+                title={labels.link}
+                aria-label={labels.link}
                 aria-expanded={linkOpen}
                 aria-pressed={editor.isActive('link')}
                 onMouseDown={(event) => event.preventDefault()}
@@ -617,18 +793,14 @@ export function CommonRichTextEditor({
                     event.preventDefault();
                     const href = linkUrl.trim();
                     if (!isSafeLink(href)) {
-                      setLinkError(
-                        'http://, https:// 또는 사이트 내부 경로를 입력해 주세요.',
-                      );
+                      setLinkError(labels.linkInvalid);
                       return;
                     }
                     if (
                       editor.state.selection.empty &&
                       !editor.isActive('link')
                     ) {
-                      setLinkError(
-                        '링크를 적용할 텍스트를 먼저 선택해 주세요.',
-                      );
+                      setLinkError(labels.linkNoSelection);
                       return;
                     }
                     editor
@@ -648,7 +820,7 @@ export function CommonRichTextEditor({
                   }}
                 >
                   <label>
-                    링크 주소
+                    {labels.linkUrl}
                     <input
                       autoFocus
                       type="text"
@@ -662,7 +834,7 @@ export function CommonRichTextEditor({
                   {linkError && <p role="alert">{linkError}</p>}
                   <div>
                     <CommonButton type="submit" size="sm" variant="primary">
-                      적용
+                      {labels.apply}
                     </CommonButton>
                     <CommonButton
                       size="sm"
@@ -676,7 +848,7 @@ export function CommonRichTextEditor({
                         setLinkOpen(false);
                       }}
                     >
-                      링크 제거
+                      {labels.removeLink}
                     </CommonButton>
                     <CommonButton
                       size="sm"
@@ -685,7 +857,7 @@ export function CommonRichTextEditor({
                         editor.commands.focus();
                       }}
                     >
-                      취소
+                      {labels.cancel}
                     </CommonButton>
                   </div>
                 </form>
@@ -695,8 +867,8 @@ export function CommonRichTextEditor({
               size="sm"
               variant="ghost"
               className={s.tool}
-              title="되돌리기"
-              aria-label="되돌리기"
+              title={labels.undo}
+              aria-label={labels.undo}
               disabled={!editor.can().undo()}
               onClick={() => editor.chain().focus().undo().run()}
             >
@@ -706,8 +878,8 @@ export function CommonRichTextEditor({
               size="sm"
               variant="ghost"
               className={s.tool}
-              title="다시 실행"
-              aria-label="다시 실행"
+              title={labels.redo}
+              aria-label={labels.redo}
               disabled={!editor.can().redo()}
               onClick={() => editor.chain().focus().redo().run()}
             >
@@ -718,9 +890,9 @@ export function CommonRichTextEditor({
                 size="sm"
                 variant="ghost"
                 className={s.tool}
-                aria-label="표 삽입"
+                aria-label={labels.insertTable}
                 aria-expanded={tablePickerOpen}
-                title="표 삽입"
+                title={labels.insertTable}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setTablePickerOpen(!tablePickerOpen)}
               >
@@ -741,7 +913,7 @@ export function CommonRichTextEditor({
                 <div
                   className={s.tablePicker}
                   role="group"
-                  aria-label="표 크기 선택"
+                  aria-label={labels.tableSizePicker}
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') {
                       event.preventDefault();
@@ -751,7 +923,9 @@ export function CommonRichTextEditor({
                   }}
                 >
                   <span aria-live="polite">
-                    {tableSize.columns}열 × {tableSize.rows}행
+                    {labels.tableSize
+                      .replace('{columns}', String(tableSize.columns))
+                      .replace('{rows}', String(tableSize.rows))}
                   </span>
                   <div className={s.tableGrid}>
                     {Array.from({ length: 20 }, (_, row) =>
@@ -765,7 +939,9 @@ export function CommonRichTextEditor({
                           <button
                             key={`${rows}-${columns}`}
                             type="button"
-                            aria-label={`${columns}열 ${rows}행 표 삽입`}
+                            aria-label={labels.insertTableSize
+                              .replace('{columns}', String(columns))
+                              .replace('{rows}', String(rows))}
                             className={active ? s.tableCellActive : undefined}
                             onMouseEnter={() => setTableSize({ rows, columns })}
                             onFocus={() => setTableSize({ rows, columns })}
@@ -798,7 +974,7 @@ export function CommonRichTextEditor({
         {uploadsEnabled && (
           <div className={s.imageTools}>
             <CommonFileUpload
-              label="이미지 삽입"
+              label={labels.insertImage}
               onBusyChange={onUploadBusyChange}
               imagesOnly
               compact
@@ -813,13 +989,13 @@ export function CommonRichTextEditor({
                     .run();
               }}
             />
-            <small>PNG · JPEG · WebP / 최대 10MB · 커서 위치에 삽입</small>
+            <small>{labels.uploadHint}</small>
           </div>
         )}
         {!uploadsEnabled && onLocalImage && (
           <div className={s.imageTools}>
             <CommonFilePicker
-              label="이미지 삽입"
+              label={labels.insertImage}
               compact
               icon={<ImageInsertIcon />}
               disabled={disabled}
@@ -828,11 +1004,11 @@ export function CommonRichTextEditor({
                 if (
                   !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
                 ) {
-                  setPasteMessage('PNG·JPEG·WebP 이미지를 선택해 주세요.');
+                  setPasteMessage(labels.selectImageType);
                   return;
                 }
                 if (file.size > maxUploadBytes) {
-                  setPasteMessage('파일은 10MB 이하여야 합니다.');
+                  setPasteMessage(labels.imageTooLarge);
                   return;
                 }
                 setPasteMessage('');
@@ -843,7 +1019,7 @@ export function CommonRichTextEditor({
                   .run();
               }}
             />
-            <small>PNG · JPEG · WebP / 최대 10MB · 브라우저에서만 표시</small>
+            <small>{labels.localImageHint}</small>
           </div>
         )}
         {pasteMessage && <p role="alert">{pasteMessage}</p>}
@@ -873,9 +1049,15 @@ export function CommonRichTextEditor({
             <CommonButton
               onClick={() => setTableToolsCollapsed(!tableToolsCollapsed)}
               className={s.tableToolsToggle}
-              title={tableToolsCollapsed ? '표 도구 펼치기' : '표 도구 접기'}
+              title={
+                tableToolsCollapsed
+                  ? labels.expandTableTools
+                  : labels.collapseTableTools
+              }
               aria-label={
-                tableToolsCollapsed ? '표 도구 펼치기' : '표 도구 접기'
+                tableToolsCollapsed
+                  ? labels.expandTableTools
+                  : labels.collapseTableTools
               }
               aria-expanded={!tableToolsCollapsed}
             >
@@ -893,14 +1075,18 @@ export function CommonRichTextEditor({
                 />
               </svg>
             </CommonButton>
-            <div className={s.tableToolRow} role="group" aria-label="표 스타일">
+            <div
+              className={s.tableToolRow}
+              role="group"
+              aria-label={labels.tableStyle}
+            >
               {[
-                ['배경색', 'backgroundColor'],
-                ['테두리', 'borders'],
-                ['테두리색', 'borderColor'],
-                ['테두리 두께', 'borderWidth'],
-                ['테두리 종류', 'borderStyle'],
-                ['폭 맞춤', 'fit'],
+                [labels.backgroundColor, 'backgroundColor'],
+                [labels.borders, 'borders'],
+                [labels.borderColor, 'borderColor'],
+                [labels.borderWidth, 'borderWidth'],
+                [labels.borderStyle, 'borderStyle'],
+                [labels.fitWidth, 'fit'],
               ].map(([label, panel]) => (
                 <CommonButton
                   key={panel}
@@ -927,41 +1113,41 @@ export function CommonRichTextEditor({
             <div
               className={s.tableToolRow}
               role="group"
-              aria-label="행과 열 편집"
+              aria-label={labels.rowsAndColumns}
             >
               {[
                 {
-                  label: '위에 행 추가',
+                  label: labels.addRowBefore,
                   icon: 'rowBefore',
                   run: () => editor.chain().focus().addRowBefore().run(),
                 },
                 {
-                  label: '아래에 행 추가',
+                  label: labels.addRowAfter,
                   icon: 'rowAfter',
                   run: () => editor.chain().focus().addRowAfter().run(),
                 },
                 {
-                  label: '왼쪽 열 추가',
+                  label: labels.addColumnBefore,
                   icon: 'columnBefore',
                   run: () => editor.chain().focus().addColumnBefore().run(),
                 },
                 {
-                  label: '오른쪽 열 추가',
+                  label: labels.addColumnAfter,
                   icon: 'columnAfter',
                   run: () => editor.chain().focus().addColumnAfter().run(),
                 },
                 {
-                  label: '행 삭제',
+                  label: labels.deleteRow,
                   icon: 'rowDelete',
                   run: () => editor.chain().focus().deleteRow().run(),
                 },
                 {
-                  label: '열 삭제',
+                  label: labels.deleteColumn,
                   icon: 'columnDelete',
                   run: () => editor.chain().focus().deleteColumn().run(),
                 },
                 {
-                  label: '표 삭제',
+                  label: labels.deleteTable,
                   icon: 'delete',
                   run: () => editor.chain().focus().deleteTable().run(),
                 },
@@ -977,11 +1163,15 @@ export function CommonRichTextEditor({
                 </CommonButton>
               ))}
             </div>
-            <div className={s.tableToolRow} role="group" aria-label="셀 편집">
+            <div
+              className={s.tableToolRow}
+              role="group"
+              aria-label={labels.cellEditing}
+            >
               <CommonButton
                 size="sm"
-                title="정렬"
-                aria-label="정렬"
+                title={labels.cellAlign}
+                aria-label={labels.cellAlign}
                 onClick={() => setTablePanel('cellAlign')}
               >
                 <TableToolIcon name="cellAlign" />
@@ -989,8 +1179,8 @@ export function CommonRichTextEditor({
               </CommonButton>
               <CommonButton
                 size="sm"
-                title="세로 정렬"
-                aria-label="세로 정렬"
+                title={labels.verticalAlign}
+                aria-label={labels.verticalAlign}
                 onClick={() => setTablePanel('verticalAlign')}
               >
                 <TableToolIcon name="verticalAlign" />
@@ -1000,8 +1190,8 @@ export function CommonRichTextEditor({
                 <>
                   <CommonButton
                     size="sm"
-                    title="셀 크기"
-                    aria-label="셀 크기"
+                    title={labels.cellSize}
+                    aria-label={labels.cellSize}
                     onClick={() => setTablePanel('size')}
                   >
                     <TableToolIcon name="size" />
@@ -1009,8 +1199,8 @@ export function CommonRichTextEditor({
                   </CommonButton>
                   <CommonButton
                     size="sm"
-                    title="셀 병합"
-                    aria-label="셀 병합"
+                    title={labels.mergeCells}
+                    aria-label={labels.mergeCells}
                     disabled={!editor.can().mergeCells()}
                     onClick={() => mergeTableCells(editor)}
                   >
@@ -1020,8 +1210,8 @@ export function CommonRichTextEditor({
               ) : (
                 <CommonButton
                   size="sm"
-                  title="셀 나누기"
-                  aria-label="셀 나누기"
+                  title={labels.splitCell}
+                  aria-label={labels.splitCell}
                   onClick={() => setTablePanel('split')}
                 >
                   <TableToolIcon name="split" />
@@ -1030,8 +1220,8 @@ export function CommonRichTextEditor({
               <CommonButton
                 size="sm"
                 disabled
-                title="셀 속성"
-                aria-label="셀 속성"
+                title={labels.cellProperties}
+                aria-label={labels.cellProperties}
                 onClick={() => setTablePanel('cell')}
               >
                 <TableToolIcon name="cell" />
@@ -1039,8 +1229,8 @@ export function CommonRichTextEditor({
               <CommonButton
                 size="sm"
                 disabled
-                title="표 속성"
-                aria-label="표 속성"
+                title={labels.tableProperties}
+                aria-label={labels.tableProperties}
                 onClick={() => setTablePanel('table')}
               >
                 <TableToolIcon name="table" />
@@ -1049,9 +1239,9 @@ export function CommonRichTextEditor({
             <div className={s.tableProperties} hidden={tablePanel !== 'size'}>
               {(
                 [
-                  ['width', '열 너비 같게'],
-                  ['height', '행 높이 같게'],
-                  ['both', '셀 크기 같게'],
+                  ['width', labels.equalWidth],
+                  ['height', labels.equalHeight],
+                  ['both', labels.equalSize],
                 ] as const
               ).map(([axis, label]) => (
                 <CommonButton
@@ -1084,24 +1274,24 @@ export function CommonRichTextEditor({
                   ])
                 : tablePanel === 'borderStyle'
                   ? [
-                      ['none', '없음'],
-                      ['solid', '실선'],
-                      ['dotted', '점선'],
-                      ['dashed', '파선'],
-                      ['double', '이중선'],
+                      ['none', labels.borderStyles.none],
+                      ['solid', labels.borderStyles.solid],
+                      ['dotted', labels.borderStyles.dotted],
+                      ['dashed', labels.borderStyles.dashed],
+                      ['double', labels.borderStyles.double],
                     ]
                   : tablePanel === 'cellAlign'
                     ? [
-                        ['left', '왼쪽 정렬'],
-                        ['center', '가운데 정렬'],
-                        ['right', '오른쪽 정렬'],
-                        ['justify', '양쪽 정렬'],
+                        ['left', labels.alignLeft],
+                        ['center', labels.alignCenter],
+                        ['right', labels.alignRight],
+                        ['justify', labels.alignJustify],
                       ]
                     : tablePanel === 'verticalAlign'
                       ? [
-                          ['top', '위쪽 정렬'],
-                          ['middle', '가운데 정렬'],
-                          ['bottom', '아래쪽 정렬'],
+                          ['top', labels.alignTop],
+                          ['middle', labels.alignMiddle],
+                          ['bottom', labels.alignBottom],
                         ]
                       : []
               ).map(([value, label]) => (
@@ -1133,16 +1323,16 @@ export function CommonRichTextEditor({
             >
               <div className={s.borderPresets}>
                 {[
-                  ['all', '모든 테두리'],
-                  ['none', '테두리 없음'],
-                  ['outer', '바깥 테두리'],
-                  ['inner', '안쪽 테두리'],
-                  ['top', '위 테두리'],
-                  ['bottom', '아래 테두리'],
-                  ['left', '왼쪽 테두리'],
-                  ['right', '오른쪽 테두리'],
-                  ['horizontal', '안쪽 가로 테두리'],
-                  ['vertical', '안쪽 세로 테두리'],
+                  ['all', labels.borderPresets.all],
+                  ['none', labels.borderPresets.none],
+                  ['outer', labels.borderPresets.outer],
+                  ['inner', labels.borderPresets.inner],
+                  ['top', labels.borderPresets.top],
+                  ['bottom', labels.borderPresets.bottom],
+                  ['left', labels.borderPresets.left],
+                  ['right', labels.borderPresets.right],
+                  ['horizontal', labels.borderPresets.horizontal],
+                  ['vertical', labels.borderPresets.vertical],
                 ].map(([mode, label]) => (
                   <CommonButton
                     key={mode}
@@ -1196,9 +1386,9 @@ export function CommonRichTextEditor({
             <div className={s.tableProperties} hidden={tablePanel !== 'split'}>
               <div className={s.propertyFields}>
                 <label>
-                  열 개수
+                  {labels.splitColumns}
                   <input
-                    aria-label="나눌 열 개수"
+                    aria-label={labels.splitColumnsLabel}
                     type="number"
                     min="1"
                     max="10"
@@ -1212,9 +1402,9 @@ export function CommonRichTextEditor({
                   />
                 </label>
                 <label>
-                  행 개수
+                  {labels.splitRows}
                   <input
-                    aria-label="나눌 행 개수"
+                    aria-label={labels.splitRowsLabel}
                     type="number"
                     min="1"
                     max="10"
@@ -1238,13 +1428,10 @@ export function CommonRichTextEditor({
                     ) {
                       setSplitError('');
                       setTablePanel('');
-                    } else
-                      setSplitError(
-                        '행·열은 1~10으로 입력해 주세요. 표는 최대 10,000칸까지 나눌 수 있습니다.',
-                      );
+                    } else setSplitError(labels.splitError);
                   }}
                 >
-                  확인
+                  {labels.confirm}
                 </CommonButton>
                 <CommonButton
                   size="sm"
@@ -1253,14 +1440,19 @@ export function CommonRichTextEditor({
                     setTablePanel('');
                   }}
                 >
-                  취소
+                  {labels.cancel}
                 </CommonButton>
               </div>
             </div>
             {['backgroundColor', 'borderColor'].includes(tablePanel) && (
               <EditorColorPicker
                 inline
-                label={tablePanel === 'backgroundColor' ? '배경색' : '테두리색'}
+                label={
+                  tablePanel === 'backgroundColor'
+                    ? labels.backgroundColor
+                    : labels.borderColor
+                }
+                labels={labels.colorPicker}
                 value={cellAttributes[tablePanel]}
                 onChange={(color) =>
                   editor
@@ -1275,8 +1467,8 @@ export function CommonRichTextEditor({
               <CommonButton
                 className={s.panelBack}
                 size="sm"
-                title="뒤로가기"
-                aria-label="뒤로가기"
+                title={labels.back}
+                aria-label={labels.back}
                 onClick={() => setTablePanel('')}
               >
                 ←
@@ -1287,13 +1479,13 @@ export function CommonRichTextEditor({
                 size="sm"
                 onClick={() => editor.chain().focus().toggleHeaderCell().run()}
               >
-                제목 셀 전환
+                {labels.toggleHeaderCell}
               </CommonButton>
               <div className={s.propertyFields}>
                 <label>
-                  테두리 두께{' '}
+                  {labels.borderWidth}{' '}
                   <select
-                    aria-label="셀 테두리 두께"
+                    aria-label={labels.cellBorderWidth}
                     value={
                       editor.getAttributes('tableCell').borderWidth ??
                       editor.getAttributes('tableHeader').borderWidth ??
@@ -1312,7 +1504,7 @@ export function CommonRichTextEditor({
                         .run()
                     }
                   >
-                    <option value="">기본</option>
+                    <option value="">{labels.defaultOption}</option>
                     <option value="1">1px</option>
                     <option value="2">2px</option>
                     <option value="3">3px</option>
@@ -1324,9 +1516,9 @@ export function CommonRichTextEditor({
                   </select>
                 </label>
                 <label>
-                  테두리 종류{' '}
+                  {labels.borderStyle}{' '}
                   <select
-                    aria-label="셀 테두리 종류"
+                    aria-label={labels.cellBorderStyle}
                     value={
                       editor.getAttributes('tableCell').borderStyle ??
                       editor.getAttributes('tableHeader').borderStyle ??
@@ -1339,18 +1531,18 @@ export function CommonRichTextEditor({
                       )
                     }
                   >
-                    <option value="">기본</option>
-                    <option value="solid">실선</option>
-                    <option value="dashed">파선</option>
-                    <option value="dotted">점선</option>
-                    <option value="double">이중선</option>
-                    <option value="none">없음</option>
+                    <option value="">{labels.defaultOption}</option>
+                    <option value="solid">{labels.borderStyles.solid}</option>
+                    <option value="dashed">{labels.borderStyles.dashed}</option>
+                    <option value="dotted">{labels.borderStyles.dotted}</option>
+                    <option value="double">{labels.borderStyles.double}</option>
+                    <option value="none">{labels.borderStyles.none}</option>
                   </select>
                 </label>
                 <label>
-                  셀 세로 정렬{' '}
+                  {labels.cellVerticalAlign}{' '}
                   <select
-                    aria-label="셀 세로 정렬"
+                    aria-label={labels.cellVerticalAlign}
                     value={
                       editor.getAttributes('tableCell').verticalAlign ??
                       editor.getAttributes('tableHeader').verticalAlign ??
@@ -1367,36 +1559,36 @@ export function CommonRichTextEditor({
                         .run()
                     }
                   >
-                    <option value="">기본</option>
-                    <option value="top">위</option>
-                    <option value="middle">가운데</option>
-                    <option value="bottom">아래</option>
+                    <option value="">{labels.defaultOption}</option>
+                    <option value="top">{labels.top}</option>
+                    <option value="middle">{labels.middle}</option>
+                    <option value="bottom">{labels.bottom}</option>
                   </select>
                 </label>
                 {[
                   {
                     name: 'cellAlign',
-                    label: '가로 정렬',
+                    label: labels.horizontalAlign,
                     options: [
-                      ['left', '왼쪽'],
-                      ['center', '가운데'],
-                      ['right', '오른쪽'],
-                      ['justify', '양쪽'],
+                      ['left', labels.left],
+                      ['center', labels.center],
+                      ['right', labels.right],
+                      ['justify', labels.justify],
                     ],
                   },
                   {
                     name: 'cellPadding',
-                    label: '안쪽 여백',
+                    label: labels.cellPadding,
                     options: ['0px', '4px', '8px', '12px', '16px', '24px'].map(
                       (value) => [value, value],
                     ),
                   },
                   {
                     name: 'cellWrap',
-                    label: '줄바꿈',
+                    label: labels.cellWrap,
                     options: [
-                      ['normal', '허용'],
-                      ['nowrap', '금지'],
+                      ['normal', labels.wrapAllowed],
+                      ['nowrap', labels.wrapDisabled],
                     ],
                   },
                 ].map(({ name, label: propertyLabel, options }) => (
@@ -1416,7 +1608,7 @@ export function CommonRichTextEditor({
                           .run()
                       }
                     >
-                      <option value="">기본</option>
+                      <option value="">{labels.defaultOption}</option>
                       {options.map(([value, title]) => (
                         <option key={value} value={value}>
                           {title}
@@ -1447,7 +1639,7 @@ export function CommonRichTextEditor({
                       .run()
                   }
                 >
-                  셀 스타일 초기화
+                  {labels.resetCellStyle}
                 </CommonButton>
               </div>
             </div>
@@ -1456,7 +1648,7 @@ export function CommonRichTextEditor({
                 size="sm"
                 onClick={() => editor.chain().focus().toggleHeaderRow().run()}
               >
-                제목 행 전환
+                {labels.toggleHeaderRow}
               </CommonButton>
               <CommonButton
                 size="sm"
@@ -1464,35 +1656,35 @@ export function CommonRichTextEditor({
                   editor.chain().focus().toggleHeaderColumn().run()
                 }
               >
-                제목 열 전환
+                {labels.toggleHeaderColumn}
               </CommonButton>
               <div className={s.propertyFields}>
                 {[
                   {
                     name: 'tableWidth',
-                    label: '표 너비',
+                    label: labels.tableWidth,
                     options: [
-                      ['auto', '자동'],
+                      ['auto', labels.auto],
                       ['50%', '50%'],
                       ['75%', '75%'],
-                      ['100%', '폭 맞춤'],
+                      ['100%', labels.fitWidth],
                     ],
                   },
                   {
                     name: 'tableLayout',
-                    label: '표 레이아웃',
+                    label: labels.tableLayout,
                     options: [
-                      ['auto', '자동'],
-                      ['fixed', '고정'],
+                      ['auto', labels.auto],
+                      ['fixed', labels.fixed],
                     ],
                   },
                   {
                     name: 'tableAlign',
-                    label: '표 배치',
+                    label: labels.tableAlign,
                     options: [
-                      ['0 auto', '왼쪽'],
-                      ['auto', '가운데'],
-                      ['auto 0', '오른쪽'],
+                      ['0 auto', labels.left],
+                      ['auto', labels.center],
+                      ['auto 0', labels.right],
                     ],
                   },
                 ].map(({ name, label: propertyLabel, options }) => (
@@ -1518,10 +1710,13 @@ export function CommonRichTextEditor({
                           <option
                             value={editor.getAttributes('table').tableWidth}
                           >
-                            {editor.getAttributes('table').tableWidth} (드래그)
+                            {labels.draggedWidth.replace(
+                              '{width}',
+                              editor.getAttributes('table').tableWidth,
+                            )}
                           </option>
                         )}
-                      <option value="">기본</option>
+                      <option value="">{labels.defaultOption}</option>
                       {options.map(([value, title]) => (
                         <option key={value} value={value}>
                           {title}

@@ -13,9 +13,20 @@ import {
   reorderIdeas,
   type IdeaBranch,
 } from './model';
+import type { GuideMessages } from '@/i18n/guide-ko';
 import s from './ideas.module.css';
 
-export function IdeaPlayground() {
+// model.ts에 저장되는 값(키)을 locale 표시 문구로 바꾼다. 사용자가 입력한 값은 그대로 둔다.
+const labelOf = (names: Record<string, string>, value: string) =>
+  names[value] ?? value;
+
+export function IdeaPlayground({
+  messages: copy,
+  backToLab,
+}: {
+  messages: GuideMessages['ideas'];
+  backToLab: string;
+}) {
   const [ideas, setIdeas] = useState(initialIdeas);
   const [branches, setBranches] = useState(initialBranches);
   const [draft, setDraft] = useState('');
@@ -28,9 +39,8 @@ export function IdeaPlayground() {
   const [editContent, setEditContent] = useState('');
   const [dragId, setDragId] = useState<string | null>(null);
   const [view, setView] = useState<'map' | 'list'>('list');
-  const [notice, setNotice] = useState(
-    '숫자가 작을수록 먼저 보여요. 드래그하거나 순위를 입력해 정렬하세요.',
-  );
+  // null이면 현재 locale의 기본 안내를 표시한다.
+  const [notice, setNotice] = useState<string | null>(null);
   const selected = ideas.find((idea) => idea.id === openedId);
   const children = branches.filter((branch) => branch.ideaId === openedId);
   const shown = selected
@@ -47,10 +57,13 @@ export function IdeaPlayground() {
   function move(id: string, position: number) {
     try {
       setIdeas(reorderIdeas(ideas, id, position));
-      setNotice('우선순위를 변경했습니다. 화면에서만 유지됩니다.');
-    } catch (error) {
+      setNotice(copy.notices.reordered);
+    } catch {
+      // reorderIdeas는 범위 오류와 대상 없음만 던진다.
       setNotice(
-        error instanceof Error ? error.message : '순위를 확인해 주세요.',
+        ideas.some((idea) => idea.id === id)
+          ? copy.notices.priorityRange.replace('{max}', String(ideas.length))
+          : copy.notices.notFound,
       );
     }
   }
@@ -76,11 +89,9 @@ export function IdeaPlayground() {
         ),
       );
       setEditingId(null);
-      setNotice('내용을 수정했습니다. 화면에서만 유지됩니다.');
-    } catch (error) {
-      setNotice(
-        error instanceof Error ? error.message : '내용을 확인해 주세요.',
-      );
+      setNotice(copy.notices.edited);
+    } catch {
+      setNotice(copy.notices.length);
     }
   }
   function renderBranches(parentId: string | null): React.ReactNode {
@@ -89,8 +100,8 @@ export function IdeaPlayground() {
       .map((branch) => (
         <li key={branch.id} className={s.branch}>
           <div className={s.detailMeta}>
-            <span>{branch.category}</span>
-            <span>나 · 화면 예시</span>
+            <span>{labelOf(copy.branchKinds, branch.category)}</span>
+            <span>{copy.branchOwner}</span>
           </div>
           <h4>{branch.title}</h4>
           <p>{branch.content}</p>
@@ -99,16 +110,18 @@ export function IdeaPlayground() {
               size="sm"
               onClick={() => {
                 setReplyId(branch.id);
-                setNotice(`“${branch.title}”에 답글을 작성합니다.`);
+                setNotice(
+                  copy.notices.replying.replace('{title}', branch.title),
+                );
               }}
             >
-              답글 달기
+              {copy.reply}
             </CommonButton>
             <CommonButton
               size="sm"
               onClick={() => edit(branch.id, branch.content)}
             >
-              수정
+              {copy.edit}
             </CommonButton>
           </div>
           {children.some((child) => child.parentId === branch.id) && (
@@ -123,26 +136,25 @@ export function IdeaPlayground() {
       <div className={s.heading}>
         <div>
           <h1>
-            생각을 모으고,
+            {copy.titleLine1}
             <br />
-            다음 단계로
+            {copy.titleLine2}
             <span className="accentDot" />
           </h1>
-          <p>아이디어에서 설계, 구현 이슈까지. 하나의 흐름으로 이어보세요.</p>
+          <p>{copy.subtitle}</p>
         </div>
-        <CommonButtonLink href="/lab">실험실로 돌아가기</CommonButtonLink>
+        <CommonButtonLink href="/lab">{backToLab}</CommonButtonLink>
       </div>
       <div className={s.prototype}>
         <span aria-hidden="true">◌</span>
         <span>
-          <strong>개인 저장소 화면 초안</strong> · 로그인·DB 연결 전입니다.
-          추가·수정·순서는 새로고침하면 초기화됩니다.
+          <strong>{copy.prototypeTitle}</strong> · {copy.prototypeNote}
         </span>
       </div>
       <div className={s.workspace}>
         <aside className={s.compose}>
           <span className={s.kicker}>01 / CAPTURE</span>
-          <h2>새 메인 아이디어</h2>
+          <h2>{copy.composeTitle}</h2>
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -151,60 +163,56 @@ export function IdeaPlayground() {
                 setIdeas([...ideas, next]);
                 openIdea(next.id);
                 setDraft('');
-                setNotice('메인 아이디어를 추가했습니다.');
-              } catch (error) {
-                setNotice(
-                  error instanceof Error
-                    ? error.message
-                    : '내용을 확인해 주세요.',
-                );
+                setNotice(copy.notices.added);
+              } catch {
+                setNotice(copy.notices.length);
               }
             }}
           >
-            <label htmlFor="idea-draft">아이디어 메모</label>
+            <label htmlFor="idea-draft">{copy.draftLabel}</label>
             <CommonTextArea
               id="idea-draft"
               required
               maxLength={3000}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder={
-                '첫 줄은 제목, 다음 줄부터 자유롭게\n어떤 가능성을 만들어볼까요?'
-              }
+              placeholder={copy.draftPlaceholder}
             />
             <div className={s.inputHint}>
-              <span>첫 줄을 제목으로 사용해요.</span>
-              <span>{draft.length} / 3,000</span>
+              <span>{copy.titleHint}</span>
+              <span>
+                {copy.counter.replace('{count}', String(draft.length))}
+              </span>
             </div>
-            <label htmlFor="idea-category">어떤 생각인가요?</label>
+            <label htmlFor="idea-category">{copy.categoryLabel}</label>
             <CommonSelectBox
               id="idea-category"
               value={category}
               onValueChange={setCategory}
-              options={['미분류', '제품', '개발', '자동화'].map((value) => ({
-                value,
-                label: value,
-              }))}
+              options={Object.entries(copy.categories).map(
+                ([value, label]) => ({ value, label }),
+              )}
             />
             <CommonButton type="submit" variant="primary">
-              아이디어 담기
+              {copy.submit}
             </CommonButton>
           </form>
-          <p className={s.composeNote}>
-            메인은 큰 주제입니다. 내용을 열어 댓글·설계·구현 이슈를
-            덧붙여보세요.
-          </p>
+          <p className={s.composeNote}>{copy.composeNote}</p>
         </aside>
-        <section className={s.board} aria-label="아이디어 보기">
+        <section className={s.board} aria-label={copy.boardLabel}>
           <div className={s.boardHeader}>
             <div>
               <span className={s.kicker}>02 / EXPLORE</span>
               <h2>
-                {selected ? selected.title : '나의 메인 아이디어'}{' '}
+                {selected ? selected.title : copy.myIdeas}{' '}
                 <span>{shown.length}</span>
               </h2>
             </div>
-            <div className={s.viewSwitch} role="group" aria-label="보기 방식">
+            <div
+              className={s.viewSwitch}
+              role="group"
+              aria-label={copy.viewMode}
+            >
               {(['list', 'map'] as const).map((mode) => (
                 <CommonButton
                   key={mode}
@@ -213,7 +221,7 @@ export function IdeaPlayground() {
                   aria-pressed={view === mode}
                   onClick={() => setView(mode)}
                 >
-                  {mode === 'list' ? '목록' : '마인드맵'}
+                  {mode === 'list' ? copy.list : copy.map}
                 </CommonButton>
               ))}
             </div>
@@ -221,11 +229,9 @@ export function IdeaPlayground() {
           {selected && (
             <div className={s.actions}>
               <CommonButton size="sm" onClick={() => openIdea(null)}>
-                ← 메인 아이디어 목록
+                {copy.backToList}
               </CommonButton>
-              <span className={s.composeNote}>
-                이 아이디어의 가지를 보고 있어요.
-              </span>
+              <span className={s.composeNote}>{copy.viewingBranches}</span>
             </div>
           )}
           {view === 'map' ? (
@@ -233,7 +239,7 @@ export function IdeaPlayground() {
               className={s.mapViewport}
               tabIndex={0}
               role="region"
-              aria-label="아이디어 마인드맵 - 좌우로 스크롤할 수 있습니다"
+              aria-label={copy.mapLabel}
             >
               <div className={s.map} style={{ height: layout.height }}>
                 <svg
@@ -258,11 +264,12 @@ export function IdeaPlayground() {
                   style={{ top: layout.height / 2 - 48 }}
                 >
                   <span>OZ</span>
-                  <strong>
-                    {selected ? '선택한 아이디어' : '나의 아이디어'}
-                  </strong>
+                  <strong>{selected ? copy.rootSelected : copy.rootAll}</strong>
                   <small>
-                    {shown.length}개의 {selected ? '가지' : '메인 아이디어'}
+                    {(selected
+                      ? copy.rootBranchCount
+                      : copy.rootIdeaCount
+                    ).replace('{count}', String(shown.length))}
                   </small>
                 </div>
                 {shown.map((idea, index) => (
@@ -279,9 +286,17 @@ export function IdeaPlayground() {
                     }
                   >
                     <span className={s.nodeMeta}>
-                      {idea.category}
+                      {labelOf(
+                        selected ? copy.branchKinds : copy.categories,
+                        idea.category,
+                      )}
                       <span>
-                        {selected ? '내용 수정' : `우선순위 ${index + 1}`}
+                        {selected
+                          ? copy.editContent
+                          : copy.priority.replace(
+                              '{position}',
+                              String(index + 1),
+                            )}
                       </span>
                     </span>
                     <strong>{idea.title}</strong>
@@ -308,7 +323,7 @@ export function IdeaPlayground() {
                   <button
                     className={s.dragHandle}
                     draggable
-                    aria-label={`${idea.title} 순서 드래그`}
+                    aria-label={copy.dragLabel.replace('{title}', idea.title)}
                     onDragStart={(event) => {
                       setDragId(idea.id);
                       event.dataTransfer.setData('text/plain', idea.id);
@@ -325,7 +340,10 @@ export function IdeaPlayground() {
                     min={1}
                     max={ideas.length}
                     defaultValue={index + 1}
-                    aria-label={`${idea.title} 우선순위`}
+                    aria-label={copy.priorityLabel.replace(
+                      '{title}',
+                      idea.title,
+                    )}
                     onBlur={(event) => {
                       const value = Number(event.target.value);
                       if (value !== index + 1) move(idea.id, value);
@@ -340,36 +358,37 @@ export function IdeaPlayground() {
                     onClick={() => openIdea(idea.id)}
                   >
                     <small>
-                      {idea.category} · {idea.status}
+                      {labelOf(copy.categories, idea.category)} ·{' '}
+                      {labelOf(copy.statuses, idea.status)}
                     </small>
                     <strong>{idea.title}</strong>
                     <span>
-                      가지{' '}
-                      {
-                        branches.filter((branch) => branch.ideaId === idea.id)
-                          .length
-                      }
-                      개
+                      {copy.branchCount.replace(
+                        '{count}',
+                        String(
+                          branches.filter((branch) => branch.ideaId === idea.id)
+                            .length,
+                        ),
+                      )}
                     </span>
                   </button>
                 </article>
               ))}
             </div>
           ) : (
-            <p className={s.composeNote}>
-              아래에서 원문과 연결된 가지·답글을 확인하세요.
-            </p>
+            <p className={s.composeNote}>{copy.belowNote}</p>
           )}
           <p className={s.liveNotice} role="status">
-            {notice}
+            {notice ?? copy.notices.initial}
           </p>
           {selected && (
-            <section className={s.detail} aria-label="선택한 아이디어 상세">
+            <section className={s.detail} aria-label={copy.detailLabel}>
               <div className={s.detailMeta}>
                 <span>
-                  {selected.category} / {selected.status}
+                  {labelOf(copy.categories, selected.category)} /{' '}
+                  {labelOf(copy.statuses, selected.status)}
                 </span>
-                <span>메인 아이디어 · 나</span>
+                <span>{copy.mainIdeaOwner}</span>
               </div>
               <h3>{selected.title}</h3>
               <p>{selected.content}</p>
@@ -377,15 +396,15 @@ export function IdeaPlayground() {
                 size="sm"
                 onClick={() => edit(selected.id, selected.content)}
               >
-                아이디어 수정
+                {copy.editIdea}
               </CommonButton>
               <h3>
-                연결된 가지 <small>{children.length}</small>
+                {copy.branchesTitle} <small>{children.length}</small>
               </h3>
               {children.length ? (
                 <ul className={s.branchList}>{renderBranches(null)}</ul>
               ) : (
-                <p>아직 가지가 없어요. 첫 생각을 덧붙여보세요.</p>
+                <p>{copy.noBranches}</p>
               )}
               <form
                 className={s.branchForm}
@@ -404,36 +423,32 @@ export function IdeaPlayground() {
                     setBranches([...branches, branch]);
                     setBranchDraft('');
                     setReplyId(null);
-                    setNotice('가지를 추가했습니다. 화면에서만 유지됩니다.');
-                  } catch (error) {
-                    setNotice(
-                      error instanceof Error
-                        ? error.message
-                        : '내용을 확인해 주세요.',
-                    );
+                    setNotice(copy.notices.branchAdded);
+                  } catch {
+                    setNotice(copy.notices.length);
                   }
                 }}
               >
-                <label htmlFor="branch-kind">덧붙일 내용 유형</label>
+                <label htmlFor="branch-kind">{copy.branchKindLabel}</label>
                 <CommonSelectBox
                   id="branch-kind"
                   value={branchKind}
                   onValueChange={setBranchKind}
-                  options={['댓글', '설계', '구현 이슈', '연결 포스트'].map(
-                    (value) => ({ value, label: value }),
+                  options={Object.entries(copy.branchKinds).map(
+                    ([value, label]) => ({ value, label }),
                   )}
                 />
                 {replyId && (
                   <div className={s.replyTarget}>
-                    답글 대상:{' '}
+                    {copy.replyTarget}{' '}
                     {children.find((branch) => branch.id === replyId)?.title}{' '}
                     <CommonButton size="sm" onClick={() => setReplyId(null)}>
-                      답글 취소
+                      {copy.cancelReply}
                     </CommonButton>
                   </div>
                 )}
                 <label htmlFor="branch-content">
-                  {replyId ? '답글 내용' : '새 가지 내용'}
+                  {replyId ? copy.replyContent : copy.branchContent}
                 </label>
                 <CommonTextArea
                   id="branch-content"
@@ -441,17 +456,17 @@ export function IdeaPlayground() {
                   onChange={(event) => setBranchDraft(event.target.value)}
                   required
                   maxLength={3000}
-                  placeholder="첫 줄은 제목, 다음 줄부터 상세 내용을 적어주세요."
+                  placeholder={copy.branchPlaceholder}
                 />
                 <CommonButton variant="primary" type="submit">
-                  {replyId ? '답글 추가' : '가지 추가'}
+                  {replyId ? copy.addReply : copy.addBranch}
                 </CommonButton>
               </form>
             </section>
           )}
           {editingId && (
-            <section className={s.detail} aria-label="내용 수정">
-              <h3>내용 수정</h3>
+            <section className={s.detail} aria-label={copy.editSection}>
+              <h3>{copy.editSection}</h3>
               <form
                 className={s.branchForm}
                 onSubmit={(event) => {
@@ -459,7 +474,7 @@ export function IdeaPlayground() {
                   saveEdit();
                 }}
               >
-                <label htmlFor="edit-content">수정할 내용</label>
+                <label htmlFor="edit-content">{copy.editLabel}</label>
                 <CommonTextArea
                   autoFocus
                   id="edit-content"
@@ -470,10 +485,10 @@ export function IdeaPlayground() {
                 />
                 <div className={s.actions}>
                   <CommonButton variant="primary" type="submit">
-                    수정 적용
+                    {copy.applyEdit}
                   </CommonButton>
                   <CommonButton onClick={() => setEditingId(null)}>
-                    수정 취소
+                    {copy.cancelEdit}
                   </CommonButton>
                 </div>
               </form>

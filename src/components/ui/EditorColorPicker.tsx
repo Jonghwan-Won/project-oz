@@ -49,13 +49,26 @@ const colors = [
   '#660066',
 ];
 
+export const defaultColorPickerLabels = {
+  noColor: '색상 없음',
+  recent: '최근 사용한 색',
+  custom: '다른 색',
+  apply: '적용',
+};
+export type ColorPickerLabels = typeof defaultColorPickerLabels;
+
 export function EditorColorPicker({
   label,
   value,
   onChange,
   inline = false,
+  glyph,
+  labels = defaultColorPickerLabels,
 }: {
   inline?: boolean;
+  /** 도구 막대 버튼에 표시할 짧은 기호. 없으면 기존 한국어 label로 판단한다. */
+  glyph?: string;
+  labels?: ColorPickerLabels;
   label: string;
   value?: string | null;
   onChange: (color: string) => void;
@@ -75,8 +88,8 @@ export function EditorColorPicker({
     <button
       key={`${color}-${index}`}
       type="button"
-      title={color || '색상 없음'}
-      aria-label={color || '색상 없음'}
+      title={color || labels.noColor}
+      aria-label={color || labels.noColor}
       aria-pressed={(value ?? '') === color}
       className={!color ? s.noColor : undefined}
       style={color ? { backgroundColor: color } : undefined}
@@ -99,13 +112,13 @@ export function EditorColorPicker({
       <div className={s.colorGrid}>{colors.map(swatch)}</div>
       {recent.length > 0 && (
         <>
-          <small>최근 사용한 색</small>
+          <small>{labels.recent}</small>
           <div className={s.colorGrid}>{recent.map(swatch)}</div>
         </>
       )}
       <div className={s.colorCustom}>
         <label>
-          다른 색{' '}
+          {labels.custom}{' '}
           <input
             data-editor-color-input
             type="color"
@@ -133,7 +146,7 @@ export function EditorColorPicker({
           disabled={!/^#[0-9a-f]{6}$/i.test(hex)}
           onClick={() => apply(hex.toLowerCase())}
         >
-          적용
+          {labels.apply}
         </CommonButton>
       </div>
     </div>
@@ -164,11 +177,12 @@ export function EditorColorPicker({
           <span
             style={{ borderBottom: `3px solid ${value || 'currentColor'}` }}
           >
-            {label === '글자 색상'
-              ? 'A'
-              : label === '글자 배경색'
-                ? '▣'
-                : label}
+            {glyph ??
+              (label === '글자 색상'
+                ? 'A'
+                : label === '글자 배경색'
+                  ? '▣'
+                  : label)}
           </span>
         </CommonButton>
       </Popover.Target>

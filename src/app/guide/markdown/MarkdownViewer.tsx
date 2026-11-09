@@ -1,30 +1,44 @@
 'use client';
 import { CommonSelectBox } from '@/components/ui/CommonSelectBox';
-import { CommonFilePicker } from '@/components/ui/CommonFilePicker';
+import {
+  CommonFilePicker,
+  type FilePickerLabels,
+} from '@/components/ui/CommonFilePicker';
 
 import { useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { decodeMarkdown, validateMarkdownFile } from './file';
+import type { GuideMessages } from '@/i18n/guide-ko';
+import {
+  decodeMarkdown,
+  MarkdownFileError,
+  validateMarkdownFile,
+} from './file';
 import s from './markdown.module.css';
 
 export function MarkdownViewer({
   documents,
+  messages: copy,
+  filePickerLabels,
 }: {
   documents: { name: string; content: string }[];
+  messages: GuideMessages['markdown']['viewer'];
+  filePickerLabels: FilePickerLabels;
 }) {
   const [document, setDocument] = useState(documents[0]);
   const [selected, setSelected] = useState(documents[0]?.name ?? '');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<
+    keyof GuideMessages['markdown']['viewer']['errors'] | ''
+  >('');
   const [pending, setPending] = useState(false);
 
   return (
-    <section className={s.viewer} aria-label="Markdown 문서 뷰어">
+    <section className={s.viewer} aria-label={copy.region}>
       <div className={s.controls}>
         <label>
-          프로젝트 문서
+          {copy.documentLabel}
           <CommonSelectBox
-            aria-label="프로젝트 문서"
+            aria-label={copy.documentLabel}
             value={selected}
             disabled={pending}
             onValueChange={(value) => {
@@ -36,7 +50,7 @@ export function MarkdownViewer({
               }
             }}
             options={[
-              { value: '', label: '내 PC에서 연 파일', disabled: true },
+              { value: '', label: copy.localFile, disabled: true },
               ...documents.map((item) => ({
                 value: item.name,
                 label: item.name,
@@ -45,10 +59,11 @@ export function MarkdownViewer({
           />
         </label>
         <CommonFilePicker
-          label="내 PC에서 파일 열기"
+          label={copy.openFile}
           accept=".md,.markdown"
           disabled={pending}
           aria-describedby="markdown-file-help"
+          labels={filePickerLabels}
           onSelect={async (file) => {
             setError('');
             try {
@@ -60,10 +75,10 @@ export function MarkdownViewer({
             } catch (cause) {
               setError(
                 cause instanceof TypeError
-                  ? 'UTF-8 텍스트 파일을 선택해 주세요.'
-                  : cause instanceof Error
-                    ? cause.message
-                    : '파일을 읽지 못했습니다. 다시 선택해 주세요.',
+                  ? 'encoding'
+                  : cause instanceof MarkdownFileError
+                    ? cause.code
+                    : 'unknown',
               );
             } finally {
               setPending(false);
@@ -72,21 +87,19 @@ export function MarkdownViewer({
         />
       </div>
       <p id="markdown-file-help" className={s.help}>
-        UTF-8 · 최대 1 MiB. 선택한 파일은 브라우저에서만 읽으며 서버에
-        업로드하거나 저장하지 않습니다. HTML은 실행하지 않으며 이미지는 자동으로
-        불러오지 않습니다.
+        {copy.help}
       </p>
       {error && (
         <p role="alert" className={s.error}>
-          {error}
+          {copy.errors[error]}
         </p>
       )}
       <p role="status" className={s.filename}>
-        {pending ? '파일을 읽고 있습니다…' : document?.name}
+        {pending ? copy.reading : document?.name}
       </p>
       <article
         className={s.markdown}
-        aria-label="문서 내용"
+        aria-label={copy.content}
         aria-busy={pending}
       >
         {document?.content ? (
@@ -95,7 +108,9 @@ export function MarkdownViewer({
             remarkPlugins={[remarkGfm]}
             components={{
               img: ({ alt }) => (
-                <span className={s.help}>[이미지: {alt || '설명 없음'}]</span>
+                <span className={s.help}>
+                  {copy.image.replace('{alt}', alt || copy.imageNoAlt)}
+                </span>
               ),
               a: ({ href, children }) => {
                 if (!href) return <span>{children}</span>;
@@ -127,11 +142,7 @@ export function MarkdownViewer({
                     </a>
                   );
                 if (relative)
-                  return (
-                    <span title="이 상대 경로는 선택 목록에서 열거나 별도로 파일을 선택해 주세요.">
-                      {children}
-                    </span>
-                  );
+                  return <span title={copy.relativeLink}>{children}</span>;
                 return (
                   <a href={href} target="_blank" rel="noopener noreferrer">
                     {children}
@@ -148,7 +159,7 @@ export function MarkdownViewer({
             {document.content}
           </Markdown>
         ) : (
-          <p>빈 문서입니다.</p>
+          <p>{copy.empty}</p>
         )}
       </article>
     </section>

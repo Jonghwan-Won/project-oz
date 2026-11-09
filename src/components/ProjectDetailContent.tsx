@@ -3,6 +3,7 @@ import { CommonRichTextView } from './ui/CommonRichTextView';
 import { CommonAssetLinks } from './ui/CommonAssetLinks';
 import { ProjectTag } from './ProjectTag';
 import type { ProjectDetailData } from '@/lib/project-detail';
+import { sharedCopy } from '@/i18n/shared-copy';
 import s from './ProjectDetailContent.module.css';
 
 export function ProjectDetailContent({
@@ -16,25 +17,22 @@ export function ProjectDetailContent({
   heading?: 'h1' | 'h2';
   downloadsDisabled?: boolean;
 }) {
-  const en = locale === 'en';
+  const copy = sharedCopy(locale).projectDetail;
   const Heading = heading;
   const rows = [
-    { label: en ? 'Period' : '작업 기간', value: project.period || '-' },
-    { label: en ? 'Client' : '고객사', value: project.customerName || '-' },
-    { label: en ? 'Origin' : '작업 구분', value: project.originLabel || '-' },
-    { label: en ? 'Type' : '프로젝트 유형', value: project.typeLabel || '-' },
+    { label: copy.period, value: project.period || '-' },
+    { label: copy.client, value: project.customerName || '-' },
+    { label: copy.origin, value: project.originLabel || '-' },
+    { label: copy.type, value: project.typeLabel || '-' },
   ];
   return (
     <article className={s.detail}>
       <div className={s.document}>
         <Heading className={s.title} lang={project.contentLocale}>
-          {project.title || (en ? 'Untitled project' : '제목 없는 프로젝트')}
+          {project.title || copy.untitled}
         </Heading>
         {project.technologies.length > 0 && (
-          <div
-            className={s.technologies}
-            aria-label={en ? 'Technologies' : '사용 기술'}
-          >
+          <div className={s.technologies} aria-label={copy.technologies}>
             {project.technologies.map((value) => (
               <ProjectTag label={value} key={value} />
             ))}
@@ -66,16 +64,14 @@ export function ProjectDetailContent({
           </div>
         )}
         {locale !== project.contentLocale && (
-          <p role="status">
-            English translation is being prepared. Showing the Korean original.
-          </p>
+          <p role="status">{copy.fallbackNotice}</p>
         )}
         <div className={s.content} lang={project.contentLocale}>
           <CommonRichTextView value={project.body} />
         </div>
         {project.attachments.length > 0 && (
           <section>
-            <h3>{en ? 'Attachments' : '첨부파일'}</h3>
+            <h3>{copy.attachments}</h3>
             <CommonAssetLinks
               assets={project.attachments}
               disabled={downloadsDisabled}
@@ -84,7 +80,7 @@ export function ProjectDetailContent({
         )}
         {project.tags.length > 0 && (
           <section>
-            <h3>{en ? 'Tags' : '태그'}</h3>
+            <h3>{copy.tags}</h3>
             <div className={s.technologies}>
               {project.tags.map((value) => (
                 <ProjectTag label={value} key={value} />

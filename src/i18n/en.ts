@@ -1,6 +1,8 @@
 import type { Messages } from './ko';
+import { portfolioEn } from './portfolio-en.ts';
 
 export const en = {
+  portfolio: portfolioEn,
   home: {
     heroStart: 'Small ideas,',
     heroHighlight: 'new',

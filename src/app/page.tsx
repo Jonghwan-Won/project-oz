@@ -6,9 +6,12 @@ import { ProjectPreviewLink } from '@/components/ProjectPreviewLink';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { getMessages } from '@/i18n/server';
+import type { Locale } from '@/i18n/locale';
+import type { PortfolioMessages } from '@/i18n/portfolio-ko';
 import { formatProjectPeriod } from '@/lib/project-detail';
 import { projectGroupOf } from '@/lib/project-origin';
 import { portfolioFileStatus } from '@/server/services/assets';
+import { getHeaderSettings } from '@/server/header-settings';
 import {
   getPublicProjects,
   type PublicProject,
@@ -24,58 +27,54 @@ import {
 import s from './home.module.css';
 import { HeroBackground } from './HeroBackground';
 
-const title = '원종환 | 풀스택 개발자 포트폴리오';
-export const metadata: Metadata = {
-  title: { absolute: title },
-  description: '원종환의 개인·교육 프로젝트와 실무 개발 이력을 소개합니다.',
-  openGraph: {
-    title,
-    description: '개인 프로젝트부터 실무 개발까지, 원종환의 작업 기록.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { messages } = await getMessages();
+  const meta = messages.portfolio.meta;
+  return {
+    title: { absolute: meta.title },
+    description: meta.description,
+    openGraph: { title: meta.title, description: meta.ogDescription },
+  };
+}
 
 /** PDF 내려받기 버튼. 실제 파일은 서버 환경 변수로 지정한다. */
-const downloads = [
-  { kind: 'resume', label: '이력서.pdf' },
-  { kind: 'portfolio', label: '포트폴리오.pdf' },
-] as const;
+const downloads = ['resume', 'portfolio'] as const;
 
 /** PDF는 새 탭의 브라우저 PDF 뷰어로 연다. 저장은 뷰어의 저장 버튼으로 한다. */
 function PortfolioDownloads({
   files,
+  labels,
   className = '',
   kinds,
 }: {
   files: ReturnType<typeof portfolioFileStatus>;
+  labels: PortfolioMessages['downloads'];
   className?: string;
   /** 일부 파일만 보여줄 때. 히어로는 포트폴리오만, 마무리 섹션은 둘 다 보여준다. */
-  kinds?: readonly (typeof downloads)[number]['kind'][];
+  kinds?: readonly (typeof downloads)[number][];
 }) {
   const visible = kinds
-    ? downloads.filter((file) => kinds.includes(file.kind))
+    ? downloads.filter((kind) => kinds.includes(kind))
     : downloads;
   return (
-    <ul
-      className={`${s.downloads} ${className}`}
-      aria-label="이력서·포트폴리오 PDF"
-    >
-      {visible.map((file) => (
-        <li key={file.kind}>
-          {files[file.kind] ? (
+    <ul className={`${s.downloads} ${className}`} aria-label={labels.label}>
+      {visible.map((kind) => (
+        <li key={kind}>
+          {files[kind] ? (
             <a
-              href={`/api/portfolio-files/${file.kind}`}
+              href={`/api/portfolio-files/${kind}`}
               target="_blank"
               rel="noopener"
-              aria-label={`${file.label} 새 탭에서 열기`}
+              aria-label={labels.openNewTab.replace('{file}', labels[kind])}
             >
               <FileIcon />
-              {file.label}
+              {labels[kind]}
               <DownloadIcon />
             </a>
           ) : (
             <span aria-disabled="true">
               <FileIcon />
-              {file.label}
+              {labels[kind]}
             </span>
           )}
         </li>
@@ -100,32 +99,6 @@ function DownloadIcon() {
   );
 }
 
-/** 직무 연관 이력(최신순). */
-const career = [
-  {
-    period: '2023. 01 - 현재',
-    org: '엠투엠글로벌',
-    role: 'SI 프로젝트 풀스택 웹 개발',
-    tag: '재직 중',
-  },
-  {
-    period: '2022. 07 - 2022. 12',
-    org: '비트캠프 강남본원',
-    tag: '교육',
-    role: '"JAVA 기반 AWS 웹 개발자 양성 과정" 수료',
-  },
-  {
-    period: '2018. 03 - 2022. 05',
-    org: '비에스온',
-    role: 'IT지원팀 · 서버·네트워크 인프라 운영',
-  },
-  {
-    period: '2016. 11 - 2018. 02',
-    org: '지오유아이티',
-    role: '고객사 맞춤 그룹웨어 컨설팅',
-  },
-];
-
 /** 프로필 카드 아이콘. 이모지는 OS마다 모양이 달라 직접 그린 선 아이콘을 쓴다. */
 const storyIcons = {
   // 말풍선: 듣고 제안하기
@@ -149,57 +122,10 @@ const storyIcons = {
 };
 
 /**
- * 프로필 카드: 경력의 세 단계를 오래된 순으로 잇는다.
- * 사실관계는 위 career 목록과 맞춘다. 근거 없는 성과·수치는 넣지 않는다.
+ * 프로필 카드 아이콘. 문구(messages.portfolio.stories)와 같은 순서로 붙인다.
+ * 사실관계는 이력 목록과 맞춘다. 근거 없는 성과·수치는 넣지 않는다.
  */
-const storyCards = [
-  {
-    icon: storyIcons.listen,
-    step: '그룹웨어 컨설팅',
-    title: '듣고, 방향을 제안했습니다',
-    body: '고객사 담당자에게 지금의 업무 방식을 듣고 요구사항을 정리해, 그룹웨어를 업무에 맞게 구성하는 방향을 제안했습니다. 요청 뒤에 있는 실제 필요를 묻는 습관이 여기서 생겼습니다.',
-  },
-  {
-    icon: storyIcons.operate,
-    step: 'IT지원 · 인프라 운영',
-    title: '멈추지 않게 운영했습니다',
-    body: 'IT지원팀에서 서버와 네트워크 등 인프라를 운영했습니다. 만든 것이 실제 환경에서 어떻게 돌아가고, 문제가 생기면 어디부터 살펴야 하는지 몸으로 익혔습니다.',
-  },
-  {
-    icon: storyIcons.build,
-    step: '풀스택 웹 개발',
-    title: '이제 직접 만듭니다',
-    body: 'SI 업체에서 Java·Spring 서버와 Vue·React 화면, 데이터베이스까지 고객사가 요청한 기능을 처음부터 끝까지 개발하고 있습니다. 앞의 두 경험이 기능을 설계하는 기준이 됩니다.',
-  },
-];
-
-/**
- * 분야별로 어떤 기술을 어디에 썼는지 정리한 문장.
- * 공개 프로젝트 설명을 바탕으로 썼으므로 프로젝트 내용이 바뀌면 함께 고친다.
- */
-const stackNotes: Record<string, string[]> = {
-  Backend: [
-    'Java·Spring Boot로 업무 기능의 API와 비즈니스 로직 구현',
-    'MyBatis·JPA로 조회·등록·수정 데이터 처리',
-    '대량 등록·수정, 재고 동기화 같은 배치와 외부 시스템 연계',
-    'PlanB의 Spring Security·JWT 인증 구성과 Swagger 기반 API 문서화',
-  ],
-  Frontend: [
-    'React·Next.js, Vue.js·Nuxt.js로 고객·판매자·관리자 화면 구현',
-    'Mantine·MUI·Vuetify 컴포넌트로 서비스·관리 화면 구성',
-    'PlanB에서 Vuex 상태 관리와 Axios API 통신 사용',
-    '하이브리드 앱의 웹 화면과 반응형 화면 구현',
-  ],
-  Database: [
-    'MySQL·PostgreSQL·Oracle·MSSQL 등 프로젝트 환경에 맞춘 RDB 사용',
-    'Redis 연동',
-  ],
-  Tools: [
-    'Git·GitHub, 농협몰의 SVN으로 소스와 변경 이력 관리',
-    'OZ에서 Docker·GitHub Actions로 이미지 빌드, Cloudflare Tunnel로 서비스 연결',
-    'PlanB의 PortOne(아임포트) 결제 요청·주문 저장, 조공의 카카오맵 API 연동',
-  ],
-};
+const storyIconList = [storyIcons.listen, storyIcons.operate, storyIcons.build];
 
 /** 프로젝트 기술 태그를 분야별로 묶는다. 목록에 없는 태그는 마지막 묶음으로 간다. */
 const stackCategories = [
@@ -295,9 +221,9 @@ function technologies(project: PublicProject) {
 }
 
 /** 기간을 '2026. 01 ~ 현재'처럼 마침표 뒤를 한 칸 띄워 보여 준다. */
-function period(project: PublicProject) {
+function period(project: PublicProject, locale: Locale) {
   return project.startedOn
-    ? formatProjectPeriod(project.startedOn, project.endedOn, 'ko').replace(
+    ? formatProjectPeriod(project.startedOn, project.endedOn, locale).replace(
         /\.(?=\d)/g,
         '. ',
       )
@@ -316,7 +242,10 @@ function stackOf(items: PublicProject[]) {
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ko'));
 }
 
-function groupStack(items: { name: string; count: number }[]) {
+function groupStack(
+  items: { name: string; count: number }[],
+  stackNotes: Record<string, string[]>,
+) {
   const known = new Set(stackCategories.flatMap((c) => c.names));
   const groups = stackCategories.map((category) => ({
     label: category.label,
@@ -368,9 +297,13 @@ function Cover({ project, sizes }: { project: PublicProject; sizes: string }) {
 function ProjectFeature({
   project,
   status,
+  locale,
+  text,
 }: {
   project: PublicProject;
   status: string | null;
+  locale: Locale;
+  text: PortfolioMessages['projects'];
 }) {
   const tech = technologies(project);
   return (
@@ -380,14 +313,16 @@ function ProjectFeature({
           href={'/work/' + project.id}
           className={s.mediaLink}
           projectId={project.id}
-          locale="ko"
+          locale={locale}
         >
           <Cover project={project} sizes="(max-width: 767px) 100vw, 45vw" />
-          <span className="srOnly">{project.title} 상세 보기</span>
+          <span className="srOnly">
+            {text.detail.replace('{title}', project.title)}
+          </span>
         </ProjectPreviewLink>
         <p className={s.mediaMeta}>
           <span>{project.typeLabel ?? project.originLabel}</span>
-          <span>{period(project)}</span>
+          <span>{period(project, locale)}</span>
         </p>
       </div>
       <div className={s.featureBody}>
@@ -400,7 +335,7 @@ function ProjectFeature({
             href={'/work/' + project.id}
             className=""
             projectId={project.id}
-            locale="ko"
+            locale={locale}
           >
             {project.title}
           </ProjectPreviewLink>
@@ -415,12 +350,19 @@ function ProjectFeature({
         )}
         <p className={s.summary}>{project.summary}</p>
         {tech.length > 0 && (
-          <ul className={s.chips} aria-label="사용 기술">
+          <ul className={s.chips} aria-label={text.techLabel}>
             {tech.slice(0, 6).map((tag) => (
               <li key={tag.name}>{tag.name}</li>
             ))}
             {tech.length > 6 && (
-              <li aria-label={`외 ${tech.length - 6}개`}>+{tech.length - 6}</li>
+              <li
+                aria-label={text.moreTech.replace(
+                  '{count}',
+                  String(tech.length - 6),
+                )}
+              >
+                +{tech.length - 6}
+              </li>
             )}
           </ul>
         )}
@@ -429,9 +371,9 @@ function ProjectFeature({
             href={'/work/' + project.id}
             className={s.fillButton}
             projectId={project.id}
-            locale="ko"
+            locale={locale}
           >
-            <Roll front="자세히 보기" />
+            <Roll front={text.more} />
           </ProjectPreviewLink>
         </div>
       </div>
@@ -439,7 +381,13 @@ function ProjectFeature({
   );
 }
 
-function ProjectTile({ project }: { project: PublicProject }) {
+function ProjectTile({
+  project,
+  locale,
+}: {
+  project: PublicProject;
+  locale: Locale;
+}) {
   return (
     <article className={s.tile}>
       <Link href={'/work/' + project.id}>
@@ -448,19 +396,25 @@ function ProjectTile({ project }: { project: PublicProject }) {
           sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
         />
         <h3>{project.title}</h3>
-        <p>{period(project) || project.originLabel}</p>
+        <p>{period(project, locale) || project.originLabel}</p>
       </Link>
     </article>
   );
 }
 
-function ProjectRows({ items }: { items: PublicProject[] }) {
+function ProjectRows({
+  items,
+  locale,
+}: {
+  items: PublicProject[];
+  locale: Locale;
+}) {
   return (
     <ul className={s.rows}>
       {items.map((p) => (
         <li key={p.id}>
           <Link href={'/work/' + p.id}>
-            <small>{period(p) || p.originLabel}</small>
+            <small>{period(p, locale) || p.originLabel}</small>
             <span>
               <strong>{p.title}</strong>
               <span>{p.summary}</span>
@@ -474,49 +428,52 @@ function ProjectRows({ items }: { items: PublicProject[] }) {
 }
 
 export default async function Home() {
-  const [{ messages }, all] = await Promise.all([
+  const [{ messages, locale }, headerSettings] = await Promise.all([
     getMessages(),
-    getPublicProjects('ko'),
+    getHeaderSettings(),
   ]);
+  const all = await getPublicProjects(locale);
+  const text = messages.portfolio;
   const projects = all.filter(
     (p) => projectGroupOf(p.originCode) === 'personal',
   );
   const works = all.filter((p) => projectGroupOf(p.originCode) === 'work');
   const statusOf = (p: PublicProject) =>
     p.endedOn
-      ? '개발 완료'
+      ? text.projects.completed
       : p.lifecycle
         ? messages.projectStatuses[p.lifecycle]
         : null;
   const stack = stackOf(all);
-  const stackGroups = groupStack(stack);
+  const stackGroups = groupStack(stack, text.stackNotes);
   const files = portfolioFileStatus();
 
   return (
     <div id="portfolio" className={s.page}>
-      <PortfolioHeader />
+      <PortfolioHeader settings={headerSettings} />
 
       <section className={s.hero} id="intro" aria-labelledby="hero-title">
-        <HeroBackground />
+        <HeroBackground dark={headerSettings.theme === 'dark'} />
         <div className={s.heroContent}>
           <p className={s.heroEyebrow} aria-hidden="true">
             Portfolio
           </p>
           <h1 id="hero-title" className={s.heroTitle}>
-            요구를 듣고, 운영을 알고,
+            {text.hero.titleStart}
             <br />
-            <em>직접 만듭니다.</em>
+            <em>{text.hero.titleEmphasis}</em>
           </h1>
-          <p className={s.heroLead}>
-            그룹웨어 컨설팅과 인프라 운영을 거쳐 지금은 서버부터 화면까지 만드는
-            9년 차 풀스택 개발자, 원종환입니다.
-          </p>
+          <p className={s.heroLead}>{text.hero.lead}</p>
           <div className={s.heroActions}>
             <a href="#profile" className={s.heroPrimary}>
-              프로필 보기
+              {text.hero.profileButton}
               <span aria-hidden="true">↓</span>
             </a>
-            <PortfolioDownloads files={files} kinds={['portfolio']} />
+            <PortfolioDownloads
+              files={files}
+              labels={text.downloads}
+              kinds={['portfolio']}
+            />
           </div>
         </div>
       </section>
@@ -551,25 +508,24 @@ export default async function Home() {
               </g>
             </svg>{' '}
             <p className={s.headline}>
-              듣는 일에서 시작해
+              {text.profile.headlineStart}
               <br />
-              <em>만드는 일</em>까지 왔습니다.
+              <em>{text.profile.headlineEmphasis}</em>
+              {text.profile.headlineEnd}
             </p>
           </div>
           <div className={s.profileText}>
             <p className={s.body}>
-              9년 동안 세 자리에서 일했습니다. 고객의 이야기를 듣고 방향을
-              제안하던 컨설턴트에서, 서버와 네트워크를 지키던 운영자를 거쳐,
-              지금은 <strong>풀스택 웹 개발자</strong>로 일하고 있습니다. 그래서
-              기능을 만들 때 고객이 실제로 원하는 것인지, 운영에서 문제없이
-              돌아갈지를 함께 봅니다.
+              {text.profile.bodyStart}
+              <strong>{text.profile.bodyStrong}</strong>
+              {text.profile.bodyEnd}
             </p>
             <ol className={s.aboutCards}>
-              {storyCards.map((item) => (
+              {text.stories.map((item, index) => (
                 <li key={item.step}>
                   <span className={s.storyIcon} aria-hidden="true">
                     <svg viewBox="0 0 24 24" focusable="false">
-                      {item.icon}
+                      {storyIconList[index]}
                     </svg>
                   </span>
                   <small>{item.step}</small>
@@ -580,13 +536,10 @@ export default async function Home() {
             </ol>
           </div>
           <div className={s.career}>
-            <h3 className={s.subTitle}>직무 연관 이력</h3>
+            <h3 className={s.subTitle}>{text.profile.careerTitle}</h3>
             <ol>
-              {career.map((item) => (
-                <li
-                  key={item.org}
-                  data-current={item.tag === '재직 중' || undefined}
-                >
+              {text.career.map((item) => (
+                <li key={item.org} data-current={item.current || undefined}>
                   <span>{item.period}</span>
                   <p>
                     <strong>
@@ -602,11 +555,11 @@ export default async function Home() {
             </ol>
           </div>
           <div className={s.stack}>
-            <h3 className={s.subTitle}>기술 스택</h3>
+            <h3 className={s.subTitle}>{text.profile.stackTitle}</h3>
             {stackGroups.length ? (
-              <StackTabs groups={stackGroups} />
+              <StackTabs groups={stackGroups} labels={text.stackTabs} />
             ) : (
-              <p className={s.empty}>등록된 기술 태그가 없습니다.</p>
+              <p className={s.empty}>{text.profile.stackEmpty}</p>
             )}
           </div>
         </section>
@@ -623,21 +576,24 @@ export default async function Home() {
           </h2>
           {projects.length ? (
             <ProjectViews
-              intro={
-                <p className={s.note}>
-                  교육 과정과 개인 작업으로 만든 프로젝트입니다.
-                </p>
-              }
+              intro={<p className={s.note}>{text.projects.intro}</p>}
+              labels={text.views}
               large={projects.map((p) => (
-                <ProjectFeature key={p.id} project={p} status={statusOf(p)} />
+                <ProjectFeature
+                  key={p.id}
+                  project={p}
+                  status={statusOf(p)}
+                  locale={locale}
+                  text={text.projects}
+                />
               ))}
               small={projects.map((p) => (
-                <ProjectTile key={p.id} project={p} />
+                <ProjectTile key={p.id} project={p} locale={locale} />
               ))}
-              list={<ProjectRows items={projects} />}
+              list={<ProjectRows items={projects} locale={locale} />}
             />
           ) : (
-            <p className={s.empty}>공개된 프로젝트가 없습니다.</p>
+            <p className={s.empty}>{text.projects.empty}</p>
           )}
         </section>
 
@@ -653,21 +609,17 @@ export default async function Home() {
           </h2>
           {works.length ? (
             <WorksRail
-              intro={
-                <p className={s.note}>
-                  실무에서 참여한 프로젝트입니다. 공개 가능한 범위와 담당한
-                  역할을 중심으로 정리했습니다.
-                </p>
-              }
+              intro={<p className={s.note}>{text.works.intro}</p>}
+              labels={text.works}
               cards={works.map((p) => (
                 <div key={p.id} className={s.workCard}>
-                  <ProjectCard project={p} locale="ko" compact />
+                  <ProjectCard project={p} locale={locale} compact />
                 </div>
               ))}
-              list={<ProjectRows items={works} />}
+              list={<ProjectRows items={works} locale={locale} />}
             />
           ) : (
-            <p className={s.empty}>공개된 실무 프로젝트가 없습니다.</p>
+            <p className={s.empty}>{text.works.empty}</p>
           )}
         </section>
       </div>
@@ -675,24 +627,20 @@ export default async function Home() {
       <footer className={s.footer} aria-labelledby="contact-title">
         <SectionLabel index="04" name="say hello" meta="contact" />
         <h2 id="contact-title" className="srOnly">
-          연락하기
+          {text.contact.title}
         </h2>
         <div className={s.closing}>
           <div className={s.closingIntro}>
             <p className={s.availability}>
               <span aria-hidden="true" />
-              새로운 협업 제안을 기다립니다
+              {text.contact.availability}
             </p>
             <p className={s.closingText}>
-              함께 좋은 서비스를
+              {text.contact.closingStart}
               <br />
-              <em>만들고 싶은 분께.</em>
+              <em>{text.contact.closingEmphasis}</em>
             </p>
-            <p className={s.contactDescription}>
-              요구를 듣는 일부터 운영까지 겪어 본 개발자로서, 화면부터 서버까지
-              필요한 기능을 직접 만들어 갑니다. 프로젝트와 협업에 관한 이야기를
-              편하게 전해 주세요.
-            </p>
+            <p className={s.contactDescription}>{text.contact.description}</p>
           </div>
           <div className={s.contactPanel}>
             <dl className={s.contactLinks}>
@@ -707,7 +655,10 @@ export default async function Home() {
                   EMAIL
                 </dt>
                 <dd>
-                  <EmailButton email="anarose4815@naver.com" />
+                  <EmailButton
+                    email="anarose4815@naver.com"
+                    labels={text.email}
+                  />
                 </dd>
               </div>
               <div>
@@ -733,18 +684,22 @@ export default async function Home() {
                 </dd>
               </div>
             </dl>
-            <PortfolioDownloads files={files} className={s.contactDownloads} />
+            <PortfolioDownloads
+              files={files}
+              labels={text.downloads}
+              className={s.contactDownloads}
+            />
           </div>
         </div>
         <div className={s.legal}>
           <p>© {seoulYear()} Won Jonghwan. All rights reserved.</p>
-          <nav aria-label="주요 페이지">
-            <Link href="/">홈</Link>
-            <Link href="/projects">프로젝트</Link>
-            <Link href="/board">Blog</Link>
-            <Link href="/lab">실험실</Link>
-            <Link href="/guide">UI 가이드</Link>
-            <Link href="/admin">관리자</Link>
+          <nav aria-label={text.footerNav.label}>
+            <Link href="/">{text.footerNav.home}</Link>
+            <Link href="/projects">{text.footerNav.projects}</Link>
+            <Link href="/board">{text.footerNav.blog}</Link>
+            <Link href="/lab">{text.footerNav.lab}</Link>
+            <Link href="/guide">{text.footerNav.guide}</Link>
+            <Link href="/admin">{text.footerNav.admin}</Link>
           </nav>
         </div>
       </footer>

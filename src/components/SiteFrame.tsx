@@ -3,26 +3,33 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { PortfolioHeader } from '@/app/Interactive';
+import { PortfolioHeader, type HeaderSettings } from '@/app/Interactive';
 import s from '@/app/home.module.css';
 
-export function SiteFrame({ children }: { children: ReactNode }) {
+export function SiteFrame({
+  children,
+  headerSettings,
+}: {
+  children: ReactNode;
+  headerSettings: HeaderSettings;
+}) {
   const pathname = usePathname();
   if (pathname === '/') return children;
+  const nav = headerSettings.labels.footerNav;
   return (
     <div className={`${s.page} ${s.innerPage}`}>
-      <PortfolioHeader />
+      <PortfolioHeader settings={headerSettings} />
       {children}
       <footer className={s.footer}>
         <div className={s.legal}>
           <p>© {new Date().getFullYear()} Won Jonghwan. All rights reserved.</p>
-          <nav aria-label="주요 페이지">
-            <Link href="/">홈</Link>
-            <Link href="/projects">프로젝트</Link>
-            <Link href="/board">Blog</Link>
-            <Link href="/lab">실험실</Link>
-            <Link href="/guide">UI 가이드</Link>
-            <Link href="/admin">관리자</Link>
+          <nav aria-label={nav.label}>
+            <Link href="/">{nav.home}</Link>
+            <Link href="/projects">{nav.projects}</Link>
+            <Link href="/board">{nav.blog}</Link>
+            <Link href="/lab">{nav.lab}</Link>
+            <Link href="/guide">{nav.guide}</Link>
+            <Link href="/admin">{nav.admin}</Link>
           </nav>
         </div>
       </footer>

@@ -228,6 +228,8 @@ test('parent echo preserves the code block cursor, but external content still re
     '@/lib/rich-text': {
       parseRichText: (value) => value,
       richTextExtensions: [],
+      textStyleFontOptions: [],
+      textStyleSizeOptions: [],
     },
     './CommonSelectBox': {},
     './CommonFileUpload': {},
@@ -352,6 +354,8 @@ test('cell pointer release shows before updating position without an Alt-Tab', (
     '@/lib/rich-text': {
       parseRichText: (value) => value,
       richTextExtensions: [],
+      textStyleFontOptions: [],
+      textStyleSizeOptions: [],
     },
   };
   const exports = {};
