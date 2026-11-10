@@ -20,6 +20,7 @@ import {
   EmailButton,
   PortfolioHeader,
   ProjectViews,
+  SectionLink,
   StackTabs,
   WorksRail,
   type StackGroup,
@@ -465,10 +466,10 @@ export default async function Home() {
           </h1>
           <p className={s.heroLead}>{text.hero.lead}</p>
           <div className={s.heroActions}>
-            <a href="#profile" className={s.heroPrimary}>
+            <SectionLink id="profile" className={s.heroPrimary}>
               {text.hero.profileButton}
               <span aria-hidden="true">↓</span>
-            </a>
+            </SectionLink>
             <PortfolioDownloads
               files={files}
               labels={text.downloads}
