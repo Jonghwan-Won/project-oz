@@ -859,7 +859,7 @@
 .page section[id] {
   scroll-margin-top: var(--p2-header);
 }
-.page .section:focus {
+.page .section[tabindex]:focus {
   outline: none;
 }
 .label {

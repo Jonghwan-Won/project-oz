@@ -133,6 +133,26 @@ function goToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
     );
 }
 
+export function SectionLink({
+  id,
+  className,
+  children,
+}: {
+  id: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <a
+      href={`/#${id}`}
+      className={className}
+      onClick={(event) => goToSection(event, id)}
+    >
+      {children}
+    </a>
+  );
+}
+
 function externalProps(href: string) {
   return href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {};
 }
